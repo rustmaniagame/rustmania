@@ -11,7 +11,8 @@ fn main() {
     let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
     let context = &mut ggez::Context::load_from_conf("rhythm attempt", "ixsetf", c).unwrap();
 
-    let default_layout = player_config::NoteLayout::new(ggez::graphics::Image::new(context, "/arrow.png").unwrap());
+    let default_layout = player_config::NoteLayout::new(ggez::graphics::Image::new(context, "/arrow.png").unwrap(),
+                                                        ggez::graphics::Image::new(context, "/receptor.png").unwrap());
 
     let mut game_screen = gameplay_screen::GameplayScreen::new(default_layout);
 
