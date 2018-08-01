@@ -4,6 +4,7 @@ extern crate chrono;
 use std::result::Result;
 use ggez::graphics;
 use std::time::{Instant, Duration};
+use super::player_config;
 
 pub struct GameplayScreen {
     layout: super::player_config::NoteLayout,
@@ -12,9 +13,9 @@ pub struct GameplayScreen {
 }
 
 impl GameplayScreen {
-    pub fn new() -> Self {
+    pub fn new(layout: player_config::NoteLayout) -> Self {
         GameplayScreen {
-            layout: super::player_config::NoteLayout::new(),
+            layout,
             notes: [Vec::new(), Vec::new(), Vec::new(), Vec::new()],
             start_time: None,
         }
@@ -44,11 +45,12 @@ impl ggez::event::EventHandler for GameplayScreen {
         if self.start_time.is_none() {
             return Ok(());
         }
+        let note_graphic = graphics::Image::new(ctx,"/arrow.png").unwrap();
         for (column_index, column_data) in self.notes.iter().enumerate() {
             for note in column_data.iter() {
                 let distance = to_milliseconds(*note) - to_milliseconds(current_time.duration_since(self.start_time.unwrap()));
-                let note_graphic = &graphics::Image::solid(ctx, 32, graphics::Color::from_rgb(128,128,128)).unwrap();
-                graphics::draw(ctx, note_graphic, graphics::Point2::new(self.layout.column_positions[column_index] as f32, distance as f32), 0.0)?;
+                //let note_graphic = &graphics::Image::solid(ctx, 32, graphics::Color::from_rgb(128,128,128)).unwrap();
+                graphics::draw(ctx, &self.layout.sprite, graphics::Point2::new(self.layout.column_positions[column_index] as f32, distance as f32), 0.0)?;
             }
         }
         graphics::present(ctx);

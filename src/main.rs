@@ -10,7 +10,10 @@ use std::time::Duration;
 fn main() {
     let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
     let context = &mut ggez::Context::load_from_conf("rhythm attempt", "ixsetf", c).unwrap();
-    let mut statey = gameplay_screen::GameplayScreen::new();
+
+    let default_layout = player_config::NoteLayout::new(ggez::graphics::Image::new(context, "/arrow.png").unwrap());
+
+    let mut statey = gameplay_screen::GameplayScreen::new(default_layout);
 
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
         let mut path = std::path::PathBuf::from(manifest_dir);
