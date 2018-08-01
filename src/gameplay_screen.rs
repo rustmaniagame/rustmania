@@ -41,8 +41,8 @@ impl ggez::event::EventHandler for GameplayScreen {
     }
     fn draw(&mut self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
         graphics::clear(ctx);
-        for (column_index, receptor) in self.layout.column_positions.iter().enumerate() {
-            graphics::draw(ctx, &self.layout.receptor_sprite, graphics::Point2::new(self.layout.column_positions[column_index] as f32, 0.0), 0.0)?;
+        for &column_position in self.layout.column_positions.iter() {
+            graphics::draw(ctx, &self.layout.receptor_sprite, graphics::Point2::new(column_position as f32, 0.0), 0.0)?;
         }
         if self.start_time.is_none() {
             return Ok(());
