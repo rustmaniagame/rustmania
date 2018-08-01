@@ -7,7 +7,7 @@ use std::time::{Instant, Duration};
 
 pub struct GameplayScreen {
     layout: super::player_config::NoteLayout,
-    notes: Vec<Duration>,
+    notes: [Vec<Duration>; 4],
     start_time: Option<Instant>,
 }
 
@@ -15,13 +15,15 @@ impl GameplayScreen {
     pub fn new() -> Self {
         GameplayScreen {
             layout: super::player_config::NoteLayout::new(),
-            notes: Vec::new(),
+            notes: [Vec::new(), Vec::new(), Vec::new(), Vec::new()],
             start_time: None,
         }
     }
-    pub fn add_notes(&mut self, new_notes: &mut Vec<Duration>) {
-        self.notes.append(new_notes);
-        self.notes.sort();
+    pub fn add_notes(&mut self, new_notes: &mut [Vec<Duration>]) {
+        for column in self.notes.iter_mut().zip(new_notes.iter_mut()) {
+            column.0.append(column.1);
+            column.0.sort();
+        }
     }
     pub fn start(&mut self) {
         self.start_time = Some(Instant::now());
@@ -38,13 +40,16 @@ impl ggez::event::EventHandler for GameplayScreen {
     }
     fn draw(&mut self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
         graphics::clear(ctx);
+        let current_time = Instant::now();
         if self.start_time.is_none() {
             return Ok(());
         }
-        for note in self.notes.iter() {
-            let distance = to_millis(*note) - to_millis(Instant::now().duration_since(self.start_time.unwrap()));
-            let catdog = &graphics::Image::solid(ctx, 32, graphics::Color::from_rgb(128,128,128)).unwrap();
-            graphics::draw(ctx, catdog, graphics::Point2::new(self.layout.column_positions[0] as f32, distance as f32), 0.0)?;
+        for column in self.notes.iter().enumerate() {
+            for note in column.1.iter() {
+                let distance = to_millis(*note) - to_millis(current_time.duration_since(self.start_time.unwrap()));
+                let catdog = &graphics::Image::solid(ctx, 32, graphics::Color::from_rgb(128,128,128)).unwrap();
+                graphics::draw(ctx, catdog, graphics::Point2::new(self.layout.column_positions[column.0] as f32, distance as f32), 0.0)?;
+            }
         }
         graphics::present(ctx);
         Ok(())

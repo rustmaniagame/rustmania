@@ -18,7 +18,11 @@ fn main() {
         context.filesystem.mount(&path, true);
     }
 
-    statey.add_notes(&mut vec![Duration::from_millis(1000),Duration::from_millis(2000),Duration::from_millis(3000),Duration::from_millis(4000)]);
+    statey.add_notes(&mut [vec![Duration::from_millis(2000),Duration::from_millis(2375),Duration::from_millis(2750),Duration::from_millis(3000)],
+        vec![Duration::from_millis(2000),Duration::from_millis(2250),Duration::from_millis(2625),Duration::from_millis(3000)],
+    vec![Duration::from_millis(2125),Duration::from_millis(2500),Duration::from_millis(2750),Duration::from_millis(4000)],
+    vec![Duration::from_millis(2250),Duration::from_millis(2500),Duration::from_millis(2875),Duration::from_millis(4000)],
+                                    ]);
     statey.start();
     if let Err(e) = ggez::event::run(context, &mut statey) {
         println!("Error: {}", e);
