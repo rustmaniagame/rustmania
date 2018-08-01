@@ -30,7 +30,7 @@ impl GameplayScreen {
     }
 }
 
-fn to_millis(dur: Duration) -> i64 {
+fn to_milliseconds(dur: Duration) -> i64 {
     dur.as_secs() as i64 * 1000 + dur.subsec_millis() as i64
 }
 
@@ -44,11 +44,11 @@ impl ggez::event::EventHandler for GameplayScreen {
         if self.start_time.is_none() {
             return Ok(());
         }
-        for column in self.notes.iter().enumerate() {
-            for note in column.1.iter() {
-                let distance = to_millis(*note) - to_millis(current_time.duration_since(self.start_time.unwrap()));
-                let catdog = &graphics::Image::solid(ctx, 32, graphics::Color::from_rgb(128,128,128)).unwrap();
-                graphics::draw(ctx, catdog, graphics::Point2::new(self.layout.column_positions[column.0] as f32, distance as f32), 0.0)?;
+        for (column_index, column_data) in self.notes.iter().enumerate() {
+            for note in column_data.iter() {
+                let distance = to_milliseconds(*note) - to_milliseconds(current_time.duration_since(self.start_time.unwrap()));
+                let note_graphic = &graphics::Image::solid(ctx, 32, graphics::Color::from_rgb(128,128,128)).unwrap();
+                graphics::draw(ctx, note_graphic, graphics::Point2::new(self.layout.column_positions[column_index] as f32, distance as f32), 0.0)?;
             }
         }
         graphics::present(ctx);
