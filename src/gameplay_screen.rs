@@ -21,9 +21,9 @@ impl GameplayScreen {
         }
     }
     pub fn add_notes(&mut self, new_notes: &mut [Vec<Duration>]) {
-        for column in self.notes.iter_mut().zip(new_notes.iter_mut()) {
-            column.0.append(column.1);
-            column.0.sort();
+        for (column, new_notes) in self.notes.iter_mut().zip(new_notes.iter_mut()) {
+            column.append(new_notes);
+            column.sort();
         }
     }
     pub fn start(&mut self) {
