@@ -33,7 +33,7 @@ fn to_millis(dur: Duration) -> i64 {
 }
 
 impl ggez::event::EventHandler for GameplayScreen {
-    fn update(&mut self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
+    fn update(&mut self, _ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
         Ok(())
     }
     fn draw(&mut self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
@@ -41,9 +41,8 @@ impl ggez::event::EventHandler for GameplayScreen {
         if self.start_time.is_none() {
             return Ok(());
         }
-        let mut distance = 0;
         for note in self.notes.iter() {
-            distance = to_millis(*note) - to_millis(Instant::now().duration_since(self.start_time.unwrap()));
+            let distance = to_millis(*note) - to_millis(Instant::now().duration_since(self.start_time.unwrap()));
             let catdog = &graphics::Image::solid(ctx, 32, graphics::Color::from_rgb(128,128,128)).unwrap();
             graphics::draw(ctx, catdog, graphics::Point2::new(self.layout.column_positions[0] as f32, distance as f32), 0.0)?;
         }

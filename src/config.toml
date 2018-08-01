@@ -10,7 +10,7 @@ max_width = 0
 max_height = 0
 
 [window_setup]
-title = "An easy, good game"
+title = "Rhythm Attempt"
 icon = ""
 resizable = false
 allow_highdpi = true

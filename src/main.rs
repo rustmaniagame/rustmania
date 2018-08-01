@@ -8,7 +8,7 @@ use std::fs::File;
 use std::time::Duration;
 
 fn main() {
-    let mut c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
+    let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
     let context = &mut ggez::Context::load_from_conf("rhythm attempt", "ixsetf", c).unwrap();
     let mut statey = gameplay_screen::GameplayScreen::new();
 
