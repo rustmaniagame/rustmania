@@ -41,11 +41,10 @@ impl ggez::event::EventHandler for GameplayScreen {
     }
     fn draw(&mut self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
         graphics::clear(ctx);
-        let current_time = Instant::now();
         if self.start_time.is_none() {
             return Ok(());
         }
-        let note_graphic = graphics::Image::new(ctx,"/arrow.png").unwrap();
+        let current_time = Instant::now();
         for (column_index, column_data) in self.notes.iter().enumerate() {
             for note in column_data.iter() {
                 let distance = to_milliseconds(*note) - to_milliseconds(current_time.duration_since(self.start_time.unwrap()));
