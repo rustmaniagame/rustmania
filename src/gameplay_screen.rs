@@ -42,7 +42,7 @@ impl ggez::event::EventHandler for GameplayScreen {
     fn draw(&mut self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
         graphics::clear(ctx);
         for &column_position in self.layout.column_positions.iter() {
-            graphics::draw(ctx, &self.layout.receptor_sprite, graphics::Point2::new(column_position as f32, 0.0), 0.0)?;
+            graphics::draw(ctx, &self.layout.receptor_sprite, graphics::Point2::new(column_position as f32, self.layout.receptor_height as f32), 0.0)?;
         }
         if self.start_time.is_none() {
             return Ok(());
@@ -50,7 +50,7 @@ impl ggez::event::EventHandler for GameplayScreen {
         let current_time = Instant::now();
         for (column_index, column_data) in self.notes.iter().enumerate() {
             for note in column_data.iter() {
-                let distance = to_milliseconds(*note) - to_milliseconds(current_time.duration_since(self.start_time.unwrap()));
+                let distance = to_milliseconds(*note) - to_milliseconds(current_time.duration_since(self.start_time.unwrap())) + self.layout.receptor_height;
                 //let note_graphic = &graphics::Image::solid(ctx, 32, graphics::Color::from_rgb(128,128,128)).unwrap();
                 graphics::draw(ctx, &self.layout.arrow_sprite, graphics::Point2::new(self.layout.column_positions[column_index] as f32, distance as f32), 0.0)?;
             }
