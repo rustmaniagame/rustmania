@@ -1,0 +1,10 @@
+[package]
+name = "first_game"
+version = "0.1.0"
+authors = ["Robert"]
+build = "build.rs"
+
+[dependencies]
+ggez = "0.4.3"
+sdl2 = "0.31.0"
+chrono = "0.4.4"
