@@ -12,13 +12,13 @@ pub struct GameplayScreen<'a> {
 }
 
 pub struct Notefield<'a> {
-    layout: super::player_config::NoteLayout,
+    layout: &'a super::player_config::NoteLayout,
     notes: &'a [Vec<Duration>; 4],
     start_time: Option<Instant>,
 }
 
 impl<'a> Notefield<'a> {
-    pub fn new(layout: player_config::NoteLayout, notes: &'a [Vec<Duration>; 4]) -> Self {
+    pub fn new(layout: &'a player_config::NoteLayout, notes: &'a [Vec<Duration>; 4]) -> Self {
         Notefield {
             layout,
             notes,
@@ -49,7 +49,7 @@ fn to_milliseconds(dur: Duration) -> i64 {
 }
 
 impl<'a> GameplayScreen<'a> {
-    pub fn new(layout: player_config::NoteLayout, notes: &'a [Vec<Duration>; 4], p2layout: player_config::NoteLayout, p2notes: &'a [Vec<Duration>; 4]) -> Self {
+    pub fn new(layout: &'a player_config::NoteLayout, notes: &'a [Vec<Duration>; 4], p2layout: &'a player_config::NoteLayout, p2notes: &'a [Vec<Duration>; 4]) -> Self {
         GameplayScreen {
             notefield: Notefield::new(layout, notes),
             p2notefield: Notefield::new(p2layout, p2notes),
