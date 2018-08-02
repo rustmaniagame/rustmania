@@ -1,8 +1,8 @@
 extern crate ggez;
 extern crate chrono;
 
-pub mod gameplay_screen;
-pub mod player_config;
+mod gameplay_screen;
+mod player_config;
 use ggez::conf;
 use std::fs::File;
 use std::time::Duration;
