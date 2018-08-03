@@ -16,17 +16,17 @@ pub struct Notefield<'a> {
     notes: &'a [Vec<i64>; 4],
     start_time: Option<Instant>,
     on_screen: Vec<(usize,usize)>,
-    draw_distance: u32,
+    draw_distance: i64,
 }
 
 impl<'a> Notefield<'a> {
-    pub fn new(layout: &'a player_config::NoteLayout, notes: &'a [Vec<i64>; 4]) -> Self {
+    pub fn new(layout: &'a player_config::NoteLayout, notes: &'a [Vec<i64>; 4], draw_distance: i64) -> Self {
         Notefield {
             layout,
             notes,
             start_time: None,
             on_screen: Vec::<_>::new(),
-            draw_distance: 600,
+            draw_distance,
         }
     }
     fn draw_field(&mut self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
@@ -44,7 +44,7 @@ impl<'a> Notefield<'a> {
                 let position = (distance as f32 * self.layout.scroll_speed) as i64 + self.layout.receptor_height;
                 graphics::draw(ctx, &self.layout.arrow_sprite, graphics::Point2::new(self.layout.column_positions[column_index] as f32, position as f32), 0.0)?;
             }
-            if self.notes[column_index][*draw_end] - time_delta < 600 && *draw_end != column_data.len()-1 {
+            if self.notes[column_index][*draw_end] - time_delta < self.draw_distance && *draw_end != column_data.len()-1 {
                 *draw_end += 1;
             }
         }
@@ -57,17 +57,19 @@ fn to_milliseconds(dur: Duration) -> i64 {
 }
 
 impl<'a> GameplayScreen<'a> {
-    pub fn new(layout: &'a player_config::NoteLayout, notes: &'a [Vec<i64>; 4], p2layout: &'a player_config::NoteLayout, p2notes: &'a [Vec<i64>; 4]) -> Self {
+    pub fn new(layout: &'a player_config::NoteLayout, notes: &'a [Vec<i64>; 4], p2layout: &'a player_config::NoteLayout, p2notes: &'a [Vec<i64>; 4], draw_distance: i64) -> Self {
         GameplayScreen {
-            notefield: Notefield::new(layout, notes),
-            p2notefield: Notefield::new(p2layout, p2notes),
+            notefield: Notefield::new(layout, notes, draw_distance),
+            p2notefield: Notefield::new(p2layout, p2notes, draw_distance),
         }
     }
     pub fn start(&mut self) {
         self.notefield.start_time = Some(Instant::now());
-        self.notefield.on_screen = self.notefield.notes.iter().map(|x| (0, match x.iter().position(|y| *y > 600) {Some(num)=> num, None => x.len()})).collect();
+        self.notefield.on_screen = self.notefield.notes.iter().map(|x| (0, match x.iter().position(|y| *y > self.notefield.draw_distance) {Some(num)=> num, None => x.len()})).collect();
 
         self.p2notefield.start_time = Some(Instant::now());
+        self.p2notefield.on_screen = self.p2notefield.notes.iter().map(|x| (0, match x.iter().position(|y| *y > self.p2notefield.draw_distance) {Some(num)=> num, None => x.len()})).collect();
+
     }
 }
 

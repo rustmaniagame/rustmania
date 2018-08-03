@@ -26,7 +26,7 @@ fn main() {
 
     let notes = [vec![2000,2375,2750,3000], vec![2000,2250,2625,3000], vec![2125,2500,2750,4000], vec![2250,2500,2875,4000]];
 
-    let mut game_screen = gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes);
+    let mut game_screen = gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, 600);
 
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
         let mut path = std::path::PathBuf::from(manifest_dir);
