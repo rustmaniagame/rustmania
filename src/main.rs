@@ -8,7 +8,7 @@ use std::fs::File;
 
 fn main() {
     let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
-    let context = &mut ggez::Context::load_from_conf("rhythm attempt", "ixsetf", c).unwrap();
+    let context = &mut ggez::Context::load_from_conf("rustmania", "ixsetf", c).unwrap();
 
     let mut p1_layout = player_config::NoteLayout::new([72, 136, 200, 264], ggez::graphics::Image::new(context, "/arrow.png").unwrap(),
                                                         ggez::graphics::Image::new(context, "/receptor.png").unwrap(), 250);
