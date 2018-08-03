@@ -39,13 +39,16 @@ impl<'a> Notefield<'a> {
         let current_time = Instant::now();
         let time_delta = to_milliseconds(current_time.duration_since(self.start_time.unwrap()));
         for (column_index, (column_data, (draw_start, draw_end))) in self.notes.iter().zip(&mut self.on_screen).enumerate() {
+            if *draw_end != column_data.len() && self.layout.delta_to_position(self.notes[column_index][*draw_end] - time_delta) < self.draw_distance {
+                *draw_end += 1;
+            }
+            if *draw_start != column_data.len() && self.notes[column_index][*draw_start] - time_delta < -180 {
+                *draw_start += 1;
+            }
             for note in column_data[*draw_start..*draw_end].iter() {
                 let note_delta = *note - time_delta;
                 let position = self.layout.delta_to_position(note_delta);
                 self.layout.draw_note_at_position(ctx, column_index, position)?;
-            }
-            if *draw_end != column_data.len() && self.layout.delta_to_position(self.notes[column_index][*draw_end] - time_delta) < self.draw_distance {
-                *draw_end += 1;
             }
         }
         Ok(())

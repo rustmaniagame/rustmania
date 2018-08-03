@@ -11,10 +11,10 @@ fn main() {
     let context = &mut ggez::Context::load_from_conf("rhythm attempt", "ixsetf", c).unwrap();
 
     let mut p1_layout = player_config::NoteLayout::new([72, 136, 200, 264], ggez::graphics::Image::new(context, "/arrow.png").unwrap(),
-                                                        ggez::graphics::Image::new(context, "/receptor.png").unwrap(), 50);
+                                                        ggez::graphics::Image::new(context, "/receptor.png").unwrap(), 250);
 
     let mut p2_layout = player_config::NoteLayout::new([472, 536, 600, 664], ggez::graphics::Image::new(context, "/arrow.png").unwrap(),
-                                                       ggez::graphics::Image::new(context, "/receptor.png").unwrap(), 50);
+                                                       ggez::graphics::Image::new(context, "/receptor.png").unwrap(), 250);
 
     if let Err(e) = p1_layout.set_scroll_speed(0.7){
         println!("Couldn't set scroll speed: {}", e);
