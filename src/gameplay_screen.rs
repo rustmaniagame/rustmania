@@ -44,7 +44,7 @@ impl<'a> Notefield<'a> {
                 let position = self.layout.delta_to_position(note_delta);
                 graphics::draw(ctx, &self.layout.arrow_sprite, graphics::Point2::new(self.layout.column_positions[column_index] as f32, position as f32), 0.0)?;
             }
-            if self.layout.delta_to_position(self.notes[column_index][if *draw_end == 0 {*draw_end} else {*draw_end-1}] - time_delta) < self.draw_distance && *draw_end != column_data.len() {
+            if *draw_end != column_data.len() && self.layout.delta_to_position(self.notes[column_index][*draw_end] - time_delta) < self.draw_distance {
                 *draw_end += 1;
             }
         }
