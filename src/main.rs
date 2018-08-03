@@ -5,7 +5,6 @@ mod gameplay_screen;
 mod player_config;
 use ggez::conf;
 use std::fs::File;
-use std::time::Duration;
 
 fn main() {
     let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
@@ -25,11 +24,7 @@ fn main() {
         println!("Couldn't set scroll speed: {}", e);
     }
 
-    let notes = [vec![Duration::from_millis(2000),Duration::from_millis(2375),Duration::from_millis(2750),Duration::from_millis(3000)],
-        vec![Duration::from_millis(2000),Duration::from_millis(2250),Duration::from_millis(2625),Duration::from_millis(3000)],
-        vec![Duration::from_millis(2125),Duration::from_millis(2500),Duration::from_millis(2750),Duration::from_millis(4000)],
-        vec![Duration::from_millis(2250),Duration::from_millis(2500),Duration::from_millis(2875),Duration::from_millis(4000)],
-    ];
+    let notes = [vec![2000,2375,2750,3000], vec![2000,2250,2625,3000], vec![2125,2500,2750,4000], vec![2250,2500,2875,4000]];
 
     let mut game_screen = gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes);
 
