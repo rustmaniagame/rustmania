@@ -15,6 +15,8 @@ pub struct Notefield<'a> {
     layout: &'a super::player_config::NoteLayout,
     notes: &'a [Vec<Duration>; 4],
     start_time: Option<Instant>,
+    on_screen: Vec<(usize,usize)>,
+    draw_distance: u32,
 }
 
 impl<'a> Notefield<'a> {
@@ -23,6 +25,8 @@ impl<'a> Notefield<'a> {
             layout,
             notes,
             start_time: None,
+            on_screen: Vec::<_>::new(),
+            draw_distance: 600,
         }
     }
     fn draw_field(&mut self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
@@ -33,11 +37,15 @@ impl<'a> Notefield<'a> {
             return Ok(());
         }
         let current_time = Instant::now();
-        for (column_index, column_data) in self.notes.iter().enumerate() {
-            for note in column_data.iter() {
-                let distance = to_milliseconds(*note) - to_milliseconds(current_time.duration_since(self.start_time.unwrap()));
+        let time_delta = to_milliseconds(current_time.duration_since(self.start_time.unwrap()));
+        for (column_index, (column_data, (draw_start, draw_end))) in self.notes.iter().zip(&mut self.on_screen).enumerate() {
+            for note in column_data[*draw_start..*draw_end].iter() {
+                let distance = to_milliseconds(*note) - time_delta;
                 let position = (distance as f32 * self.layout.scroll_speed) as i64 + self.layout.receptor_height;
                 graphics::draw(ctx, &self.layout.arrow_sprite, graphics::Point2::new(self.layout.column_positions[column_index] as f32, position as f32), 0.0)?;
+            }
+            if to_milliseconds(self.notes[column_index][*draw_end]) - time_delta < 600 && *draw_end != column_data.len()-1 {
+                *draw_end += 1;
             }
         }
         Ok(())
@@ -57,6 +65,8 @@ impl<'a> GameplayScreen<'a> {
     }
     pub fn start(&mut self) {
         self.notefield.start_time = Some(Instant::now());
+        self.notefield.on_screen = self.notefield.notes.iter().map(|x| (0, match x.iter().position(|y| to_milliseconds(*y) > 600) {Some(num)=> num, None => x.len()})).collect();
+
         self.p2notefield.start_time = Some(Instant::now());
     }
 }
