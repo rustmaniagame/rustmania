@@ -25,4 +25,7 @@ impl NoteLayout {
         self.scroll_speed = new_speed;
         Ok(())
     }
+    pub fn delta_to_position(&self, delta: i64) -> i64 {
+        (delta as f32 * self.scroll_speed) as i64 + self.receptor_height
+    }
 }

@@ -40,11 +40,11 @@ impl<'a> Notefield<'a> {
         let time_delta = to_milliseconds(current_time.duration_since(self.start_time.unwrap()));
         for (column_index, (column_data, (draw_start, draw_end))) in self.notes.iter().zip(&mut self.on_screen).enumerate() {
             for note in column_data[*draw_start..*draw_end].iter() {
-                let distance = *note - time_delta;
-                let position = (distance as f32 * self.layout.scroll_speed) as i64 + self.layout.receptor_height;
+                let note_delta = *note - time_delta;
+                let position = self.layout.delta_to_position(note_delta);
                 graphics::draw(ctx, &self.layout.arrow_sprite, graphics::Point2::new(self.layout.column_positions[column_index] as f32, position as f32), 0.0)?;
             }
-            if self.notes[column_index][*draw_end] - time_delta < self.draw_distance && *draw_end != column_data.len()-1 {
+            if self.layout.delta_to_position(self.notes[column_index][*draw_end] - time_delta) < self.draw_distance && *draw_end != column_data.len()-1 {
                 *draw_end += 1;
             }
         }
