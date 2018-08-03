@@ -1,4 +1,5 @@
-use ggez::graphics;
+extern crate ggez;
+use ggez::{graphics, Context};
 
 pub struct NoteLayout {
     pub column_positions: [i64; 4],
@@ -27,5 +28,9 @@ impl NoteLayout {
     }
     pub fn delta_to_position(&self, delta: i64) -> i64 {
         (delta as f32 * self.scroll_speed) as i64 + self.receptor_height
+    }
+    pub fn draw_note_at_position(&self, ctx: &mut Context, column: usize, position: i64) -> Result<(), ggez::GameError> {
+        graphics::draw(ctx, &self.arrow_sprite, graphics::Point2::new(self.column_positions[column] as f32, position as f32), 0.0)?;
+        Ok(())
     }
 }
