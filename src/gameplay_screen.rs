@@ -30,7 +30,7 @@ impl<'a> Notefield<'a> {
         }
     }
     fn draw_field(&mut self, ctx: &mut ggez::Context, time: Option<i64>) -> Result<(), ggez::GameError> {
-        self.layout.draw_receptors(ctx);
+        self.layout.draw_receptors(ctx)?;
         if time.is_none() {
             return Ok(());
         }
