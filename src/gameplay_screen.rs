@@ -42,11 +42,7 @@ impl<'a> Notefield<'a> {
             if *draw_start != column_data.len() && column_data[*draw_start] - time < -180 {
                 *draw_start += 1;
             }
-            for note in column_data[*draw_start..*draw_end].iter() {
-                let note_delta = *note - time;
-                let position = self.layout.delta_to_position(note_delta);
-                self.layout.draw_note_at_position(ctx, column_index, position)?;
-            }
+            self.layout.draw_column_of_notes(ctx, column_data[*draw_start..*draw_end].iter().map(|note| *note - time), column_index)?;
         }
         Ok(())
     }
