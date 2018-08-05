@@ -1,10 +1,12 @@
 use std::fs;
 
-pub struct Notedata {
+pub struct TimingData {
     pub notes: [Vec<i64>; 4],
 }
 
-impl Notedata {
+pub struct Notedata();
+
+impl TimingData {
     pub fn from_sm() -> Self {
         let mut notes = [Vec::new(),Vec::new(),Vec::new(),Vec::new()];
         let bpm = 128;
@@ -24,7 +26,7 @@ impl Notedata {
                 }
             }
         }
-        Notedata {
+        TimingData {
             notes,
         }
     }
