@@ -14,14 +14,14 @@ pub struct GameplayScreen<'a> {
 
 pub struct Notefield<'a> {
     layout: &'a super::player_config::NoteLayout,
-    notes: &'a notedata::Notedata,
+    notes: &'a notedata::TimingData,
     start_time: Option<Instant>,
     on_screen: Vec<(usize,usize)>,
     draw_distance: i64,
 }
 
 impl<'a> Notefield<'a> {
-    pub fn new(layout: &'a player_config::NoteLayout, notes: &'a notedata::Notedata, draw_distance: i64) -> Self {
+    pub fn new(layout: &'a player_config::NoteLayout, notes: &'a notedata::TimingData, draw_distance: i64) -> Self {
         Notefield {
             layout,
             notes,
@@ -61,7 +61,7 @@ fn to_milliseconds(dur: Duration) -> i64 {
 }
 
 impl<'a> GameplayScreen<'a> {
-    pub fn new(layout: &'a player_config::NoteLayout, notes: &'a notedata::Notedata, p2layout: &'a player_config::NoteLayout, p2notes: &'a notedata::Notedata, draw_distance: i64) -> Self {
+    pub fn new(layout: &'a player_config::NoteLayout, notes: &'a notedata::TimingData, p2layout: &'a player_config::NoteLayout, p2notes: &'a notedata::TimingData, draw_distance: i64) -> Self {
         GameplayScreen {
             notefield: Notefield::new(layout, notes, draw_distance),
             p2notefield: Notefield::new(p2layout, p2notes, draw_distance),
