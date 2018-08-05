@@ -31,10 +31,10 @@ impl<'a> Notefield<'a> {
     }
     fn draw_field(&mut self, ctx: &mut ggez::Context, time: Option<i64>) -> Result<(), ggez::GameError> {
         self.layout.draw_receptors(ctx)?;
-        if time.is_none() {
-            return Ok(());
-        }
-        let time = time.unwrap();
+        let time = match time {
+            Some(time) => time,
+            None => return Ok(()),
+        };
         for ((column_index, column_data), (draw_start, draw_end)) in self.notes.columns().enumerate().zip(&mut self.on_screen) {
             if *draw_end != column_data.len() && self.layout.delta_to_position(column_data[*draw_end] - time) < self.draw_distance {
                 *draw_end += 1;
