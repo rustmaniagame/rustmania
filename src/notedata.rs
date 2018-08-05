@@ -4,7 +4,7 @@ pub struct TimingData {
     pub notes: [Vec<i64>; 4],
 }
 
-pub struct Notedata();
+pub struct _Notedata();
 
 impl TimingData {
     pub fn from_sm() -> Self {
