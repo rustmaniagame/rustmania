@@ -30,9 +30,7 @@ impl<'a> Notefield<'a> {
         }
     }
     fn draw_field(&mut self, ctx: &mut ggez::Context, time: Option<i64>) -> Result<(), ggez::GameError> {
-        for &column_position in self.layout.column_positions.iter() {
-            graphics::draw(ctx, &self.layout.receptor_sprite, graphics::Point2::new(column_position as f32, self.layout.receptor_height as f32), 0.0)?;
-        }
+        self.layout.draw_receptors(ctx);
         if time.is_none() {
             return Ok(());
         }

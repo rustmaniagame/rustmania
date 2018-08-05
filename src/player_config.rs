@@ -33,4 +33,10 @@ impl NoteLayout {
         graphics::draw(ctx, &self.arrow_sprite, graphics::Point2::new(self.column_positions[column] as f32, position as f32), 0.0)?;
         Ok(())
     }
+    pub fn draw_receptors(&self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
+        for &column_position in self.column_positions.iter() {
+            graphics::draw(ctx, &self.receptor_sprite, graphics::Point2::new(column_position as f32, self.receptor_height as f32), 0.0)?;
+        }
+        Ok(())
+    }
 }
