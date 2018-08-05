@@ -35,7 +35,7 @@ impl<'a> Notefield<'a> {
             return Ok(());
         }
         let time = time.unwrap();
-        for ((column_index, column_data), (draw_start, draw_end)) in self.notes.notes.iter().enumerate().zip(&mut self.on_screen) {
+        for ((column_index, column_data), (draw_start, draw_end)) in self.notes.columns().enumerate().zip(&mut self.on_screen) {
             if *draw_end != column_data.len() && self.layout.delta_to_position(column_data[*draw_end] - time) < self.draw_distance {
                 *draw_end += 1;
             }
@@ -66,9 +66,9 @@ impl<'a> GameplayScreen<'a> {
     }
     pub fn start(&mut self) {
         self.start_time = Some(Instant::now());
-        self.notefield.on_screen = self.notefield.notes.notes.iter().map(|x| (0, match x.iter().position(|y| *y > self.notefield.draw_distance) {Some(num)=> num, None => x.len()})).collect();
+        self.notefield.on_screen = self.notefield.notes.columns().map(|x| (0, match x.iter().position(|y| *y > self.notefield.draw_distance) {Some(num)=> num, None => x.len()})).collect();
 
-        self.p2notefield.on_screen = self.p2notefield.notes.notes.iter().map(|x| (0, match x.iter().position(|y| *y > self.p2notefield.draw_distance) {Some(num)=> num, None => x.len()})).collect();
+        self.p2notefield.on_screen = self.p2notefield.notes.columns().map(|x| (0, match x.iter().position(|y| *y > self.p2notefield.draw_distance) {Some(num)=> num, None => x.len()})).collect();
 
     }
 }

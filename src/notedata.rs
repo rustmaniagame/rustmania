@@ -1,7 +1,8 @@
 use std::fs;
+use std::slice;
 
 pub struct TimingData {
-    pub notes: [Vec<i64>; 4],
+    notes: [Vec<i64>; 4],
 }
 
 pub struct _Notedata();
@@ -29,5 +30,8 @@ impl TimingData {
         TimingData {
             notes,
         }
+    }
+    pub fn columns(&self) -> slice::Iter<Vec<i64>> {
+        self.notes.iter()
     }
 }
