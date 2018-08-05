@@ -37,11 +37,11 @@ impl<'a> Notefield<'a> {
             return Ok(());
         }
         let time = time.unwrap();
-        for (column_index, (column_data, (draw_start, draw_end))) in self.notes.notes.iter().zip(&mut self.on_screen).enumerate() {
-            if *draw_end != column_data.len() && self.layout.delta_to_position(self.notes.notes[column_index][*draw_end] - time) < self.draw_distance {
+        for ((column_index, column_data), (draw_start, draw_end)) in self.notes.notes.iter().enumerate().zip(&mut self.on_screen) {
+            if *draw_end != column_data.len() && self.layout.delta_to_position(column_data[*draw_end] - time) < self.draw_distance {
                 *draw_end += 1;
             }
-            if *draw_start != column_data.len() && self.notes.notes[column_index][*draw_start] - time < -180 {
+            if *draw_start != column_data.len() && column_data[*draw_start] - time < -180 {
                 *draw_start += 1;
             }
             for note in column_data[*draw_start..*draw_end].iter() {
