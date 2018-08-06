@@ -5,16 +5,13 @@ pub struct Fraction {
 }
 
 fn gcd(mut x: u64, mut y: u64) -> u64 {
-    println!("wtf?");
     while x != 0 && y !=0 {
-        println!("{}, {}",x, y);
         if x > y {
             x -= y;
         } else {
             y -= x;
         }
     }
-    println!("{}, {}",x, y);
     if x == 0 {
         y
     } else {
