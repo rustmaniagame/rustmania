@@ -45,6 +45,9 @@ impl Fraction {
         self.numerator /= gcd as i64;
         self.denominator /= gcd;
     }
+    pub fn contents(&self) -> (i64, i64) {
+        (self.numerator, self.denominator as i64)
+    }
 }
 
 #[cfg(test)]
