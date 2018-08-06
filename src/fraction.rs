@@ -2,11 +2,11 @@ use std::cmp;
 
 #[derive(PartialEq, Debug)]
 pub struct Fraction {
-    numerator: i32,
-    denominator: u32,
+    numerator: i64,
+    denominator: u64,
 }
 
-fn gcd(mut x: u32, mut y: u32) -> u32 {
+fn gcd(mut x: u64, mut y: u64) -> u64 {
     println!("wtf?");
     while x != 0 && y !=0 {
         println!("{}, {}",x, y);
@@ -25,7 +25,7 @@ fn gcd(mut x: u32, mut y: u32) -> u32 {
 }
 
 impl Fraction {
-    pub fn new(numerator: i32, denominator: u32) -> Option<Fraction> {
+    pub fn new(numerator: i64, denominator: u64) -> Option<Fraction> {
         if 0 == denominator {
             return None;
         }
@@ -41,8 +41,8 @@ impl Fraction {
             self.denominator = 1;
             return;
         }
-        let gcd = gcd(self.numerator.abs() as u32, self.denominator);
-        self.numerator /= gcd as i32;
+        let gcd = gcd(self.numerator.abs() as u64, self.denominator);
+        self.numerator /= gcd as i64;
         self.denominator /= gcd;
     }
 }
