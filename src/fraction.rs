@@ -1,5 +1,3 @@
-use std::cmp;
-
 #[derive(PartialEq, Debug)]
 pub struct Fraction {
     numerator: i64,
