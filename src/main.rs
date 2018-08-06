@@ -4,6 +4,7 @@ extern crate chrono;
 mod gameplay_screen;
 mod player_config;
 mod notedata;
+mod fraction;
 use ggez::conf;
 use std::fs::File;
 
