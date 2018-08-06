@@ -67,6 +67,12 @@ impl<'a> GameplayScreen<'a> {
         self.p2notefield.on_screen = self.p2notefield.notes.columns().map(|x| (0, match x.iter().position(|y| *y > self.p2notefield.draw_distance) {Some(num)=> num, None => x.len()})).collect();
 
     }
+    fn start_time_to_milliseconds(&self) -> Option<i64> {
+        match self.start_time {
+            Some(time) => Some(to_milliseconds(Instant::now().duration_since(time))),
+            None => None
+        }
+    }
 }
 
 impl<'a> ggez::event::EventHandler for GameplayScreen<'a> {
@@ -75,10 +81,7 @@ impl<'a> ggez::event::EventHandler for GameplayScreen<'a> {
     }
     fn draw(&mut self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
         graphics::clear(ctx);
-        let time_delta = match self.start_time {
-            Some(time) => Some(to_milliseconds(Instant::now().duration_since(time))),
-            None => None
-        };
+        let time_delta = self.start_time_to_milliseconds();
         self.notefield.draw_field(ctx, time_delta)?;
         self.p2notefield.draw_field(ctx, time_delta)?;
         graphics::present(ctx);
