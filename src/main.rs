@@ -26,9 +26,11 @@ fn main() {
         println!("Couldn't set scroll speed: {}", e);
     }
 
+    let notedata = notedata::NoteData::from_sm();
+
     //let notes = [vec![2000,2375,2750,3000], vec![2000,2250,2625,3000], vec![2125,2500,2750,4000], vec![2250,2500,2875,4000]];
 
-    let notes = notedata::TimingData::from_sm();
+    let notes = notedata::TimingData::from_notedata(notedata, 128.0, 1000.0);
 
     let mut game_screen = gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, 600);
 
