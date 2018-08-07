@@ -12,12 +12,12 @@ pub struct NoteData {
 }
 
 #[derive(Debug)]
-struct NoteRow {
+pub struct NoteRow {
     row: Vec<(NoteType,usize)>,
 }
 
 #[derive(Debug)]
-enum NoteType {
+pub enum NoteType {
     Tap,
     Hold,
     Roll,
@@ -48,6 +48,22 @@ impl TimingData {
         }
         TimingData {
             notes,
+        }
+    }
+    pub fn from_notedata(data: NoteData, bpm: f64, offset: f64) -> Self {
+        let mut output = [Vec::new(),Vec::new(),Vec::new(),Vec::new()];
+        for ( measure_index , measure) in data.notes.iter().enumerate() {
+            let measure_time = (measure_index * 240_000) as f64 / bpm + offset;
+            for (inner_time, data) in measure.iter() {
+                let (num_beats, division) = inner_time.contents();
+                let row_time = measure_time + (240_000 * num_beats / division) as f64 / bpm;
+                for (note, column_index) in data.row.iter() {
+                    output[*column_index].push(row_time as i64);
+                }
+            }
+        }
+        TimingData {
+            notes: output,
         }
     }
     pub fn columns(&self) -> slice::Iter<Vec<i64>> {
