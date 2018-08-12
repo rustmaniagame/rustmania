@@ -7,8 +7,15 @@ pub struct TimingData {
 }
 
 #[derive(Debug)]
+pub struct ChartMetadata {
+    title: Option<String>,
+    bpm: Option<f64>,
+}
+
+#[derive(Debug)]
 pub struct NoteData {
     notes: Vec<Vec<(Fraction, NoteRow)>>,
+    data: ChartMetadata,
 }
 
 #[derive(Debug)]
@@ -48,6 +55,15 @@ impl TimingData {
     }
 }
 
+impl ChartMetadata {
+    pub fn new() -> Self {
+        ChartMetadata {
+            title: None,
+            bpm: None,
+        }
+    }
+}
+
 
 fn parse_measure(measure: &[&str]) -> Vec<(Fraction,NoteRow)> {
     let mut output = Vec::new();
@@ -83,17 +99,41 @@ fn char_to_notetype(character: char) -> Option<NoteType> {
     }
 }
 
+fn parse_main_block(contents: String) -> Vec<Vec<(Fraction, NoteRow)>> {
+    let mut notes = Vec::new();
+    let lines: Vec<_> = contents.lines().skip(5).collect();
+    let measures = lines.split(|&x| x == ",");
+    for measure in measures {
+        notes.push(parse_measure(measure));
+    }
+    notes
+}
+
+fn split_once(contents: &str, letter: char) -> (&str,&str) {
+    let mut split = contents.splitn(2, letter);
+    let first = split.next().unwrap_or("");
+    let second = split.next().unwrap_or("");
+    (first,second)
+}
+
+fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
+    match tag {
+        "NOTES" => data.notes = parse_main_block(contents.to_string()),
+        _ => {},
+    }
+}
+
 impl NoteData {
     pub fn from_sm() -> Self {
-        let mut notes = Vec::new();
+        let mut chart = NoteData {
+                notes: Vec::new(),
+                data: ChartMetadata::new(),
+            };
         let simfile = fs::read_to_string("resources/barebones.sm").unwrap();
-        let lines: Vec<_> = simfile.lines().collect();
-        let measures = lines.split(|&x| x == ",");
-        for measure in measures {
-            notes.push(parse_measure(measure));
+        let tags = simfile.split(|x| x == '#').map(|x| split_once(x, ':'));
+        for (tag, contents) in tags {
+            parse_tag(tag, contents, &mut chart);
         }
-        NoteData {
-            notes,
-        }
+        chart
     }
 }
