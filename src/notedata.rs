@@ -1,6 +1,7 @@
 use std::fs;
 use std::slice;
 use fraction::Fraction;
+use nom::double_s;
 
 pub struct TimingData {
     notes: [Vec<i64>; 4],
@@ -33,8 +34,27 @@ pub enum NoteType {
     Fake,
 }
 
+named!( bpm_parse<&str,(Vec<(f64,f64)>,(f64,f64))>, many_till!(bpm_line, do_parse!(
+time: double_s >>
+tag!("=")   >>
+bpm: double_s >>
+tag!(";")    >>
+( ( time, bpm ) )
+)));
+
+named!(bpm_line<&str, (f64,f64)>,
+  do_parse!(
+        time: double_s >>
+           tag!("=")   >>
+           bpm: double_s >>
+           tag!(",")    >>
+    ( ( time, bpm ) )
+  )
+);
+
 impl TimingData {
-    pub fn from_notedata(data: NoteData, bpm: f64, offset: f64) -> Self {
+    pub fn from_notedata(data: NoteData, offset: f64) -> Self {
+        let bpm = data.data.bpm.unwrap_or(6.0);
         let mut output = [Vec::new(),Vec::new(),Vec::new(),Vec::new()];
         for ( measure_index , measure) in data.notes.iter().enumerate() {
             let measure_time = (measure_index * 240_000) as f64 / bpm + offset;
@@ -118,6 +138,11 @@ fn split_once(contents: &str, letter: char) -> (&str,&str) {
 
 fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
     match tag {
+        "TITLE" => data.data.title = Some(contents.to_string()),
+        "BPMS" => data.data.bpm = match bpm_parse(contents) {
+            Ok(thing) => Some(((thing.1).1).1),
+            Err(_) => None,
+        },
         "NOTES" => data.notes = parse_main_block(contents.to_string()),
         _ => {},
     }
