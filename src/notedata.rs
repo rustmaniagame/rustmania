@@ -10,6 +10,7 @@ pub struct TimingData {
 #[derive(Debug)]
 pub struct ChartMetadata {
     title: Option<String>,
+    offset: Option<f64>,
     bpm: Option<f64>,
 }
 
@@ -52,9 +53,17 @@ named!(bpm_line<&str, (f64,f64)>,
   )
 );
 
+named!(float_tag_parse<&str, f64>,
+    do_parse!(
+        value: double_s >>
+        tag!(";") >>
+    ( value )
+));
+
 impl TimingData {
-    pub fn from_notedata(data: NoteData, offset: f64) -> Self {
+    pub fn from_notedata(data: NoteData) -> Self {
         let bpm = data.data.bpm.unwrap_or(6.0);
+        let offset= data.data.offset.unwrap_or(0.0) * 1000.0;
         let mut output = [Vec::new(),Vec::new(),Vec::new(),Vec::new()];
         for ( measure_index , measure) in data.notes.iter().enumerate() {
             let measure_time = (measure_index * 240_000) as f64 / bpm + offset;
@@ -79,6 +88,7 @@ impl ChartMetadata {
     pub fn new() -> Self {
         ChartMetadata {
             title: None,
+            offset: None,
             bpm: None,
         }
     }
@@ -139,6 +149,10 @@ fn split_once(contents: &str, letter: char) -> (&str,&str) {
 fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
     match tag {
         "TITLE" => data.data.title = Some(contents.to_string()),
+        "OFFSET" => data.data.offset = match float_tag_parse(contents) {
+            Ok(thing) => Some(-1.0*thing.1),
+            Err(_) => None,
+        },
         "BPMS" => data.data.bpm = match bpm_parse(contents) {
             Ok(thing) => Some(((thing.1).1).1),
             Err(_) => None,
