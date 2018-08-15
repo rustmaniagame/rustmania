@@ -3,26 +3,22 @@ use std::slice;
 use fraction::Fraction;
 use nom::double_s;
 
-pub struct TimingData {
-    notes: [Vec<i64>; 4],
-}
-
 #[derive(Debug)]
 pub struct ChartMetadata {
-    title: Option<String>,
-    offset: Option<f64>,
-    bpm: Option<f64>,
+    pub title: Option<String>,
+    pub offset: Option<f64>,
+    pub bpm: Option<f64>,
 }
 
 #[derive(Debug)]
 pub struct NoteData {
     notes: Vec<Vec<(Fraction, NoteRow)>>,
-    data: ChartMetadata,
+    pub data: ChartMetadata,
 }
 
 #[derive(Debug)]
 pub struct NoteRow {
-    row: Vec<(NoteType,usize)>,
+    pub row: Vec<(NoteType,usize)>,
 }
 
 #[derive(Debug)]
@@ -59,30 +55,6 @@ named!(float_tag_parse<&str, f64>,
         tag!(";") >>
     ( value )
 ));
-
-impl TimingData {
-    pub fn from_notedata(data: NoteData) -> Self {
-        let bpm = data.data.bpm.unwrap_or(6.0);
-        let offset= data.data.offset.unwrap_or(0.0) * 1000.0;
-        let mut output = [Vec::new(),Vec::new(),Vec::new(),Vec::new()];
-        for ( measure_index , measure) in data.notes.iter().enumerate() {
-            let measure_time = (measure_index * 240_000) as f64 / bpm + offset;
-            for (inner_time, data) in measure.iter() {
-                let (num_beats, division) = inner_time.contents();
-                let row_time = measure_time + (240_000 * num_beats / division) as f64 / bpm;
-                for (note, column_index) in data.row.iter() {
-                    output[*column_index].push(row_time as i64);
-                }
-            }
-        }
-        TimingData {
-            notes: output,
-        }
-    }
-    pub fn columns(&self) -> slice::Iter<Vec<i64>> {
-        self.notes.iter()
-    }
-}
 
 impl ChartMetadata {
     pub fn new() -> Self {
@@ -174,5 +146,8 @@ impl NoteData {
             parse_tag(tag, contents, &mut chart);
         }
         chart
+    }
+    pub fn columns(&self) -> slice::Iter<Vec<(Fraction, NoteRow)>> {
+        self.notes.iter()
     }
 }
