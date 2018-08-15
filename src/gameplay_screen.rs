@@ -15,7 +15,7 @@ pub struct GameplayScreen<'a> {
 
 pub struct Notefield<'a> {
     layout: &'a super::player_config::NoteLayout,
-    notes: &'a timingdata::TimingData,
+    notes: &'a timingdata::TimingData<'a>,
     on_screen: Vec<(usize,usize)>,
     draw_distance: i64,
 }
@@ -36,13 +36,13 @@ impl<'a> Notefield<'a> {
             None => return Ok(()),
         };
         for ((column_index, column_data), (draw_start, draw_end)) in self.notes.columns().enumerate().zip(&mut self.on_screen) {
-            if *draw_end != column_data.len() && self.layout.delta_to_position(column_data[*draw_end] - time) < self.draw_distance {
+            if *draw_end != column_data.len() && self.layout.delta_to_position(column_data[*draw_end].0 - time) < self.draw_distance {
                 *draw_end += 1;
             }
-            if *draw_start != column_data.len() && column_data[*draw_start] - time < -180 {
+            if *draw_start != column_data.len() && column_data[*draw_start].0 - time < -180 {
                 *draw_start += 1;
             }
-            self.layout.draw_column_of_notes(ctx, column_data[*draw_start..*draw_end].iter().map(|note| *note - time), column_index)?;
+            self.layout.draw_column_of_notes(ctx, column_data[*draw_start..*draw_end].iter().map(|(note, _ )| *note - time), column_index)?;
         }
         Ok(())
     }
@@ -62,9 +62,9 @@ impl<'a> GameplayScreen<'a> {
     }
     pub fn start(&mut self) {
         self.start_time = Some(Instant::now());
-        self.notefield.on_screen = self.notefield.notes.columns().map(|x| (0, match x.iter().position(|y| *y > self.notefield.draw_distance) {Some(num)=> num, None => x.len()})).collect();
+        self.notefield.on_screen = self.notefield.notes.columns().map(|x| (0, match x.iter().position(|(y, _)| *y > self.notefield.draw_distance) {Some(num)=> num, None => x.len()})).collect();
 
-        self.p2notefield.on_screen = self.p2notefield.notes.columns().map(|x| (0, match x.iter().position(|y| *y > self.p2notefield.draw_distance) {Some(num)=> num, None => x.len()})).collect();
+        self.p2notefield.on_screen = self.p2notefield.notes.columns().map(|x| (0, match x.iter().position(|(y, _)| *y > self.p2notefield.draw_distance) {Some(num)=> num, None => x.len()})).collect();
 
     }
     fn start_time_to_milliseconds(&self) -> Option<i64> {
