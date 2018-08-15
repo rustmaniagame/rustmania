@@ -19,7 +19,7 @@ pub struct NoteData {
 
 #[derive(Debug)]
 pub struct NoteRow {
-    pub row: Vec<(NoteType,usize)>,
+    row: Vec<(NoteType,usize)>,
 }
 
 #[derive(Debug)]
@@ -64,5 +64,11 @@ impl NoteData {
     }
     pub fn columns(&self) -> slice::Iter<Vec<(Fraction, NoteRow)>> {
         self.notes.iter()
+    }
+}
+
+impl NoteRow {
+    pub fn notes(&self) -> slice::Iter<(NoteType,usize)> {
+        self.row.iter()
     }
 }

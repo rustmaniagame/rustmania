@@ -16,7 +16,7 @@ impl<'a> TimingData<'a> {
             for (inner_time, row) in measure.iter() {
                 let (num_beats, division) = inner_time.contents();
                 let row_time = measure_time + (240_000 * num_beats / division) as f64 / bpm;
-                for (note, column_index) in row.row.iter() {
+                for (note, column_index) in row.notes() {
                     let sprite = sprite_list.get(division as usize).unwrap_or(&sprite_list[0]);
                     output[*column_index].push((row_time as i64, sprite));
                 }
