@@ -16,10 +16,10 @@ fn main() {
     let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
     let context = &mut ggez::Context::load_from_conf("rustmania", "ixsetf", c).unwrap();
 
-    let mut p1_layout = player_config::NoteLayout::new([72, 136, 200, 264], ggez::graphics::Image::new(context, "/arrow.png").unwrap(),
+    let mut p1_layout = player_config::NoteLayout::new([72, 136, 200, 264], vec![ggez::graphics::Image::new(context, "/arrow.png").unwrap()],
                                                         ggez::graphics::Image::new(context, "/receptor.png").unwrap(), 250);
 
-    let mut p2_layout = player_config::NoteLayout::new([472, 536, 600, 664], ggez::graphics::Image::new(context, "/arrow.png").unwrap(),
+    let mut p2_layout = player_config::NoteLayout::new([472, 536, 600, 664], vec![ggez::graphics::Image::new(context, "/arrow.png").unwrap()],
                                                        ggez::graphics::Image::new(context, "/receptor.png").unwrap(), 250);
 
     if let Err(e) = p1_layout.set_scroll_speed(0.7){
@@ -32,7 +32,7 @@ fn main() {
 
     let notedata = notedata::NoteData::from_sm();
 
-    let notes = timingdata::TimingData::from_notedata(notedata, &p1_layout.arrow_sprite);
+    let notes = timingdata::TimingData::from_notedata(notedata, &p1_layout.arrow_sprites[0]);
 
     let mut game_screen = gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, 600);
 
