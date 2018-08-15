@@ -29,13 +29,13 @@ impl NoteLayout {
     pub fn delta_to_position(&self, delta: i64) -> i64 {
         (delta as f32 * self.scroll_speed) as i64 + self.receptor_height
     }
-    pub fn draw_note_at_position(&self, ctx: &mut Context, column: usize, position: i64) -> Result<(), ggez::GameError> {
-        graphics::draw(ctx, &self.arrow_sprite, graphics::Point2::new(self.column_positions[column] as f32, position as f32), 0.0)?;
+    pub fn draw_note_at_position<'a>(&self, ctx: &mut Context, column: usize, position: i64, sprite: &'a graphics::Image) -> Result<(), ggez::GameError> {
+        graphics::draw(ctx, sprite, graphics::Point2::new(self.column_positions[column] as f32, position as f32), 0.0)?;
         Ok(())
     }
-    pub fn draw_column_of_notes(&self, ctx: &mut ggez::Context, column: impl Iterator<Item=i64>, column_index: usize) -> Result<(), ggez::GameError> {
-        for note in column {
-            self.draw_note_at_position(ctx, column_index, self.delta_to_position(note))?;
+    pub fn draw_column_of_notes<'a>(&self, ctx: &mut ggez::Context, column: impl Iterator<Item=(i64, &'a graphics::Image)>, column_index: usize) -> Result<(), ggez::GameError> {
+        for (note, sprite) in column {
+            self.draw_note_at_position(ctx, column_index, self.delta_to_position(note), sprite)?;
         }
         Ok(())
     }
