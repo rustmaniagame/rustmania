@@ -14,7 +14,7 @@ use std::fs::File;
 use notedata::NoteType;
 use fraction::Fraction;
 
-fn spritefinder(measure: usize, row_time: f64, row_alignment: Fraction, note_type: NoteType, column: usize) -> usize {
+fn sprite_finder(_measure: usize, _row_time: f64, row_alignment: Fraction, _note_type: NoteType, _column: usize) -> usize {
     let (_, division) = (row_alignment * 4).contents();
     match division {
         1 => 0,

@@ -13,7 +13,7 @@ impl<'a> TimingData<'a> {
     pub fn from_notedata<T>(
         data: NoteData,
         sprite_list: &'a Vec<graphics::Image>,
-        spritefinder: T,
+        sprite_finder: T,
     ) -> Self
     where
         T: Fn(usize, f64, Fraction, NoteType, usize) -> usize,
@@ -28,7 +28,7 @@ impl<'a> TimingData<'a> {
                 let row_time = measure_time + (240_000.0 * value(*inner_time)) / bpm;
                 for (note, column_index) in row.notes() {
                     let sprite = sprite_list
-                        .get(spritefinder(measure_index, measure_time, *inner_time, *note, *column_index) )
+                        .get(sprite_finder(measure_index, measure_time, *inner_time, *note, *column_index) )
                         .unwrap_or(&sprite_list[0]);
                     output[*column_index].push((row_time as i64, sprite));
                 }
