@@ -3,7 +3,7 @@ use ggez::{graphics, Context};
 
 pub struct NoteLayout {
     pub column_positions: [i64; 4],
-    pub arrow_sprites: Vec<graphics::Image>,
+    pub arrows_sprite: graphics::Image,
     pub receptor_sprite: graphics::Image,
     pub receptor_height: i64,
     pub scroll_speed: f32,
@@ -12,13 +12,13 @@ pub struct NoteLayout {
 impl NoteLayout {
     pub fn new(
         column_positions: [i64; 4],
-        arrow_sprites: Vec<graphics::Image>,
+        arrows_sprite: graphics::Image,
         receptor_sprite: graphics::Image,
         receptor_height: i64,
     ) -> NoteLayout {
         NoteLayout {
             column_positions,
-            arrow_sprites,
+            arrows_sprite,
             receptor_sprite,
             receptor_height,
             scroll_speed: 1.0,

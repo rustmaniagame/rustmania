@@ -16,7 +16,7 @@ impl<'a, T> TimingData<'a, T>
 where
     T: graphics::Drawable,
 {
-    pub fn from_notedata<U>(data: NoteData, sprite_list: &'a Vec<T>, sprite_finder: U) -> Self
+    pub fn from_notedata<U>(data: NoteData, sprite_list: &'a T, sprite_finder: U) -> Self
     where
         U: Fn(usize, f64, Fraction, NoteType, usize) -> usize,
     {
@@ -29,14 +29,14 @@ where
                 let row_time = measure_time + (240_000.0 * value(*inner_time)) / bpm;
                 for (note, column_index) in row.notes() {
                     let sprite = sprite_list
-                        .get(sprite_finder(
+                        /*.get(sprite_finder(
                             measure_index,
                             measure_time,
                             *inner_time,
                             *note,
                             *column_index,
                         ))
-                        .unwrap_or(&sprite_list[0]);
+                        .unwrap_or(&sprite_list[0])*/;
                     output[*column_index].push((row_time as i64, sprite));
                 }
             }

@@ -3,6 +3,7 @@ extern crate ggez;
 
 use super::player_config;
 use ggez::graphics;
+use ggez::graphics::spritebatch::SpriteBatch;
 use std::result::Result;
 use std::time::{Duration, Instant};
 use timingdata;
@@ -17,6 +18,7 @@ pub struct Notefield<'a> {
     layout: &'a super::player_config::NoteLayout,
     notes: &'a timingdata::TimingData<'a, graphics::Image>,
     on_screen: Vec<(usize, usize)>,
+    batch: SpriteBatch,
     draw_distance: i64,
 }
 
@@ -24,12 +26,14 @@ impl<'a> Notefield<'a> {
     pub fn new(
         layout: &'a player_config::NoteLayout,
         notes: &'a timingdata::TimingData<graphics::Image>,
+        batch: SpriteBatch,
         draw_distance: i64,
     ) -> Self {
         Notefield {
             layout,
             notes,
             on_screen: Vec::<_>::new(),
+            batch,
             draw_distance,
         }
     }
@@ -81,8 +85,18 @@ impl<'a> GameplayScreen<'a> {
         draw_distance: i64,
     ) -> Self {
         GameplayScreen {
-            notefield: Notefield::new(layout, notes, draw_distance),
-            p2notefield: Notefield::new(p2layout, p2notes, draw_distance),
+            notefield: Notefield::new(
+                layout,
+                notes,
+                SpriteBatch::new(layout.arrows_sprite.clone()),
+                draw_distance,
+            ),
+            p2notefield: Notefield::new(
+                p2layout,
+                p2notes,
+                SpriteBatch::new(p2layout.arrows_sprite.clone()),
+                draw_distance,
+            ),
             start_time: None,
         }
     }
