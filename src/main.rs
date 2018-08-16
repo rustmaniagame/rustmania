@@ -9,12 +9,18 @@ mod notedata;
 mod player_config;
 mod timingdata;
 
-use ggez::conf;
-use std::fs::File;
-use notedata::NoteType;
 use fraction::Fraction;
+use ggez::conf;
+use notedata::NoteType;
+use std::fs::File;
 
-fn sprite_finder(_measure: usize, _row_time: f64, row_alignment: Fraction, _note_type: NoteType, _column: usize) -> usize {
+fn sprite_finder(
+    _measure: usize,
+    _row_time: f64,
+    row_alignment: Fraction,
+    _note_type: NoteType,
+    _column: usize,
+) -> usize {
     let (_, division) = (row_alignment * 4).contents();
     match division {
         1 => 0,
@@ -65,7 +71,8 @@ fn main() {
 
     let notedata = notedata::NoteData::from_sm();
 
-    let notes = timingdata::TimingData::from_notedata(notedata, &p1_layout.arrow_sprites, sprite_finder);
+    let notes =
+        timingdata::TimingData::from_notedata(notedata, &p1_layout.arrow_sprites, sprite_finder);
 
     let mut game_screen =
         gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, 600);
