@@ -65,7 +65,7 @@ fn main() {
 
     let notedata = notedata::NoteData::from_sm();
 
-    let notes = timingdata::TimingData::from_notedata(notedata, &p1_layout.arrow_sprites, spritefinder);
+    let notes = timingdata::TimingData::from_notedata(notedata, &p1_layout.arrow_sprites, sprite_finder);
 
     let mut game_screen =
         gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, 600);

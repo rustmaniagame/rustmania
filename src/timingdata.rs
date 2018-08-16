@@ -24,7 +24,6 @@ impl<'a> TimingData<'a> {
         for (measure_index, measure) in data.columns().enumerate() {
             let measure_time = (measure_index * 240_000) as f64 / bpm + offset;
             for (inner_time, row) in measure.iter() {
-                let (_, division) = (*inner_time * 4).contents();
                 let row_time = measure_time + (240_000.0 * value(*inner_time)) / bpm;
                 for (note, column_index) in row.notes() {
                     let sprite = sprite_list
