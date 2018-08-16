@@ -11,6 +11,24 @@ mod timingdata;
 
 use ggez::conf;
 use std::fs::File;
+use notedata::NoteType;
+use fraction::Fraction;
+
+fn spritefinder(measure: usize, row_time: f64, row_alignment: Fraction, note_type: NoteType, column: usize) -> usize {
+    let (_, division) = (row_alignment * 4).contents();
+    match division {
+        1 => 0,
+        2 => 1,
+        3 => 2,
+        4 => 3,
+        6 => 4,
+        8 => 5,
+        12 => 6,
+        16 => 7,
+        24 => 8,
+        _ => 9,
+    }
+}
 
 fn main() {
     let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
@@ -19,7 +37,7 @@ fn main() {
     let mut p1_layout = player_config::NoteLayout::new(
         [72, 136, 200, 264],
         vec![
-            ggez::graphics::Image::new(context, "/arrow.png").unwrap(),
+            ggez::graphics::Image::new(context, "/arrows.png").unwrap(),
             ggez::graphics::Image::solid(
                 context,
                 64,
@@ -32,7 +50,7 @@ fn main() {
 
     let mut p2_layout = player_config::NoteLayout::new(
         [472, 536, 600, 664],
-        vec![ggez::graphics::Image::new(context, "/arrow.png").unwrap()],
+        vec![ggez::graphics::Image::new(context, "/arrows.png").unwrap()],
         ggez::graphics::Image::new(context, "/receptor.png").unwrap(),
         250,
     );
@@ -47,7 +65,7 @@ fn main() {
 
     let notedata = notedata::NoteData::from_sm();
 
-    let notes = timingdata::TimingData::from_notedata(notedata, &p1_layout.arrow_sprites);
+    let notes = timingdata::TimingData::from_notedata(notedata, &p1_layout.arrow_sprites, spritefinder);
 
     let mut game_screen =
         gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, 600);

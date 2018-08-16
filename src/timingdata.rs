@@ -16,7 +16,7 @@ impl<'a> TimingData<'a> {
         spritefinder: T,
     ) -> Self
     where
-        T: Fn(usize, f64, Fraction, NoteType, usize) -> graphics::Image,
+        T: Fn(usize, f64, Fraction, NoteType, usize) -> usize,
     {
         let bpm = data.data.bpm.unwrap_or(6.0);
         let offset = data.data.offset.unwrap_or(0.0) * 1000.0;
@@ -28,7 +28,7 @@ impl<'a> TimingData<'a> {
                 let row_time = measure_time + (240_000.0 * value(*inner_time)) / bpm;
                 for (note, column_index) in row.notes() {
                     let sprite = sprite_list
-                        .get(division as usize)
+                        .get(spritefinder(measure_index, measure_time, *inner_time, *note, *column_index) )
                         .unwrap_or(&sprite_list[0]);
                     output[*column_index].push((row_time as i64, sprite));
                 }

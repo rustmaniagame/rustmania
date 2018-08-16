@@ -22,7 +22,7 @@ pub struct NoteRow {
     row: Vec<(NoteType, usize)>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum NoteType {
     Tap,
     Hold,
