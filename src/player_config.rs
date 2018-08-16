@@ -41,12 +41,12 @@ impl NoteLayout {
         position: i64,
         sprite: &'a graphics::Image,
     ) -> Result<(), ggez::GameError> {
-        graphics::draw(
+        /*graphics::draw(
             ctx,
             sprite,
             graphics::Point2::new(self.column_positions[column] as f32, position as f32),
             0.0,
-        )?;
+        )?;*/
         Ok(())
     }
     pub fn draw_column_of_notes<'a>(

@@ -68,6 +68,7 @@ impl<'a> Notefield<'a> {
                 column_index,
             )?;
         }
+        graphics::draw(ctx, &self.batch, graphics::Point2::new(0.0,0.0),0.0);
         Ok(())
     }
 }
