@@ -1,12 +1,12 @@
 #[macro_use]
 extern crate nom;
-extern crate ggez;
 extern crate chrono;
+extern crate ggez;
 
-mod gameplay_screen;
-mod player_config;
-mod notedata;
 mod fraction;
+mod gameplay_screen;
+mod notedata;
+mod player_config;
 mod timingdata;
 
 use ggez::conf;
@@ -16,18 +16,32 @@ fn main() {
     let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
     let context = &mut ggez::Context::load_from_conf("rustmania", "ixsetf", c).unwrap();
 
-    let mut p1_layout = player_config::NoteLayout::new([72, 136, 200, 264], vec![ggez::graphics::Image::new(context, "/arrow.png").unwrap()
-                                                        , ggez::graphics::Image::solid(context, 64, ggez::graphics::Color::new(0.5,0.5,0.5,0.5)).unwrap()],
-                                                        ggez::graphics::Image::new(context, "/receptor.png").unwrap(), 250);
+    let mut p1_layout = player_config::NoteLayout::new(
+        [72, 136, 200, 264],
+        vec![
+            ggez::graphics::Image::new(context, "/arrow.png").unwrap(),
+            ggez::graphics::Image::solid(
+                context,
+                64,
+                ggez::graphics::Color::new(0.5, 0.5, 0.5, 0.5),
+            ).unwrap(),
+        ],
+        ggez::graphics::Image::new(context, "/receptor.png").unwrap(),
+        250,
+    );
 
-    let mut p2_layout = player_config::NoteLayout::new([472, 536, 600, 664], vec![ggez::graphics::Image::new(context, "/arrow.png").unwrap()],
-                                                       ggez::graphics::Image::new(context, "/receptor.png").unwrap(), 250);
+    let mut p2_layout = player_config::NoteLayout::new(
+        [472, 536, 600, 664],
+        vec![ggez::graphics::Image::new(context, "/arrow.png").unwrap()],
+        ggez::graphics::Image::new(context, "/receptor.png").unwrap(),
+        250,
+    );
 
-    if let Err(e) = p1_layout.set_scroll_speed(0.7){
+    if let Err(e) = p1_layout.set_scroll_speed(0.7) {
         println!("Couldn't set scroll speed: {}", e);
     }
 
-    if let Err(e) = p2_layout.set_scroll_speed(1.4){
+    if let Err(e) = p2_layout.set_scroll_speed(1.4) {
         println!("Couldn't set scroll speed: {}", e);
     }
 
@@ -35,7 +49,8 @@ fn main() {
 
     let notes = timingdata::TimingData::from_notedata(notedata, &p1_layout.arrow_sprites);
 
-    let mut game_screen = gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, 600);
+    let mut game_screen =
+        gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, 600);
 
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
         let mut path = std::path::PathBuf::from(manifest_dir);

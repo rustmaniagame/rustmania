@@ -1,8 +1,8 @@
 mod sm_parse;
 
+use fraction::Fraction;
 use std::fs;
 use std::slice;
-use fraction::Fraction;
 
 #[derive(Debug)]
 pub struct ChartMetadata {
@@ -19,7 +19,7 @@ pub struct NoteData {
 
 #[derive(Debug)]
 pub struct NoteRow {
-    row: Vec<(NoteType,usize)>,
+    row: Vec<(NoteType, usize)>,
 }
 
 #[derive(Debug)]
@@ -42,19 +42,19 @@ impl ChartMetadata {
     }
 }
 
-fn split_once(contents: &str, letter: char) -> (&str,&str) {
+fn split_once(contents: &str, letter: char) -> (&str, &str) {
     let mut split = contents.splitn(2, letter);
     let first = split.next().unwrap_or("");
     let second = split.next().unwrap_or("");
-    (first,second)
+    (first, second)
 }
 
 impl NoteData {
     pub fn from_sm() -> Self {
         let mut chart = NoteData {
-                notes: Vec::new(),
-                data: ChartMetadata::new(),
-            };
+            notes: Vec::new(),
+            data: ChartMetadata::new(),
+        };
         let simfile = fs::read_to_string("resources/barebones.sm").unwrap();
         let tags = simfile.split(|x| x == '#').map(|x| split_once(x, ':'));
         for (tag, contents) in tags {
@@ -68,7 +68,7 @@ impl NoteData {
 }
 
 impl NoteRow {
-    pub fn notes(&self) -> slice::Iter<(NoteType,usize)> {
+    pub fn notes(&self) -> slice::Iter<(NoteType, usize)> {
         self.row.iter()
     }
 }

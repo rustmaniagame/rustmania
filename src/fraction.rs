@@ -1,11 +1,13 @@
-#[derive(PartialEq, Debug)]
+use std::ops::Mul;
+
+#[derive(PartialEq, Debug, Copy, Clone)]
 pub struct Fraction {
     numerator: i64,
     denominator: u64,
 }
 
 fn gcd(mut x: u64, mut y: u64) -> u64 {
-    while x != 0 && y !=0 {
+    while x != 0 && y != 0 {
         if x > y {
             x -= y;
         } else {
@@ -17,6 +19,10 @@ fn gcd(mut x: u64, mut y: u64) -> u64 {
     } else {
         x
     }
+}
+
+pub fn value(input: Fraction) -> f64 {
+    input.numerator as f64 / input.denominator as f64
 }
 
 impl Fraction {
@@ -40,8 +46,22 @@ impl Fraction {
         self.numerator /= gcd as i64;
         self.denominator /= gcd;
     }
-    pub fn contents(&self) -> (i64, i64) {
-        (self.numerator, self.denominator as i64)
+    pub fn contents(&self) -> (i64, u64) {
+        (self.numerator, self.denominator)
+    }
+}
+
+impl Mul<i64> for Fraction {
+    type Output = Fraction;
+    fn mul(self, rhs: i64) -> Fraction {
+        let (mut numerator, denominator) = self.contents();
+        numerator *= rhs;
+        let mut result = Fraction {
+            numerator,
+            denominator,
+        };
+        result.simplify();
+        result
     }
 }
 
@@ -50,25 +70,25 @@ mod tests {
     use super::*;
     #[test]
     fn fractions_simplify() {
-        let half = Fraction::new(1,2);
-        let alt_half = Fraction::new(2,4);
-        assert_eq!(half,alt_half);
+        let half = Fraction::new(1, 2);
+        let alt_half = Fraction::new(2, 4);
+        assert_eq!(half, alt_half);
     }
     #[test]
     fn negatives_simplify() {
-        let neg_third = Fraction::new(-1,3);
-        let alt_neg_third = Fraction::new(-4,12);
-        assert_eq!(neg_third,alt_neg_third);
+        let neg_third = Fraction::new(-1, 3);
+        let alt_neg_third = Fraction::new(-4, 12);
+        assert_eq!(neg_third, alt_neg_third);
     }
     #[test]
     fn zeros_equal() {
-        let zero = Fraction::new(0,2);
-        let other_zero = Fraction::new(0,3);
+        let zero = Fraction::new(0, 2);
+        let other_zero = Fraction::new(0, 3);
         assert_eq!(zero, other_zero);
     }
     #[test]
     fn reject_nan() {
-        let nan = Fraction::new(2,0);
+        let nan = Fraction::new(2, 0);
         assert_eq!(nan, None);
     }
 }
