@@ -71,4 +71,16 @@ impl NoteLayout {
         }
         Ok(())
     }
+    pub fn add_receptors(
+        &self,
+        batch: &mut graphics::spritebatch::SpriteBatch,
+    ) -> Result<(), ggez::GameError> {
+        for &column_position in self.column_positions.iter() {
+            batch.add(graphics::DrawParam {
+                dest: graphics::Point2::new(column_position as f32, self.receptor_height as f32),
+                ..Default::default()
+            });
+        }
+        Ok(())
+    }
 }
