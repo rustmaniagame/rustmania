@@ -37,6 +37,22 @@ impl<'a> Notefield<'a> {
             draw_distance,
         }
     }
+    fn start(&mut self) -> Result<(), ggez::GameError> {
+        //self.layout.add_receptors(&mut self.batch)?;
+        self.on_screen = self.notes
+            .columns()
+            .map(|x| {
+                (
+                    0,
+                    match x.iter().position(|(y, _)| *y > self.draw_distance) {
+                        Some(num) => num,
+                        None => x.len(),
+                    },
+                )
+            })
+            .collect();
+        Ok(())
+    }
     fn draw_field(
         &mut self,
         ctx: &mut ggez::Context,
@@ -68,7 +84,7 @@ impl<'a> Notefield<'a> {
                 column_index,
             )?;
         }
-        graphics::draw(ctx, &self.batch, graphics::Point2::new(0.0,0.0),0.0);
+        graphics::draw(ctx, &self.batch, graphics::Point2::new(0.0, 0.0), 0.0);
         Ok(())
     }
 }
@@ -103,37 +119,8 @@ impl<'a> GameplayScreen<'a> {
     }
     pub fn start(&mut self) {
         self.start_time = Some(Instant::now());
-        self.notefield.on_screen = self.notefield
-            .notes
-            .columns()
-            .map(|x| {
-                (
-                    0,
-                    match x.iter()
-                        .position(|(y, _)| *y > self.notefield.draw_distance)
-                    {
-                        Some(num) => num,
-                        None => x.len(),
-                    },
-                )
-            })
-            .collect();
-
-        self.p2notefield.on_screen = self.p2notefield
-            .notes
-            .columns()
-            .map(|x| {
-                (
-                    0,
-                    match x.iter()
-                        .position(|(y, _)| *y > self.p2notefield.draw_distance)
-                    {
-                        Some(num) => num,
-                        None => x.len(),
-                    },
-                )
-            })
-            .collect();
+        self.notefield.start();
+        self.p2notefield.start();
     }
     fn start_time_to_milliseconds(&self) -> Option<i64> {
         match self.start_time {
