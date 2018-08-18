@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate nom;
 extern crate chrono;
+extern crate clap;
 extern crate ggez;
 extern crate num_rational;
 
@@ -9,6 +10,7 @@ mod notedata;
 mod player_config;
 mod timingdata;
 
+use clap::{App, Arg};
 use ggez::conf;
 use ggez::graphics::{set_background_color, Color, Rect};
 use notedata::NoteType;
@@ -38,6 +40,16 @@ fn sprite_finder(
 }
 
 fn main() {
+    let _matches = App::new("Rustmania")
+        .author("ixsetf, noemail@email.net")
+        .version("0.1.0")
+        .about("A rhythm game in the vein of Stepmania and Etterna, currently in very early stages of development.")
+        .arg(
+            Arg::with_name("in_file").index(1)
+        )
+        .after_help("Licenced under MIT.")
+        .get_matches();
+
     let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
     let context = &mut ggez::Context::load_from_conf("rustmania", "ixsetf", c).unwrap();
     set_background_color(context, Color::new(0.0, 0.0, 0.0, 1.0));

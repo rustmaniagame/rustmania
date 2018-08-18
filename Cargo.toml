@@ -1,7 +1,7 @@
 [package]
-name = "first_game"
+name = "rustmania"
 version = "0.1.0"
-authors = ["Robert"]
+authors = ["ixsetf"]
 build = "build.rs"
 
 [dependencies]
@@ -10,3 +10,4 @@ sdl2 = "0.31.0"
 chrono = "0.4.4"
 nom = "4.0.0"
 num-rational = "0.2.1"
+clap = "2.32.0"
