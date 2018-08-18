@@ -1,9 +1,12 @@
-use fraction::value;
-use fraction::Fraction;
 use ggez::graphics;
 use notedata::NoteData;
 use notedata::NoteType;
+use num_rational::Rational32;
 use std::slice;
+
+fn value(fraction: Rational32) -> f64 {
+    *fraction.numer() as f64 / *fraction.denom() as f64
+}
 
 #[derive(Debug)]
 pub struct TimingData {
@@ -13,7 +16,7 @@ pub struct TimingData {
 impl TimingData {
     pub fn from_notedata<U>(data: NoteData, sprite_finder: U) -> Self
     where
-        U: Fn(usize, f64, Fraction, NoteType, usize) -> graphics::Rect,
+        U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
     {
         let bpm = data.data.bpm.unwrap_or(6.0);
         let offset = data.data.offset.unwrap_or(0.0) * 1000.0;

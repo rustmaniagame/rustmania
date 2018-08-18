@@ -89,13 +89,13 @@ impl<'a> Notefield<'a> {
             self.batch.clear();
             for ((column_index, column_data), (draw_start, draw_end)) in
                 self.notes.columns().enumerate().zip(&mut self.on_screen)
-                {
-                    self.layout.add_column_of_notes(
-                        column_data[*draw_start..*draw_end].iter().map(|x| *x),
-                        column_index,
-                        &mut self.batch,
-                    )?;
-                }
+            {
+                self.layout.add_column_of_notes(
+                    column_data[*draw_start..*draw_end].iter().map(|x| *x),
+                    column_index,
+                    &mut self.batch,
+                )?;
+            }
         }
         let coolparam = graphics::DrawParam {
             dest: graphics::Point2::new(0.0, -1.0 * (self.layout.delta_to_offset(time))),

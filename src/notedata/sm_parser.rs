@@ -21,8 +21,14 @@ pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
     }
 }
 
-fn parse_main_block(contents: &str) -> Vec<Vec<(Fraction, NoteRow)>> {
-    contents.lines().skip(6).collect::<Vec<_>>().split(|&x| x == ",").map(|measure| parse_measure(measure)).collect::<Vec<_>>()
+fn parse_main_block(contents: &str) -> Vec<Vec<(Rational32, NoteRow)>> {
+    contents
+        .lines()
+        .skip(6)
+        .collect::<Vec<_>>()
+        .split(|&x| x == ",")
+        .map(|measure| parse_measure(measure))
+        .collect::<Vec<_>>()
 }
 
 fn char_to_notetype(character: char) -> Option<NoteType> {
@@ -38,12 +44,12 @@ fn char_to_notetype(character: char) -> Option<NoteType> {
     }
 }
 
-fn parse_measure(measure: &[&str]) -> Vec<(Fraction, NoteRow)> {
+fn parse_measure(measure: &[&str]) -> Vec<(Rational32, NoteRow)> {
     let mut output = Vec::new();
     let division = measure.len();
     for (subindex, beat) in measure.iter().enumerate() {
         output.push((
-            Fraction::new(subindex as i64, division as u64).unwrap(),
+            Rational32::new(subindex as i32, division as i32),
             parse_line(beat),
         ));
     }

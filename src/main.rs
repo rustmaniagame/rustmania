@@ -2,27 +2,27 @@
 extern crate nom;
 extern crate chrono;
 extern crate ggez;
+extern crate num_rational;
 
-mod fraction;
 mod gameplay_screen;
 mod notedata;
 mod player_config;
 mod timingdata;
 
-use fraction::Fraction;
 use ggez::conf;
-use ggez::graphics::{Rect,set_background_color, Color};
+use ggez::graphics::{set_background_color, Color, Rect};
 use notedata::NoteType;
+use num_rational::Rational32;
 use std::fs::File;
 
 fn sprite_finder(
     _measure: usize,
     _row_time: f64,
-    row_alignment: Fraction,
+    row_alignment: Rational32,
     _note_type: NoteType,
     _column: usize,
 ) -> Rect {
-    let (_, division) = (row_alignment * 4).contents();
+    let &division = (row_alignment * 4).denom();
     match division {
         1 => Rect::new(0.0, 0.0, 1.0, 0.125),
         2 => Rect::new(0.0, 0.125, 1.0, 0.125),
@@ -40,7 +40,7 @@ fn sprite_finder(
 fn main() {
     let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
     let context = &mut ggez::Context::load_from_conf("rustmania", "ixsetf", c).unwrap();
-    set_background_color(context, Color::new(0.0,0.0,0.0,1.0));
+    set_background_color(context, Color::new(0.0, 0.0, 0.0, 1.0));
 
     let mut p1_layout = player_config::NoteLayout::new(
         [72, 136, 200, 264],

@@ -1,6 +1,6 @@
 mod sm_parser;
 
-use fraction::Fraction;
+use num_rational::Rational32;
 use std::fs;
 use std::slice;
 
@@ -13,7 +13,7 @@ pub struct ChartMetadata {
 
 #[derive(Debug)]
 pub struct NoteData {
-    notes: Vec<Vec<(Fraction, NoteRow)>>,
+    notes: Vec<Vec<(Rational32, NoteRow)>>,
     pub data: ChartMetadata,
 }
 
@@ -62,7 +62,7 @@ impl NoteData {
         }
         chart
     }
-    pub fn columns(&self) -> slice::Iter<Vec<(Fraction, NoteRow)>> {
+    pub fn columns(&self) -> slice::Iter<Vec<(Rational32, NoteRow)>> {
         self.notes.iter()
     }
 }
