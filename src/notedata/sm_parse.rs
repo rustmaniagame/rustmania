@@ -23,7 +23,7 @@ pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
 
 fn parse_main_block(contents: String) -> Vec<Vec<(Fraction, NoteRow)>> {
     let mut notes = Vec::new();
-    let lines: Vec<_> = contents.lines().skip(5).collect();
+    let lines: Vec<_> = contents.lines().skip(6).collect();
     let measures = lines.split(|&x| x == ",");
     for measure in measures {
         notes.push(parse_measure(measure));
