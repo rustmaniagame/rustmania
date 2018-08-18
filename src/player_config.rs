@@ -1,5 +1,5 @@
 extern crate ggez;
-use ggez::{graphics, Context};
+use ggez::graphics;
 
 pub struct NoteLayout {
     pub column_positions: [i64; 4],
@@ -34,13 +34,19 @@ impl NoteLayout {
     pub fn delta_to_position(&self, delta: i64) -> i64 {
         (delta as f32 * self.scroll_speed) as i64 + self.receptor_height
     }
-    pub fn draw_note_at_position<'a>(
+    pub fn delta_to_offset(&self, delta: i64) -> f32 {
+        (delta as f32 * self.scroll_speed)
+    }
+    pub fn add_note(
         &self,
-        ctx: &mut Context,
         column: usize,
         position: i64,
-        sprite: &'a graphics::Image,
+        batch: &mut graphics::spritebatch::SpriteBatch,
     ) -> Result<(), ggez::GameError> {
+        batch.add(graphics::DrawParam {
+            dest: graphics::Point2::new(self.column_positions[column] as f32, position as f32),
+            ..Default::default()
+        });
         /*graphics::draw(
             ctx,
             sprite,
@@ -49,14 +55,14 @@ impl NoteLayout {
         )?;*/
         Ok(())
     }
-    pub fn draw_column_of_notes<'a>(
+    pub fn add_column_of_notes<'a>(
         &self,
-        ctx: &mut ggez::Context,
-        column: impl Iterator<Item = (i64, &'a graphics::Image)>,
+        column: impl Iterator<Item = i64>,
         column_index: usize,
+        batch: &mut graphics::spritebatch::SpriteBatch,
     ) -> Result<(), ggez::GameError> {
-        for (note, sprite) in column {
-            self.draw_note_at_position(ctx, column_index, self.delta_to_position(note), sprite)?;
+        for note in column {
+            self.add_note(column_index, self.delta_to_position(note), batch)?;
         }
         Ok(())
     }
@@ -71,7 +77,8 @@ impl NoteLayout {
         }
         Ok(())
     }
-    pub fn add_receptors(
+    //this will likely be the method to draw receptors in the future, but it is not currently in use
+    pub fn _add_receptors(
         &self,
         batch: &mut graphics::spritebatch::SpriteBatch,
     ) -> Result<(), ggez::GameError> {

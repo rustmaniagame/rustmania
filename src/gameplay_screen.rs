@@ -66,25 +66,37 @@ impl<'a> Notefield<'a> {
         for ((column_index, column_data), (draw_start, draw_end)) in
             self.notes.columns().enumerate().zip(&mut self.on_screen)
         {
-            if *draw_end != column_data.len()
+            while *draw_end != column_data.len()
                 && self.layout
                     .delta_to_position(column_data[*draw_end].0 - time)
                     < self.draw_distance
             {
+                self.layout.add_note(
+                    column_index,
+                    self.layout.delta_to_position(column_data[*draw_end].0),
+                    &mut self.batch,
+                )?;
                 *draw_end += 1;
             }
-            if *draw_start != column_data.len() && column_data[*draw_start].0 - time < -180 {
+            while *draw_start != column_data.len() && column_data[*draw_start].0 - time < -180 {
                 *draw_start += 1;
             }
-            self.layout.draw_column_of_notes(
-                ctx,
-                column_data[*draw_start..*draw_end]
-                    .iter()
-                    .map(|(note, sprite)| (*note - time, *sprite)),
+        }
+        self.batch.clear();
+        for ((column_index, column_data), (draw_start, draw_end)) in
+            self.notes.columns().enumerate().zip(&mut self.on_screen)
+        {
+            self.layout.add_column_of_notes(
+                column_data[*draw_start..*draw_end].iter().map(|(x, _)| *x),
                 column_index,
+                &mut self.batch,
             )?;
         }
-        graphics::draw(ctx, &self.batch, graphics::Point2::new(0.0, 0.0), 0.0);
+        let coolparam = graphics::DrawParam {
+            dest: graphics::Point2::new(0.0, -1.0 * (self.layout.delta_to_offset(time))),
+            ..Default::default()
+        };
+        graphics::draw_ex(ctx, &self.batch, coolparam)?;
         Ok(())
     }
 }
@@ -117,10 +129,11 @@ impl<'a> GameplayScreen<'a> {
             start_time: None,
         }
     }
-    pub fn start(&mut self) {
+    pub fn start(&mut self) -> Result<(), ggez::GameError> {
         self.start_time = Some(Instant::now());
-        self.notefield.start();
-        self.p2notefield.start();
+        self.notefield.start()?;
+        self.p2notefield.start()?;
+        Ok(())
     }
     fn start_time_to_milliseconds(&self) -> Option<i64> {
         match self.start_time {

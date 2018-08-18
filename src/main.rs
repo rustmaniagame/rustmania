@@ -76,7 +76,9 @@ fn main() {
         context.filesystem.mount(&path, true);
     }
 
-    game_screen.start();
+    if let Err(e) = game_screen.start() {
+        println!("Error starting screen: {}", e)
+    }
     if let Err(e) = ggez::event::run(context, &mut game_screen) {
         println!("Error: {}", e);
     } else {
