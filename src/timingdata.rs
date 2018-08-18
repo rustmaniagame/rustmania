@@ -5,6 +5,7 @@ use notedata::NoteData;
 use notedata::NoteType;
 use std::slice;
 
+#[derive(Debug)]
 pub struct TimingData {
     notes: [Vec<(i64, graphics::Rect)>; 4],
 }
