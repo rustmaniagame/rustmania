@@ -41,9 +41,11 @@ impl NoteLayout {
         &self,
         column: usize,
         position: i64,
+        coords: graphics::Rect,
         batch: &mut graphics::spritebatch::SpriteBatch,
     ) -> Result<(), ggez::GameError> {
         batch.add(graphics::DrawParam {
+            src: coords,
             dest: graphics::Point2::new(self.column_positions[column] as f32, position as f32),
             ..Default::default()
         });
@@ -62,7 +64,7 @@ impl NoteLayout {
         batch: &mut graphics::spritebatch::SpriteBatch,
     ) -> Result<(), ggez::GameError> {
         for (note, coords) in column {
-            self.add_note(column_index, self.delta_to_position(note), batch)?;
+            self.add_note(column_index, self.delta_to_position(note), coords, batch)?;
         }
         Ok(())
     }

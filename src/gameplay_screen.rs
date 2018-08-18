@@ -74,6 +74,7 @@ impl<'a> Notefield<'a> {
                 self.layout.add_note(
                     column_index,
                     self.layout.delta_to_position(column_data[*draw_end].0),
+                    column_data[*draw_end].1,
                     &mut self.batch,
                 )?;
                 *draw_end += 1;
@@ -87,7 +88,7 @@ impl<'a> Notefield<'a> {
             self.notes.columns().enumerate().zip(&mut self.on_screen)
         {
             self.layout.add_column_of_notes(
-                column_data[*draw_start..*draw_end].iter(),
+                column_data[*draw_start..*draw_end].iter().map(|x| *x),
                 column_index,
                 &mut self.batch,
             )?;
