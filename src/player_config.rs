@@ -57,11 +57,11 @@ impl NoteLayout {
     }
     pub fn add_column_of_notes<'a>(
         &self,
-        column: impl Iterator<Item = i64>,
+        column: impl Iterator<Item = (i64, graphics::Rect)>,
         column_index: usize,
         batch: &mut graphics::spritebatch::SpriteBatch,
     ) -> Result<(), ggez::GameError> {
-        for note in column {
+        for (note, coords) in column {
             self.add_note(column_index, self.delta_to_position(note), batch)?;
         }
         Ok(())
