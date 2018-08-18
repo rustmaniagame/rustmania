@@ -63,6 +63,7 @@ impl<'a> Notefield<'a> {
             Some(time) => time,
             None => return Ok(()),
         };
+        let mut clear_batch = false;
         for ((column_index, column_data), (draw_start, draw_end)) in
             self.notes.columns().enumerate().zip(&mut self.on_screen)
         {
@@ -81,17 +82,20 @@ impl<'a> Notefield<'a> {
             }
             while *draw_start != column_data.len() && column_data[*draw_start].0 - time < -180 {
                 *draw_start += 1;
+                clear_batch = true;
             }
         }
-        self.batch.clear();
-        for ((column_index, column_data), (draw_start, draw_end)) in
-            self.notes.columns().enumerate().zip(&mut self.on_screen)
-        {
-            self.layout.add_column_of_notes(
-                column_data[*draw_start..*draw_end].iter().map(|x| *x),
-                column_index,
-                &mut self.batch,
-            )?;
+        if clear_batch {
+            self.batch.clear();
+            for ((column_index, column_data), (draw_start, draw_end)) in
+                self.notes.columns().enumerate().zip(&mut self.on_screen)
+                {
+                    self.layout.add_column_of_notes(
+                        column_data[*draw_start..*draw_end].iter().map(|x| *x),
+                        column_index,
+                        &mut self.batch,
+                    )?;
+                }
         }
         let coolparam = graphics::DrawParam {
             dest: graphics::Point2::new(0.0, -1.0 * (self.layout.delta_to_offset(time))),
