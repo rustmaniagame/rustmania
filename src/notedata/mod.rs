@@ -1,4 +1,4 @@
-mod sm_parse;
+mod sm_parser;
 
 use fraction::Fraction;
 use std::fs;
@@ -58,7 +58,7 @@ impl NoteData {
         let simfile = fs::read_to_string("resources/barebones.sm").unwrap();
         let tags = simfile.split(|x| x == '#').map(|x| split_once(x, ':'));
         for (tag, contents) in tags {
-            sm_parse::parse_tag(tag, contents, &mut chart);
+            sm_parser::parse_tag(tag, contents, &mut chart);
         }
         chart
     }
