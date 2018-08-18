@@ -11,7 +11,7 @@ mod timingdata;
 
 use fraction::Fraction;
 use ggez::conf;
-use ggez::graphics::Rect;
+use ggez::graphics::{Rect,set_background_color, Color};
 use notedata::NoteType;
 use std::fs::File;
 
@@ -40,26 +40,27 @@ fn sprite_finder(
 fn main() {
     let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
     let context = &mut ggez::Context::load_from_conf("rustmania", "ixsetf", c).unwrap();
+    set_background_color(context, Color::new(0.0,0.0,0.0,1.0));
 
     let mut p1_layout = player_config::NoteLayout::new(
         [72, 136, 200, 264],
         ggez::graphics::Image::new(context, "/arrows.png").unwrap(),
         ggez::graphics::Image::new(context, "/receptor.png").unwrap(),
-        250,
+        100,
     );
 
     let mut p2_layout = player_config::NoteLayout::new(
         [472, 536, 600, 664],
         ggez::graphics::Image::new(context, "/arrows.png").unwrap(),
         ggez::graphics::Image::new(context, "/receptor.png").unwrap(),
-        250,
+        100,
     );
 
-    if let Err(e) = p1_layout.set_scroll_speed(0.7) {
+    if let Err(e) = p1_layout.set_scroll_speed(0.5) {
         println!("Couldn't set scroll speed: {}", e);
     }
 
-    if let Err(e) = p2_layout.set_scroll_speed(1.4) {
+    if let Err(e) = p2_layout.set_scroll_speed(1.0) {
         println!("Couldn't set scroll speed: {}", e);
     }
 
