@@ -23,12 +23,12 @@ impl TimingData {
                 let row_time = measure_time + (240_000.0 * value(*inner_time)) / bpm;
                 for (note, column_index) in row.notes() {
                     let sprite = sprite_finder(
-                            measure_index,
-                            measure_time,
-                            *inner_time,
-                            *note,
-                            *column_index,
-                        );
+                        measure_index,
+                        measure_time,
+                        *inner_time,
+                        *note,
+                        *column_index,
+                    );
                     output[*column_index].push((row_time as i64, sprite));
                 }
             }

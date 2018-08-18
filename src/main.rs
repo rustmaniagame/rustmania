@@ -24,16 +24,16 @@ fn sprite_finder(
 ) -> Rect {
     let (_, division) = (row_alignment * 4).contents();
     match division {
-        1 => Rect::new(0.0,0.0,63.0,63.0),
-        2 => Rect::new(0.0,0.0,63.0,63.0),
-        3 => Rect::new(0.0,0.0,63.0,63.0),
-        4 => Rect::new(0.0,0.0,63.0,63.0),
-        6 => Rect::new(0.0,0.0,63.0,63.0),
-        8 => Rect::new(0.0,0.0,63.0,63.0),
-        12 => Rect::new(0.0,0.0,63.0,63.0),
-        16 => Rect::new(0.0,0.0,63.0,63.0),
-        24 => Rect::new(0.0,0.0,63.0,63.0),
-        _ => Rect::new(0.0,0.0,63.0,63.0),
+        1 => Rect::new(0.0, 0.0, 63.0, 63.0),
+        2 => Rect::new(0.0, 0.0, 63.0, 63.0),
+        3 => Rect::new(0.0, 0.0, 63.0, 63.0),
+        4 => Rect::new(0.0, 0.0, 63.0, 63.0),
+        6 => Rect::new(0.0, 0.0, 63.0, 63.0),
+        8 => Rect::new(0.0, 0.0, 63.0, 63.0),
+        12 => Rect::new(0.0, 0.0, 63.0, 63.0),
+        16 => Rect::new(0.0, 0.0, 63.0, 63.0),
+        24 => Rect::new(0.0, 0.0, 63.0, 63.0),
+        _ => Rect::new(0.0, 0.0, 63.0, 63.0),
     }
 }
 
@@ -65,8 +65,7 @@ fn main() {
 
     let notedata = notedata::NoteData::from_sm();
 
-    let notes =
-        timingdata::TimingData::from_notedata(notedata, sprite_finder);
+    let notes = timingdata::TimingData::from_notedata(notedata, sprite_finder);
 
     let mut game_screen =
         gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, 600);
