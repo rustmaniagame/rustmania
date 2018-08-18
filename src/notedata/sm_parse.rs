@@ -16,12 +16,12 @@ pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
                 Err(_) => None,
             }
         }
-        "NOTES" => data.notes = parse_main_block(contents.to_string()),
+        "NOTES" => data.notes = parse_main_block(contents),
         _ => {}
     }
 }
 
-fn parse_main_block(contents: String) -> Vec<Vec<(Fraction, NoteRow)>> {
+fn parse_main_block(contents: &str) -> Vec<Vec<(Fraction, NoteRow)>> {
     contents.lines().skip(6).collect::<Vec<_>>().split(|&x| x == ",").map(|measure| parse_measure(measure)).collect::<Vec<_>>()
 }
 
