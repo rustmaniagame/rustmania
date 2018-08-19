@@ -61,7 +61,7 @@ fn main() {
 
     let simfile = File::open(Path::new(
         matches
-            .value_of("NoteSkin")
+            .value_of("SimFile")
             .expect("No path for simfile received."),
     )).expect("Could not open simfile.");
 
