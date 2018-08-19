@@ -17,7 +17,6 @@ use ggez::graphics::{set_background_color, Color, Rect};
 use notedata::NoteType;
 use num_rational::Rational32;
 use std::fs::File;
-use std::path::Path;
 
 fn sprite_finder(
     _measure: usize,
@@ -65,20 +64,24 @@ fn main() {
             .expect("No path for simfile received."),
     ).expect("Could not open simfile.");
 
+    let noteskin = matches
+        .value_of("NoteSkin")
+        .expect("No path for NoteSkin specified");
+
     let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
     let context = &mut ggez::Context::load_from_conf("rustmania", "ixsetf", c).unwrap();
     set_background_color(context, Color::new(0.0, 0.0, 0.0, 1.0));
 
     let mut p1_layout = player_config::NoteLayout::new(
         [72, 136, 200, 264],
-        ggez::graphics::Image::new(context, "/arrows.png").unwrap(),
+        ggez::graphics::Image::new(context, noteskin).unwrap(),
         ggez::graphics::Image::new(context, "/receptor.png").unwrap(),
         100,
     );
 
     let mut p2_layout = player_config::NoteLayout::new(
         [472, 536, 600, 664],
-        ggez::graphics::Image::new(context, "/arrows.png").unwrap(),
+        ggez::graphics::Image::new(context, noteskin).unwrap(),
         ggez::graphics::Image::new(context, "/receptor.png").unwrap(),
         100,
     );
