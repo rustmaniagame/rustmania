@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate nom;
 extern crate chrono;
+#[macro_use]
 extern crate clap;
 extern crate ggez;
 extern crate num_rational;
@@ -41,7 +42,7 @@ fn sprite_finder(
 
 fn main() {
     let _matches = App::new("Rustmania")
-        .author("ixsetf, noemail@email.net")
+        .author(crate_authors!())
         .version("0.1.0")
         .about("A rhythm game in the vein of Stepmania and Etterna, currently in very early stages of development.")
         .arg(
