@@ -45,9 +45,14 @@ fn main() {
         .author(crate_authors!())
         .version("0.1.0")
         .about("A rhythm game in the vein of Stepmania and Etterna, currently in very early stages of development.")
-        .arg(
-            Arg::with_name("in_file").index(1)
-        )
+        .args(&[
+            Arg::with_name("SimFile")
+                .help("The path to your .sm file.")
+                .required(true),
+            Arg::with_name("NoteSkin")
+                .help("The path to your NoteSkin image file.")
+                .required(true)
+        ])
         .after_help("Licenced under MIT.")
         .get_matches();
 
