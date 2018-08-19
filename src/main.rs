@@ -74,15 +74,15 @@ fn main() {
 
     let mut p1_layout = player_config::NoteLayout::new(
         [72, 136, 200, 264],
-        ggez::graphics::Image::new(context, noteskin).unwrap(),
-        ggez::graphics::Image::new(context, "/receptor.png").unwrap(),
+        ggez::graphics::Image::new(context, noteskin).expect("Could not parse noteskin from path."),
+        ggez::graphics::Image::new(context, "/receptor.png").expect("Could not parse receptor."),
         100,
     );
 
     let mut p2_layout = player_config::NoteLayout::new(
         [472, 536, 600, 664],
-        ggez::graphics::Image::new(context, noteskin).unwrap(),
-        ggez::graphics::Image::new(context, "/receptor.png").unwrap(),
+        ggez::graphics::Image::new(context, noteskin).expect("Could not parse noteskin from path."),
+        ggez::graphics::Image::new(context, "/receptor.png").expect("Could not parse receptor."),
         100,
     );
 
