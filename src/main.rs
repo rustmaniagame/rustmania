@@ -59,11 +59,11 @@ fn main() {
         .after_help("Licenced under MIT.")
         .get_matches();
 
-    let simfile = File::open(Path::new(
+    let simfile = File::open(
         matches
             .value_of("SimFile")
             .expect("No path for simfile received."),
-    )).expect("Could not open simfile.");
+    ).expect("Could not open simfile.");
 
     let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
     let context = &mut ggez::Context::load_from_conf("rustmania", "ixsetf", c).unwrap();
