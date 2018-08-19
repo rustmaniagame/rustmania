@@ -17,6 +17,7 @@ use ggez::graphics::{set_background_color, Color, Rect};
 use notedata::NoteType;
 use num_rational::Rational32;
 use std::fs::File;
+use std::path::Path;
 
 fn sprite_finder(
     _measure: usize,
@@ -41,20 +42,24 @@ fn sprite_finder(
 }
 
 fn main() {
-    let _matches = App::new("Rustmania")
+    let matches = App::new("Rustmania")
         .author(crate_authors!())
         .version("0.1.0")
         .about("A rhythm game in the vein of Stepmania and Etterna, currently in very early stages of development.")
         .args(&[
             Arg::with_name("SimFile")
                 .help("The path to your .sm file.")
+                .index(1)
                 .required(true),
             Arg::with_name("NoteSkin")
                 .help("The path to your NoteSkin image file.")
+                .index(2)
                 .required(true)
         ])
         .after_help("Licenced under MIT.")
         .get_matches();
+
+    let simfile = File::open(Path::new(matches.value_of("NoteSkin").expect("No path for simfile received."))).expect("Could not open simfile.");
 
     let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
     let context = &mut ggez::Context::load_from_conf("rustmania", "ixsetf", c).unwrap();
@@ -82,9 +87,9 @@ fn main() {
         println!("Couldn't set scroll speed: {}", e);
     }
 
-    let notedata = notedata::NoteData::from_sm();
+    let notedata = notedata::NoteData::from_sm(simfile);
 
-    let notes = timingdata::TimingData::from_notedata(notedata, sprite_finder);
+    let notes = timingdata::TimingData::from_notedata(notedata.expect("Failed to parse .sm file."), sprite_finder);
 
     let mut game_screen =
         gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, 600);

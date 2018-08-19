@@ -1,7 +1,7 @@
 mod sm_parser;
 
 use num_rational::Rational32;
-use std::fs;
+use std::io;
 use std::slice;
 
 #[derive(Debug)]
@@ -50,17 +50,21 @@ fn split_once(contents: &str, letter: char) -> (&str, &str) {
 }
 
 impl NoteData {
-    pub fn from_sm() -> Self {
+    pub fn from_sm<T>(mut simfile: T) -> Result<Self, io::Error>
+    where
+        T: io::Read,
+    {
         let mut chart = NoteData {
             notes: Vec::new(),
             data: ChartMetadata::new(),
         };
-        let simfile = fs::read_to_string("resources/barebones.sm").unwrap();
-        let tags = simfile.split(|x| x == '#').map(|x| split_once(x, ':'));
+        let mut chart_string = String::new();
+        simfile.read_to_string(&mut chart_string)?;
+        let tags = chart_string.split(|x| x == '#').map(|x| split_once(x, ':'));
         for (tag, contents) in tags {
             sm_parser::parse_tag(tag, contents, &mut chart);
         }
-        chart
+        Ok(chart)
     }
     pub fn columns(&self) -> slice::Iter<Vec<(Rational32, NoteRow)>> {
         self.notes.iter()
