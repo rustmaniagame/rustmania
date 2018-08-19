@@ -59,7 +59,11 @@ fn main() {
         .after_help("Licenced under MIT.")
         .get_matches();
 
-    let simfile = File::open(Path::new(matches.value_of("NoteSkin").expect("No path for simfile received."))).expect("Could not open simfile.");
+    let simfile = File::open(Path::new(
+        matches
+            .value_of("NoteSkin")
+            .expect("No path for simfile received."),
+    )).expect("Could not open simfile.");
 
     let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
     let context = &mut ggez::Context::load_from_conf("rustmania", "ixsetf", c).unwrap();
@@ -89,7 +93,10 @@ fn main() {
 
     let notedata = notedata::NoteData::from_sm(simfile);
 
-    let notes = timingdata::TimingData::from_notedata(notedata.expect("Failed to parse .sm file."), sprite_finder);
+    let notes = timingdata::TimingData::from_notedata(
+        notedata.expect("Failed to parse .sm file."),
+        sprite_finder,
+    );
 
     let mut game_screen =
         gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, 600);
