@@ -49,12 +49,6 @@ impl NoteLayout {
             dest: graphics::Point2::new(self.column_positions[column] as f32, position as f32),
             ..Default::default()
         });
-        /*graphics::draw(
-            ctx,
-            sprite,
-            graphics::Point2::new(self.column_positions[column] as f32, position as f32),
-            0.0,
-        )?;*/
         Ok(())
     }
     pub fn add_column_of_notes<'a>(
