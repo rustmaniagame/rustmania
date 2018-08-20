@@ -94,3 +94,19 @@ named!(float_tag_parse<&str, f64>,
         tag!(";") >>
     ( value )
 ));
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_lines_correctly() {
+        assert_eq!(NoteRow { row: vec![] }, parse_line("0000"));
+        assert_eq!(
+            NoteRow {
+                row: vec![(NoteType::Tap, 2)],
+            },
+            parse_line("0010")
+        );
+    }
+}
