@@ -52,13 +52,13 @@ fn parse_measure(measure: &[&str]) -> Vec<(Rational32, NoteRow)> {
         .map(|(subindex, beat)| {
             (
                 Rational32::new(subindex as i32, division as i32),
-                parse_line(beat),
+                parse_line(*beat),
             )
         })
         .collect()
 }
 
-fn parse_line(contents: &&str) -> NoteRow {
+fn parse_line(contents: &str) -> NoteRow {
     NoteRow {
         row: contents
             .chars()
