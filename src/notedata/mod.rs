@@ -4,25 +4,25 @@ use num_rational::Rational32;
 use std::io;
 use std::slice;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct ChartMetadata {
     pub title: Option<String>,
     pub offset: Option<f64>,
     pub bpm: Option<f64>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct NoteData {
     notes: Vec<Vec<(Rational32, NoteRow)>>,
     pub data: ChartMetadata,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct NoteRow {
     row: Vec<(NoteType, usize)>,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum NoteType {
     Tap,
     Hold,
