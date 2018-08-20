@@ -45,25 +45,29 @@ fn char_to_notetype(character: char) -> Option<NoteType> {
 }
 
 fn parse_measure(measure: &[&str]) -> Vec<(Rational32, NoteRow)> {
-    let mut output = Vec::new();
     let division = measure.len();
-    for (subindex, beat) in measure.iter().enumerate() {
-        output.push((
-            Rational32::new(subindex as i32, division as i32),
-            parse_line(beat),
-        ));
-    }
-    output
+    measure
+        .iter()
+        .enumerate()
+        .map(|(subindex, beat)| {
+            (
+                Rational32::new(subindex as i32, division as i32),
+                parse_line(beat),
+            )
+        })
+        .collect()
 }
 
 fn parse_line(contents: &&str) -> NoteRow {
-    let mut row = Vec::new();
-    contents.chars().enumerate().for_each(|(index, character)| {
-        if let Some(note) = char_to_notetype(character) {
-            row.push((note, index));
-        }
-    });
-    NoteRow { row }
+    NoteRow {
+        row: contents
+            .chars()
+            .enumerate()
+            .map(|(index, character)| (char_to_notetype(character), index))
+            .filter(|(index, _)| index.is_some())
+            .map(|(index, character)| (index.unwrap(), character))
+            .collect(),
+    }
 }
 
 named!( bpm_parse<&str,(Vec<(f64,f64)>,(f64,f64))>, many_till!(bpm_line, do_parse!(
