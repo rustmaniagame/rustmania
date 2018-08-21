@@ -22,9 +22,12 @@ pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
 }
 
 fn parse_main_block(contents: &str) -> Vec<Vec<(Rational32, NoteRow)>> {
+    let forbidden: &[_] = &[';', '\n', '\r'];
     contents
+        .trim_right_matches(forbidden)
         .lines()
-        .skip(6)
+        .filter(|x| *x != "")
+        .skip(5)
         .collect::<Vec<_>>()
         .split(|&x| x == ",")
         .map(|measure| parse_measure(measure))
