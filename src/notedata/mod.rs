@@ -76,3 +76,50 @@ impl NoteRow {
         self.row.iter()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use notedata::NoteType;
+    use num_rational::Ratio;
+    use std::fs::File;
+
+    #[test]
+    fn split_once_correctly() {
+        assert_eq!(split_once("left$right", '$'), (("left", "right")))
+    }
+    #[test]
+    fn simple_file_parse() {
+        assert_eq!(
+            NoteData::from_sm(File::open("test_files/notes_test.sm").unwrap()).unwrap(),
+            NoteData {
+                notes: vec![
+                    vec![
+                        (
+                            Rational32::new(0, 1),
+                            NoteRow {
+                                row: vec![(NoteType::Tap, 3)],
+                            },
+                        ),
+                    ],
+                    vec![],
+                    vec![
+                        (
+                            Rational32::new(0, 1),
+                            NoteRow {
+                                row: vec![(NoteType::Mine, 1),(NoteType::Hold, 3)],
+                            },
+                        ),
+                        (
+                            Rational32::new(1, 2),
+                            NoteRow {
+                                row: vec![(NoteType::Fake, 0)],
+                            },
+                        ),
+                    ],
+                ],
+                data: ChartMetadata::new(),
+            }
+        );
+    }
+}
