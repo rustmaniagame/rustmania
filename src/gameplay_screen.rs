@@ -7,10 +7,12 @@ use ggez::graphics::spritebatch::SpriteBatch;
 use std::result::Result;
 use std::time::{Duration, Instant};
 use timingdata;
+use ggez::audio;
 
 pub struct GameplayScreen<'a> {
     notefield: Notefield<'a>,
     p2notefield: Notefield<'a>,
+    music: audio::Source,
     start_time: Option<Instant>,
 }
 
@@ -116,6 +118,7 @@ impl<'a> GameplayScreen<'a> {
         notes: &'a timingdata::TimingData,
         p2layout: &'a player_config::NoteLayout,
         p2notes: &'a timingdata::TimingData,
+        music: audio::Source,
         draw_distance: i64,
     ) -> Self {
         GameplayScreen {
@@ -131,6 +134,7 @@ impl<'a> GameplayScreen<'a> {
                 SpriteBatch::new(p2layout.arrows_sprite.clone()),
                 draw_distance,
             ),
+            music,
             start_time: None,
         }
     }
@@ -138,6 +142,7 @@ impl<'a> GameplayScreen<'a> {
         self.start_time = Some(Instant::now());
         self.notefield.start()?;
         self.p2notefield.start()?;
+        self.music.play()?;
         Ok(())
     }
     fn start_time_to_milliseconds(&self) -> Option<i64> {
