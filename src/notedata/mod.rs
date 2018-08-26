@@ -7,6 +7,7 @@ use std::slice;
 #[derive(Debug, PartialEq)]
 pub struct ChartMetadata {
     pub title: Option<String>,
+    pub music_path: Option<String>,
     pub offset: Option<f64>,
     pub bpm: Option<f64>,
 }
@@ -36,6 +37,7 @@ impl ChartMetadata {
     pub fn new() -> Self {
         ChartMetadata {
             title: None,
+            music_path: None,
             offset: None,
             bpm: None,
         }

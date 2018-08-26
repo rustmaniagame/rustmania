@@ -2,12 +2,12 @@ extern crate chrono;
 extern crate ggez;
 
 use super::player_config;
+use ggez::audio;
 use ggez::graphics;
 use ggez::graphics::spritebatch::SpriteBatch;
 use std::result::Result;
 use std::time::{Duration, Instant};
 use timingdata;
-use ggez::audio;
 
 pub struct GameplayScreen<'a> {
     notefield: Notefield<'a>,

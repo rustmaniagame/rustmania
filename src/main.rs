@@ -94,14 +94,22 @@ fn main() {
         println!("Couldn't set scroll speed: {}", e);
     }
 
-    let notedata = notedata::NoteData::from_sm(simfile);
+    let notedata = notedata::NoteData::from_sm(simfile).expect("Failed to parse .sm file.");
 
-    let notes = timingdata::TimingData::from_notedata(
-        notedata.expect("Failed to parse .sm file."),
-        sprite_finder,
-    );
+    let music = ggez::audio::Source::new(
+        context,
+        format!(
+            "/{}",
+            notedata
+                .data
+                .music_path
+                .clone()
+                .expect("No valid music path")
+        ),
+    ).expect("couldnt open audio file");
 
-    let music = ggez::audio::Source::new(context, "/Mu.ogg").expect("couldnt open audio file");
+    let notes = timingdata::TimingData::from_notedata(notedata, sprite_finder);
+
     let mut game_screen =
         gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, music, 600);
 

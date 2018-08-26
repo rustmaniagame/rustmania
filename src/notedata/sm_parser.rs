@@ -3,7 +3,8 @@ use nom::double_s;
 
 pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
     match tag {
-        "TITLE" => data.data.title = Some(contents.to_string()),
+        "TITLE" => data.data.title = Some(str_tag_parse(contents).unwrap().1.to_string()),
+        "MUSIC" => data.data.music_path = Some(str_tag_parse(contents).unwrap().1.to_string()),
         "OFFSET" => {
             data.data.offset = match float_tag_parse(contents) {
                 Ok(thing) => Some(-1.0 * thing.1),
@@ -97,6 +98,10 @@ named!(float_tag_parse<&str, f64>,
         tag!(";") >>
     ( value )
 ));
+
+named!(str_tag_parse<&str, &str>,
+    take_until!(";")
+);
 
 #[cfg(test)]
 mod tests {
