@@ -55,6 +55,21 @@ impl<'a> Notefield<'a> {
             .collect();
         Ok(())
     }
+    fn redraw_batch(&mut self) -> Result<(), ggez::GameError> {
+        self.batch.clear();
+        for ((column_index, column_data), (draw_start, draw_end)) in
+            self.notes.columns().enumerate().zip(&mut self.on_screen)
+        {
+            if *draw_start < *draw_end {
+                self.layout.add_column_of_notes(
+                    column_data[*draw_start..*draw_end].iter().map(|x| *x),
+                    column_index,
+                    &mut self.batch,
+                )?;
+            }
+        }
+        Ok(())
+    }
     fn draw_field(
         &mut self,
         ctx: &mut ggez::Context,
@@ -74,12 +89,14 @@ impl<'a> Notefield<'a> {
                     .delta_to_position(column_data[*draw_end].0 - time)
                     < self.draw_distance
             {
-                self.layout.add_note(
-                    column_index,
-                    self.layout.delta_to_position(column_data[*draw_end].0),
-                    column_data[*draw_end].1,
-                    &mut self.batch,
-                )?;
+                if *draw_start <= *draw_end {
+                    self.layout.add_note(
+                        column_index,
+                        self.layout.delta_to_position(column_data[*draw_end].0),
+                        column_data[*draw_end].1,
+                        &mut self.batch,
+                    );
+                }
                 *draw_end += 1;
             }
             while *draw_start != column_data.len() && column_data[*draw_start].0 - time < -180 {
@@ -88,22 +105,36 @@ impl<'a> Notefield<'a> {
             }
         }
         if clear_batch {
-            self.batch.clear();
-            for ((column_index, column_data), (draw_start, draw_end)) in
-                self.notes.columns().enumerate().zip(&mut self.on_screen)
-            {
-                self.layout.add_column_of_notes(
-                    column_data[*draw_start..*draw_end].iter().map(|x| *x),
-                    column_index,
-                    &mut self.batch,
-                )?;
-            }
+            self.redraw_batch()?;
         }
         let coolparam = graphics::DrawParam {
             dest: graphics::Point2::new(0.0, -1.0 * (self.layout.delta_to_offset(time))),
             ..Default::default()
         };
         graphics::draw_ex(ctx, &self.batch, coolparam)?;
+        Ok(())
+    }
+    fn handle_event(
+        &mut self,
+        ctx: &mut ggez::Context,
+        keycode: ggez::event::Keycode,
+        time: Option<i64>,
+    ) -> Result<(), ggez::GameError> {
+        let index = match keycode {
+            ggez::event::Keycode::Z => 0,
+            ggez::event::Keycode::X => 1,
+            ggez::event::Keycode::Comma => 2,
+            ggez::event::Keycode::Period => 3,
+            _ => return Ok(()),
+        };
+        if let Some(time) = time {
+            if self.notes.columns().collect::<Vec<_>>()[index][self.on_screen[index].0].0 - time
+                < 180
+            {
+                self.on_screen[index].0 += 1;
+            };
+        }
+        self.redraw_batch()?;
         Ok(())
     }
 }
@@ -142,7 +173,7 @@ impl<'a> GameplayScreen<'a> {
         self.start_time = Some(Instant::now());
         self.notefield.start()?;
         self.p2notefield.start()?;
-        self.music.play()?;
+        //self.music.play()?;
         Ok(())
     }
     fn start_time_to_milliseconds(&self) -> Option<i64> {
@@ -164,5 +195,19 @@ impl<'a> ggez::event::EventHandler for GameplayScreen<'a> {
         self.p2notefield.draw_field(ctx, time_delta)?;
         graphics::present(ctx);
         Ok(())
+    }
+    fn key_down_event(
+        &mut self,
+        ctx: &mut ggez::Context,
+        keycode: ggez::event::Keycode,
+        _keymod: ggez::event::Mod,
+        _repeat: bool,
+    ) {
+        if _repeat {
+            return;
+        }
+        let time_delta = self.start_time_to_milliseconds();
+        self.notefield.handle_event(ctx, keycode, time_delta);
+        self.p2notefield.handle_event(ctx, keycode, time_delta);
     }
 }
