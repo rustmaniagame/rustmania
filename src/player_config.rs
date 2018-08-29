@@ -43,24 +43,22 @@ impl NoteLayout {
         position: i64,
         coords: graphics::Rect,
         batch: &mut graphics::spritebatch::SpriteBatch,
-    ) -> Result<(), ggez::GameError> {
+    ) {
         batch.add(graphics::DrawParam {
             src: coords,
             dest: graphics::Point2::new(self.column_positions[column] as f32, position as f32),
             ..Default::default()
         });
-        Ok(())
     }
     pub fn add_column_of_notes<'a>(
         &self,
         column: impl Iterator<Item = (i64, graphics::Rect)>,
         column_index: usize,
         batch: &mut graphics::spritebatch::SpriteBatch,
-    ) -> Result<(), ggez::GameError> {
+    ) {
         for (note, coords) in column {
-            self.add_note(column_index, self.delta_to_position(note), coords, batch)?;
+            self.add_note(column_index, self.delta_to_position(note), coords, batch);
         }
-        Ok(())
     }
     pub fn draw_receptors(&self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
         for &column_position in self.column_positions.iter() {

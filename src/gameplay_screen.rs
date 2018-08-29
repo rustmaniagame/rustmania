@@ -55,7 +55,7 @@ impl<'a> Notefield<'a> {
             .collect();
         Ok(())
     }
-    fn redraw_batch(&mut self) -> Result<(), ggez::GameError> {
+    fn redraw_batch(&mut self) {
         self.batch.clear();
         for ((column_index, column_data), (draw_start, draw_end)) in
             self.notes.columns().enumerate().zip(&mut self.on_screen)
@@ -65,10 +65,9 @@ impl<'a> Notefield<'a> {
                     column_data[*draw_start..*draw_end].iter().map(|x| *x),
                     column_index,
                     &mut self.batch,
-                )?;
+                );
             }
         }
-        Ok(())
     }
     fn draw_field(
         &mut self,
@@ -105,7 +104,7 @@ impl<'a> Notefield<'a> {
             }
         }
         if clear_batch {
-            self.redraw_batch()?;
+            self.redraw_batch();
         }
         let coolparam = graphics::DrawParam {
             dest: graphics::Point2::new(0.0, -1.0 * (self.layout.delta_to_offset(time))),
@@ -114,18 +113,13 @@ impl<'a> Notefield<'a> {
         graphics::draw_ex(ctx, &self.batch, coolparam)?;
         Ok(())
     }
-    fn handle_event(
-        &mut self,
-        ctx: &mut ggez::Context,
-        keycode: ggez::event::Keycode,
-        time: Option<i64>,
-    ) -> Result<(), ggez::GameError> {
+    fn handle_event(&mut self, keycode: ggez::event::Keycode, time: Option<i64>) {
         let index = match keycode {
             ggez::event::Keycode::Z => 0,
             ggez::event::Keycode::X => 1,
             ggez::event::Keycode::Comma => 2,
             ggez::event::Keycode::Period => 3,
-            _ => return Ok(()),
+            _ => return,
         };
         if let Some(time) = time {
             if self.notes.columns().collect::<Vec<_>>()[index][self.on_screen[index].0].0 - time
@@ -134,8 +128,7 @@ impl<'a> Notefield<'a> {
                 self.on_screen[index].0 += 1;
             };
         }
-        self.redraw_batch()?;
-        Ok(())
+        self.redraw_batch();
     }
 }
 
@@ -173,7 +166,7 @@ impl<'a> GameplayScreen<'a> {
         self.start_time = Some(Instant::now());
         self.notefield.start()?;
         self.p2notefield.start()?;
-        //self.music.play()?;
+        self.music.play()?;
         Ok(())
     }
     fn start_time_to_milliseconds(&self) -> Option<i64> {
@@ -198,7 +191,7 @@ impl<'a> ggez::event::EventHandler for GameplayScreen<'a> {
     }
     fn key_down_event(
         &mut self,
-        ctx: &mut ggez::Context,
+        _ctx: &mut ggez::Context,
         keycode: ggez::event::Keycode,
         _keymod: ggez::event::Mod,
         _repeat: bool,
@@ -207,7 +200,7 @@ impl<'a> ggez::event::EventHandler for GameplayScreen<'a> {
             return;
         }
         let time_delta = self.start_time_to_milliseconds();
-        self.notefield.handle_event(ctx, keycode, time_delta);
-        self.p2notefield.handle_event(ctx, keycode, time_delta);
+        self.notefield.handle_event(keycode, time_delta);
+        self.p2notefield.handle_event(keycode, time_delta);
     }
 }
