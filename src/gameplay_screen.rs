@@ -122,11 +122,13 @@ impl<'a> Notefield<'a> {
             _ => return,
         };
         if let Some(time) = time {
-            if self.notes.columns().collect::<Vec<_>>()[index][self.on_screen[index].0].0 - time
-                < 180
+            if let Some(delta) =
+                self.notes.columns().collect::<Vec<_>>()[index].get(self.on_screen[index].0)
             {
-                self.on_screen[index].0 += 1;
-            };
+                if delta.0 - time < 180 {
+                    self.on_screen[index].0 += 1;
+                }
+            }
         }
         self.redraw_batch();
     }
