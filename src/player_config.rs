@@ -88,4 +88,13 @@ impl NoteLayout {
         }
         Ok(())
     }
+    pub fn draw_judgment(&self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
+        graphics::draw(
+            ctx,
+            &self.judgment_sprite,
+            graphics::Point2::new(0.0, 0.0),
+            0.0,
+        )?;
+        Ok(())
+    }
 }
