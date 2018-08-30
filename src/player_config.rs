@@ -1,4 +1,5 @@
 extern crate ggez;
+use gameplay_screen::Judgement;
 use ggez::graphics;
 
 pub struct NoteLayout {
@@ -88,7 +89,11 @@ impl NoteLayout {
         }
         Ok(())
     }
-    pub fn draw_judgment(&self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
+    pub fn draw_judgment(
+        &self,
+        ctx: &mut ggez::Context,
+        judge: Judgement,
+    ) -> Result<(), ggez::GameError> {
         graphics::draw(
             ctx,
             &self.judgment_sprite,

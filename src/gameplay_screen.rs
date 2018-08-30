@@ -25,6 +25,7 @@ pub struct Notefield<'a> {
     last_judgement: Option<Judgement>,
 }
 
+#[derive(Copy, Clone)]
 pub enum Judgement {
     Marvelous,
     Perfect,
@@ -123,6 +124,9 @@ impl<'a> Notefield<'a> {
             ..Default::default()
         };
         graphics::draw_ex(ctx, &self.batch, coolparam)?;
+        if let Some(judgment) = self.last_judgement {
+            self.layout.draw_judgment(ctx, judgment)?;
+        }
         Ok(())
     }
     fn handle_event(&mut self, keycode: ggez::event::Keycode, time: Option<i64>) {
