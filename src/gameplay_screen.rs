@@ -133,8 +133,7 @@ impl<'a> Notefield<'a> {
             ggez::event::Keycode::Period => 3,
             _ => return,
         };
-        let delta =
-            self.notes.columns().collect::<Vec<_>>()[index].get(self.on_screen[index].0);
+        let delta = self.notes.columns().collect::<Vec<_>>()[index].get(self.on_screen[index].0);
         if let (Some(time), Some((delta, _))) = (time, delta) {
             let offset = delta - time;
             if offset < 180 {
@@ -148,12 +147,12 @@ impl<'a> Notefield<'a> {
     fn handle_judgement(&mut self, offset: i64) {
         let abs_offset = offset.abs();
         match abs_offset {
-            0 ... 22 => self.last_judgement = Some(Judgement::Marvelous),
-            23 ... 45 => self.last_judgement = Some(Judgement::Perfect),
-            46 ... 90 => self.last_judgement = Some(Judgement::Great),
-            91 ... 135 => self.last_judgement = Some(Judgement::Good),
-            136 ... 180 => self.last_judgement = Some(Judgement::Bad),
-            _ => {},
+            0...22 => self.last_judgement = Some(Judgement::Marvelous),
+            23...45 => self.last_judgement = Some(Judgement::Perfect),
+            46...90 => self.last_judgement = Some(Judgement::Great),
+            91...135 => self.last_judgement = Some(Judgement::Good),
+            136...180 => self.last_judgement = Some(Judgement::Bad),
+            _ => {}
         }
     }
 }

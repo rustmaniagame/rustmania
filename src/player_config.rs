@@ -5,6 +5,7 @@ pub struct NoteLayout {
     pub column_positions: [i64; 4],
     pub arrows_sprite: graphics::Image,
     pub receptor_sprite: graphics::Image,
+    pub judgment_sprite: graphics::Image,
     pub receptor_height: i64,
     pub scroll_speed: f32,
 }
@@ -14,12 +15,14 @@ impl NoteLayout {
         column_positions: [i64; 4],
         arrows_sprite: graphics::Image,
         receptor_sprite: graphics::Image,
+        judgment_sprite: graphics::Image,
         receptor_height: i64,
     ) -> NoteLayout {
         NoteLayout {
             column_positions,
             arrows_sprite,
             receptor_sprite,
+            judgment_sprite,
             receptor_height,
             scroll_speed: 1.0,
         }

@@ -76,6 +76,7 @@ fn main() {
         [72, 136, 200, 264],
         ggez::graphics::Image::new(context, noteskin).expect("Could not parse noteskin from path."),
         ggez::graphics::Image::new(context, "/receptor.png").expect("Could not parse receptor."),
+        ggez::graphics::Image::new(context, "/Judgments.png").expect("Could not parse judgments."),
         100,
     );
 
@@ -83,6 +84,7 @@ fn main() {
         [472, 536, 600, 664],
         ggez::graphics::Image::new(context, noteskin).expect("Could not parse noteskin from path."),
         ggez::graphics::Image::new(context, "/receptor.png").expect("Could not parse receptor."),
+        ggez::graphics::Image::new(context, "/Judgments.png").expect("Could not parse judgments."),
         100,
     );
 
