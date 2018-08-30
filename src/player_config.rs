@@ -24,6 +24,7 @@ impl NoteLayout {
             scroll_speed: 1.0,
         }
     }
+    //noinspection RsUnresolvedReference
     pub fn set_scroll_speed(&mut self, new_speed: f32) -> Result<(), String> {
         if !new_speed.is_sign_positive() {
             return Err(String::from("scroll speed not positive"));

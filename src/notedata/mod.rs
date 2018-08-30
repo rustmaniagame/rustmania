@@ -52,6 +52,7 @@ fn split_once(contents: &str, letter: char) -> (&str, &str) {
 }
 
 impl NoteData {
+    //noinspection RsUnresolvedReference
     pub fn from_sm<T>(mut simfile: T) -> Result<Self, io::Error>
     where
         T: io::Read,
