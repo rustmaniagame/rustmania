@@ -22,6 +22,16 @@ pub struct Notefield<'a> {
     on_screen: Vec<(usize, usize)>,
     batch: SpriteBatch,
     draw_distance: i64,
+    last_judgement: Option<Judgement>,
+}
+
+pub enum Judgement {
+    Marvelous,
+    Perfect,
+    Great,
+    Good,
+    Bad,
+    Miss,
 }
 
 impl<'a> Notefield<'a> {
@@ -37,6 +47,7 @@ impl<'a> Notefield<'a> {
             on_screen: Vec::<_>::new(),
             batch,
             draw_distance,
+            last_judgement: None,
         }
     }
     fn start(&mut self) -> Result<(), ggez::GameError> {
@@ -105,6 +116,7 @@ impl<'a> Notefield<'a> {
         }
         if clear_batch {
             self.redraw_batch();
+            self.last_judgement = Some(Judgement::Miss);
         }
         let coolparam = graphics::DrawParam {
             dest: graphics::Point2::new(0.0, -1.0 * (self.layout.delta_to_offset(time))),
@@ -121,16 +133,27 @@ impl<'a> Notefield<'a> {
             ggez::event::Keycode::Period => 3,
             _ => return,
         };
-        if let Some(time) = time {
-            if let Some(delta) =
-                self.notes.columns().collect::<Vec<_>>()[index].get(self.on_screen[index].0)
-            {
-                if delta.0 - time < 180 {
-                    self.on_screen[index].0 += 1;
-                }
+        let delta =
+            self.notes.columns().collect::<Vec<_>>()[index].get(self.on_screen[index].0);
+        if let (Some(time), Some((delta, _))) = (time, delta) {
+            let offset = delta - time;
+            if offset < 180 {
+                self.on_screen[index].0 += 1;
+                self.handle_judgement(offset);
             }
         }
         self.redraw_batch();
+    }
+    fn handle_judgement(&mut self, offset: i64) {
+        let abs_offset = offset.abs();
+        match abs_offset {
+            0 ... 22 => self.last_judgement = Some(Judgement::Marvelous),
+            23 ... 45 => self.last_judgement = Some(Judgement::Perfect),
+            46 ... 90 => self.last_judgement = Some(Judgement::Great),
+            91 ... 135 => self.last_judgement = Some(Judgement::Good),
+            136 ... 180 => self.last_judgement = Some(Judgement::Bad),
+            _ => {},
+        }
     }
 }
 
