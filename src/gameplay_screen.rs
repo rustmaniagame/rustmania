@@ -144,6 +144,7 @@ impl<'a> Notefield<'a> {
         }
         self.redraw_batch();
     }
+    //noinspection RsUnresolvedReference
     fn handle_judgement(&mut self, offset: i64) {
         let abs_offset = offset.abs();
         match abs_offset {
