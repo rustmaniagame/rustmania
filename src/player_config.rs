@@ -32,12 +32,8 @@ impl NoteLayout {
         }
     }
     //noinspection RsUnresolvedReference
-    pub fn set_scroll_speed(&mut self, new_speed: f32) -> Result<(), String> {
-        if !new_speed.is_sign_positive() {
-            return Err(String::from("scroll speed not positive"));
-        }
+    pub fn set_scroll_speed(&mut self, new_speed: f32) {
         self.scroll_speed = new_speed;
-        Ok(())
     }
     pub fn delta_to_position(&self, delta: i64) -> i64 {
         (delta as f32 * self.scroll_speed) as i64 + self.receptor_height

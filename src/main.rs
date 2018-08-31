@@ -77,8 +77,8 @@ fn main() {
         ggez::graphics::Image::new(context, noteskin).expect("Could not parse noteskin from path."),
         ggez::graphics::Image::new(context, "/receptor.png").expect("Could not parse receptor."),
         ggez::graphics::Image::new(context, "/Judgments.png").expect("Could not parse judgments."),
-        100,
-        ggez::graphics::Point2::new(72.0,383.0),
+        436,
+        ggez::graphics::Point2::new(72.0,183.0),
     );
 
     let mut p2_layout = player_config::NoteLayout::new(
@@ -90,13 +90,9 @@ fn main() {
         ggez::graphics::Point2::new(472.0,383.0),
     );
 
-    if let Err(e) = p1_layout.set_scroll_speed(0.5) {
-        println!("Couldn't set scroll speed: {}", e);
-    }
+    p1_layout.set_scroll_speed(-0.7);
 
-    if let Err(e) = p2_layout.set_scroll_speed(1.0) {
-        println!("Couldn't set scroll speed: {}", e);
-    }
+    p2_layout.set_scroll_speed(1.0);
 
     let notedata = notedata::NoteData::from_sm(simfile).expect("Failed to parse .sm file.");
 
