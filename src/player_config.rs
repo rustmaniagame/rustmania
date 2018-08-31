@@ -3,11 +3,12 @@ use gameplay_screen::Judgement;
 use ggez::graphics;
 
 pub struct NoteLayout {
-    pub column_positions: [i64; 4],
     pub arrows_sprite: graphics::Image,
     pub receptor_sprite: graphics::Image,
     pub judgment_sprite: graphics::Image,
+    pub column_positions: [i64; 4],
     pub receptor_height: i64,
+    pub judgment_position: graphics::Point2,
     pub scroll_speed: f32,
 }
 
@@ -18,6 +19,7 @@ impl NoteLayout {
         receptor_sprite: graphics::Image,
         judgment_sprite: graphics::Image,
         receptor_height: i64,
+        judgment_position: graphics::Point2,
     ) -> NoteLayout {
         NoteLayout {
             column_positions,
@@ -25,6 +27,7 @@ impl NoteLayout {
             receptor_sprite,
             judgment_sprite,
             receptor_height,
+            judgment_position,
             scroll_speed: 1.0,
         }
     }
@@ -104,6 +107,7 @@ impl NoteLayout {
         };
         let param = graphics::DrawParam {
             src,
+            dest: self.judgment_position,
             ..Default::default()
         };
         graphics::draw_ex(ctx, &self.judgment_sprite, param)?;
