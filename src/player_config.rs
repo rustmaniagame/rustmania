@@ -1,6 +1,6 @@
 extern crate ggez;
-use notefield::Judgement;
 use ggez::graphics;
+use notefield::Judgement;
 
 pub struct NoteLayout {
     pub arrows_sprite: graphics::Image,
@@ -94,12 +94,12 @@ impl NoteLayout {
         judge: Judgement,
     ) -> Result<(), ggez::GameError> {
         let src = match judge {
-            Judgement::Marvelous => graphics::Rect::new(0.0,0.0,1.0,0.1666),
-            Judgement::Perfect => graphics::Rect::new(0.0,0.1666,1.0,0.1666),
-            Judgement::Great => graphics::Rect::new(0.0,0.3333,1.0,0.1666),
-            Judgement::Good => graphics::Rect::new(0.0,0.5,1.0,0.1666),
-            Judgement::Bad => graphics::Rect::new(0.0,0.6666,1.0,0.1666),
-            Judgement::Miss => graphics::Rect::new(0.0,0.8333,1.0,1.666),
+            Judgement::Marvelous => graphics::Rect::new(0.0, 0.0, 1.0, 0.1666),
+            Judgement::Perfect => graphics::Rect::new(0.0, 0.1666, 1.0, 0.1666),
+            Judgement::Great => graphics::Rect::new(0.0, 0.3333, 1.0, 0.1666),
+            Judgement::Good => graphics::Rect::new(0.0, 0.5, 1.0, 0.1666),
+            Judgement::Bad => graphics::Rect::new(0.0, 0.6666, 1.0, 0.1666),
+            Judgement::Miss => graphics::Rect::new(0.0, 0.8333, 1.0, 1.666),
         };
         let param = graphics::DrawParam {
             src,

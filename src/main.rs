@@ -8,9 +8,9 @@ extern crate num_rational;
 
 mod gameplay_screen;
 mod notedata;
+mod notefield;
 mod player_config;
 mod timingdata;
-mod notefield;
 
 use clap::{App, Arg};
 use ggez::conf;
@@ -79,7 +79,7 @@ fn main() {
         ggez::graphics::Image::new(context, "/receptor.png").expect("Could not parse receptor."),
         ggez::graphics::Image::new(context, "/Judgments.png").expect("Could not parse judgments."),
         436,
-        ggez::graphics::Point2::new(72.0,183.0),
+        ggez::graphics::Point2::new(72.0, 183.0),
     );
 
     let mut p2_layout = player_config::NoteLayout::new(
@@ -88,7 +88,7 @@ fn main() {
         ggez::graphics::Image::new(context, "/receptor.png").expect("Could not parse receptor."),
         ggez::graphics::Image::new(context, "/Judgments.png").expect("Could not parse judgments."),
         100,
-        ggez::graphics::Point2::new(472.0,383.0),
+        ggez::graphics::Point2::new(472.0, 383.0),
     );
 
     p1_layout.set_scroll_speed(-0.7);

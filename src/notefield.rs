@@ -60,15 +60,15 @@ impl<'a> Notefield<'a> {
         self.batch.clear();
         for ((column_index, column_data), (draw_start, draw_end)) in
             self.notes.columns().enumerate().zip(&mut self.on_screen)
-            {
-                if *draw_start < *draw_end {
-                    self.layout.add_column_of_notes(
-                        column_data[*draw_start..*draw_end].iter().map(|x| *x),
-                        column_index,
-                        &mut self.batch,
-                    );
-                }
+        {
+            if *draw_start < *draw_end {
+                self.layout.add_column_of_notes(
+                    column_data[*draw_start..*draw_end].iter().map(|x| *x),
+                    column_index,
+                    &mut self.batch,
+                );
             }
+        }
     }
     pub fn draw_field(
         &mut self,
@@ -83,27 +83,27 @@ impl<'a> Notefield<'a> {
         let mut clear_batch = false;
         for ((column_index, column_data), (draw_start, draw_end)) in
             self.notes.columns().enumerate().zip(&mut self.on_screen)
-            {
-                while *draw_end != column_data.len()
-                    && self.layout
+        {
+            while *draw_end != column_data.len()
+                && self.layout
                     .delta_to_position(column_data[*draw_end].0 - time)
                     < self.draw_distance
-                    {
-                        if *draw_start <= *draw_end {
-                            self.layout.add_note(
-                                column_index,
-                                self.layout.delta_to_position(column_data[*draw_end].0),
-                                column_data[*draw_end].1,
-                                &mut self.batch,
-                            );
-                        }
-                        *draw_end += 1;
-                    }
-                while *draw_start != column_data.len() && column_data[*draw_start].0 - time < -180 {
-                    *draw_start += 1;
-                    clear_batch = true;
+            {
+                if *draw_start <= *draw_end {
+                    self.layout.add_note(
+                        column_index,
+                        self.layout.delta_to_position(column_data[*draw_end].0),
+                        column_data[*draw_end].1,
+                        &mut self.batch,
+                    );
                 }
+                *draw_end += 1;
             }
+            while *draw_start != column_data.len() && column_data[*draw_start].0 - time < -180 {
+                *draw_start += 1;
+                clear_batch = true;
+            }
+        }
         if clear_batch {
             self.redraw_batch();
             self.last_judgement = Some(Judgement::Miss);
