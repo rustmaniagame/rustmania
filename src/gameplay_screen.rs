@@ -119,11 +119,11 @@ impl<'a> Notefield<'a> {
             self.redraw_batch();
             self.last_judgement = Some(Judgement::Miss);
         }
-        let coolparam = graphics::DrawParam {
+        let target_parameter = graphics::DrawParam {
             dest: graphics::Point2::new(0.0, -1.0 * (self.layout.delta_to_offset(time))),
             ..Default::default()
         };
-        graphics::draw_ex(ctx, &self.batch, coolparam)?;
+        graphics::draw_ex(ctx, &self.batch, target_parameter)?;
         if let Some(judgment) = self.last_judgement {
             self.layout.draw_judgment(ctx, judgment)?;
         }
