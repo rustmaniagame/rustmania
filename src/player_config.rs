@@ -1,5 +1,5 @@
 extern crate ggez;
-use gameplay_screen::Judgement;
+use notefield::Judgement;
 use ggez::graphics;
 
 pub struct NoteLayout {
