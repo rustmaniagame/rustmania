@@ -1,6 +1,7 @@
 extern crate ggez;
 use ggez::graphics;
 use notefield::Judgement;
+use timingdata::GameplayInfo;
 
 pub struct NoteLayout {
     pub arrows_sprite: graphics::Image,
@@ -56,11 +57,11 @@ impl NoteLayout {
     }
     pub fn add_column_of_notes<'a>(
         &self,
-        column: impl Iterator<Item = (i64, graphics::Rect)>,
+        column: impl Iterator<Item = GameplayInfo>,
         column_index: usize,
         batch: &mut graphics::spritebatch::SpriteBatch,
     ) {
-        for (note, coords) in column {
+        for GameplayInfo(note, coords) in column {
             self.add_note(column_index, self.delta_to_position(note), coords, batch);
         }
     }

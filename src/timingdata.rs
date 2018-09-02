@@ -9,14 +9,27 @@ fn value(fraction: Rational32) -> f64 {
 }
 
 #[derive(Debug)]
-pub struct TimingData {
-    notes: [Vec<(i64, graphics::Rect)>; 4],
+pub struct TimingData<T>
+where T: TimingInfo {
+    notes: [Vec<T>; 4],
 }
 
-impl TimingData {
+pub trait TimingInfo{}
+
+#[derive(Copy, Clone)]
+pub struct GameplayInfo(pub i64, pub graphics::Rect);
+
+impl TimingInfo for GameplayInfo {}
+
+#[derive(Copy, Clone)]
+pub struct OffsetInfo(i64);
+
+impl TimingInfo for OffsetInfo {}
+
+impl TimingData<GameplayInfo> {
     pub fn from_notedata<U>(data: NoteData, sprite_finder: U) -> Self
-    where
-        U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
+        where
+            U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
     {
         let bpm = data.data.bpm.unwrap_or(6.0);
         let offset = data.data.offset.unwrap_or(0.0) * 1000.0;
@@ -33,13 +46,16 @@ impl TimingData {
                         *note,
                         *column_index,
                     );
-                    output[*column_index].push((row_time as i64, sprite));
+                    output[*column_index].push(GameplayInfo(row_time as i64, sprite));
                 }
             }
         }
         TimingData { notes: output }
     }
-    pub fn columns(&self) -> slice::Iter<Vec<(i64, graphics::Rect)>> {
+}
+impl<T> TimingData<T>
+    where T: TimingInfo {
+    pub fn columns(&self) -> slice::Iter<Vec<T>> {
         self.notes.iter()
     }
 }

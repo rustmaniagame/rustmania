@@ -3,11 +3,11 @@ extern crate ggez;
 use ggez::graphics;
 use ggez::graphics::spritebatch::SpriteBatch;
 use player_config;
-use timingdata;
+use timingdata::{TimingData,GameplayInfo};
 
 pub struct Notefield<'a> {
     layout: &'a super::player_config::NoteLayout,
-    notes: &'a timingdata::TimingData,
+    notes: &'a TimingData<GameplayInfo>,
     on_screen: Vec<(usize, usize)>,
     batch: SpriteBatch,
     draw_distance: i64,
@@ -27,7 +27,7 @@ pub enum Judgement {
 impl<'a> Notefield<'a> {
     pub fn new(
         layout: &'a player_config::NoteLayout,
-        notes: &'a timingdata::TimingData,
+        notes: &'a TimingData<GameplayInfo>,
         batch: SpriteBatch,
         draw_distance: i64,
     ) -> Self {
@@ -47,7 +47,7 @@ impl<'a> Notefield<'a> {
             .map(|x| {
                 (
                     0,
-                    match x.iter().position(|(y, _)| *y > self.draw_distance) {
+                    match x.iter().position(|GameplayInfo(y, _)| *y > self.draw_distance) {
                         Some(num) => num,
                         None => x.len(),
                     },
@@ -127,7 +127,7 @@ impl<'a> Notefield<'a> {
             _ => return,
         };
         let delta = self.notes.columns().collect::<Vec<_>>()[index].get(self.on_screen[index].0);
-        if let (Some(time), Some((delta, _))) = (time, delta) {
+        if let (Some(time), Some(GameplayInfo(delta, _))) = (time, delta) {
             let offset = delta - time;
             if offset < 180 {
                 self.on_screen[index].0 += 1;

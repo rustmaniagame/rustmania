@@ -8,7 +8,7 @@ use notefield::Notefield;
 use player_config;
 use std::result::Result;
 use std::time::{Duration, Instant};
-use timingdata;
+use timingdata::{TimingData,GameplayInfo};
 
 pub struct GameplayScreen<'a> {
     notefield: Notefield<'a>,
@@ -24,9 +24,9 @@ fn to_milliseconds(dur: Duration) -> i64 {
 impl<'a> GameplayScreen<'a> {
     pub fn new(
         layout: &'a player_config::NoteLayout,
-        notes: &'a timingdata::TimingData,
+        notes: &'a TimingData<GameplayInfo>,
         p2layout: &'a player_config::NoteLayout,
-        p2notes: &'a timingdata::TimingData,
+        p2notes: &'a TimingData<GameplayInfo>,
         music: audio::Source,
         draw_distance: i64,
     ) -> Self {
