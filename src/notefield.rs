@@ -3,7 +3,7 @@ extern crate ggez;
 use ggez::graphics;
 use ggez::graphics::spritebatch::SpriteBatch;
 use player_config;
-use timingdata::{TimingData,GameplayInfo};
+use timingdata::{GameplayInfo, TimingData};
 
 pub struct Notefield<'a> {
     layout: &'a super::player_config::NoteLayout,
@@ -47,7 +47,9 @@ impl<'a> Notefield<'a> {
             .map(|x| {
                 (
                     0,
-                    match x.iter().position(|GameplayInfo(y, _)| *y > self.draw_distance) {
+                    match x.iter()
+                        .position(|GameplayInfo(y, _)| *y > self.draw_distance)
+                    {
                         Some(num) => num,
                         None => x.len(),
                     },

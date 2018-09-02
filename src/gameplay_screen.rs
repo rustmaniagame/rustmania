@@ -8,7 +8,7 @@ use notefield::Notefield;
 use player_config;
 use std::result::Result;
 use std::time::{Duration, Instant};
-use timingdata::{TimingData,GameplayInfo};
+use timingdata::{GameplayInfo, TimingData};
 
 pub struct GameplayScreen<'a> {
     notefield: Notefield<'a>,
