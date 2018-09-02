@@ -132,9 +132,9 @@ impl<'a> Notefield<'a> {
             if offset < 180 {
                 self.on_screen[index].0 += 1;
                 self.handle_judgement(offset);
+                self.redraw_batch();
             }
         }
-        self.redraw_batch();
     }
     //noinspection RsUnresolvedReference
     fn handle_judgement(&mut self, offset: i64) {
