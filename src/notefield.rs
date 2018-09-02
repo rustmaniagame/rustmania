@@ -16,11 +16,7 @@ pub struct Notefield<'a> {
 
 #[derive(Copy, Clone)]
 pub enum Judgement {
-    Marvelous,
-    Perfect,
-    Great,
-    Good,
-    Bad,
+    Hit(usize),
     Miss,
 }
 
@@ -142,11 +138,11 @@ impl<'a> Notefield<'a> {
     fn handle_judgement(&mut self, offset: i64) {
         let abs_offset = offset.abs();
         match abs_offset {
-            0...22 => self.last_judgement = Some(Judgement::Marvelous),
-            23...45 => self.last_judgement = Some(Judgement::Perfect),
-            46...90 => self.last_judgement = Some(Judgement::Great),
-            91...135 => self.last_judgement = Some(Judgement::Good),
-            136...180 => self.last_judgement = Some(Judgement::Bad),
+            0...22 => self.last_judgement = Some(Judgement::Hit(0)),
+            23...45 => self.last_judgement = Some(Judgement::Hit(1)),
+            46...90 => self.last_judgement = Some(Judgement::Hit(2)),
+            91...135 => self.last_judgement = Some(Judgement::Hit(3)),
+            136...180 => self.last_judgement = Some(Judgement::Hit(4)),
             _ => {}
         }
     }
