@@ -18,13 +18,13 @@ where
 
 pub trait TimingInfo {}
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct GameplayInfo(pub i64, pub graphics::Rect);
 
 impl TimingInfo for GameplayInfo {}
 
-#[derive(Copy, Clone)]
-pub struct OffsetInfo(i64);
+#[derive(Copy, Clone, Debug)]
+pub struct OffsetInfo(pub i64);
 
 impl TimingInfo for OffsetInfo {}
 
@@ -59,13 +59,15 @@ impl<T> TimingData<T>
 where
     T: TimingInfo,
 {
+    pub fn add(&mut self, offset: T, column: usize) {
+        self.notes[column].push(offset);
+    }
     pub fn columns(&self) -> slice::Iter<Vec<T>> {
         self.notes.iter()
     }
     pub fn new() -> Self {
-        TimingData
-        {
-            notes: [Vec::new(),Vec::new(),Vec::new(),Vec::new()],
+        TimingData {
+            notes: [Vec::new(), Vec::new(), Vec::new(), Vec::new()],
         }
     }
 }

@@ -12,7 +12,7 @@ pub struct Notefield<'a> {
     batch: SpriteBatch,
     draw_distance: i64,
     last_judgement: Option<Judgement>,
-    judgment_list: TimingData<OffsetInfo>
+    judgment_list: TimingData<OffsetInfo>,
 }
 
 #[derive(Copy, Clone)]
@@ -131,13 +131,13 @@ impl<'a> Notefield<'a> {
             let offset = delta - time;
             if offset < 180 {
                 self.on_screen[index].0 += 1;
-                self.handle_judgement(offset);
+                self.handle_judgement(offset, index);
                 self.redraw_batch();
             }
         }
     }
     //noinspection RsUnresolvedReference
-    fn handle_judgement(&mut self, offset: i64) {
+    fn handle_judgement(&mut self, offset: i64, column: usize) {
         let abs_offset = offset.abs();
         match abs_offset {
             0...22 => self.last_judgement = Some(Judgement::Hit(0)),
@@ -147,5 +147,6 @@ impl<'a> Notefield<'a> {
             136...180 => self.last_judgement = Some(Judgement::Hit(4)),
             _ => {}
         }
+        self.judgment_list.add(OffsetInfo(offset), column);
     }
 }
