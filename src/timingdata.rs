@@ -71,3 +71,17 @@ where
         }
     }
 }
+impl TimingData<OffsetInfo> {
+    pub fn calculate_score(&self) -> f64 {
+        let max_points =
+            (self.notes[0].len() + self.notes[1].len() + self.notes[2].len() + self.notes[3].len())
+                as f64;
+        let mut current_points = 0.0;
+        for column in self.columns() {
+            for offset in column {
+                current_points += 200.0 - offset.0.abs() as f64;
+            }
+        }
+        current_points / max_points
+    }
+}

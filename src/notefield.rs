@@ -100,6 +100,7 @@ impl<'a> Notefield<'a> {
                 *draw_end += 1;
             }
             while *draw_start != column_data.len() && column_data[*draw_start].0 - time < -180 {
+                self.judgment_list.add(OffsetInfo(-200), column_index); //this is extremely temporary
                 *draw_start += 1;
                 clear_batch = true;
             }
@@ -116,6 +117,7 @@ impl<'a> Notefield<'a> {
         if let Some(judgment) = self.last_judgement {
             self.layout.draw_judgment(ctx, judgment)?;
         }
+        println!("{}", self.judgment_list.calculate_score());
         Ok(())
     }
     pub fn handle_event(&mut self, keycode: ggez::event::Keycode, time: Option<i64>) {
