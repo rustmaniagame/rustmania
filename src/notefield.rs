@@ -3,7 +3,7 @@ extern crate ggez;
 use ggez::graphics;
 use ggez::graphics::spritebatch::SpriteBatch;
 use player_config;
-use timingdata::{GameplayInfo, TimingData};
+use timingdata::{GameplayInfo, OffsetInfo, TimingData};
 
 pub struct Notefield<'a> {
     layout: &'a super::player_config::NoteLayout,
@@ -12,6 +12,7 @@ pub struct Notefield<'a> {
     batch: SpriteBatch,
     draw_distance: i64,
     last_judgement: Option<Judgement>,
+    judgment_list: TimingData<OffsetInfo>
 }
 
 #[derive(Copy, Clone)]
@@ -34,6 +35,7 @@ impl<'a> Notefield<'a> {
             batch,
             draw_distance,
             last_judgement: None,
+            judgment_list: TimingData::<_>::new(),
         }
     }
     pub fn start(&mut self) -> Result<(), ggez::GameError> {

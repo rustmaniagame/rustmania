@@ -62,4 +62,10 @@ where
     pub fn columns(&self) -> slice::Iter<Vec<T>> {
         self.notes.iter()
     }
+    pub fn new() -> Self {
+        TimingData
+        {
+            notes: [Vec::new(),Vec::new(),Vec::new(),Vec::new()],
+        }
+    }
 }
