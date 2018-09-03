@@ -28,6 +28,16 @@ pub struct OffsetInfo(pub i64);
 
 impl TimingInfo for OffsetInfo {}
 
+impl OffsetInfo {
+    fn wife(&self, ts: f64) -> f64 {
+        let maxms = self.0 as f64;
+        let avedeviation = 95.0 * ts;
+        let mut y = 1.0 - 2.0_f64.powf(-1.0 * maxms * maxms / (avedeviation * avedeviation));
+        y *= y;
+        (10.0) * (1.0 - y) - 8.0
+    }
+}
+
 impl TimingData<GameplayInfo> {
     pub fn from_notedata<U>(data: NoteData, sprite_finder: U) -> Self
     where
@@ -79,7 +89,7 @@ impl TimingData<OffsetInfo> {
         let mut current_points = 0.0;
         for column in self.columns() {
             for offset in column {
-                current_points += 200.0 - offset.0.abs() as f64;
+                current_points += offset.wife(1.0);
             }
         }
         current_points / max_points
