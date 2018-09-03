@@ -5,6 +5,7 @@ use ggez::graphics::spritebatch::SpriteBatch;
 use player_config;
 use timingdata::{GameplayInfo, OffsetInfo, TimingData};
 
+#[derive(PartialEq)]
 pub struct Notefield<'a> {
     layout: &'a super::player_config::NoteLayout,
     notes: &'a TimingData<GameplayInfo>,

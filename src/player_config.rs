@@ -3,6 +3,7 @@ use ggez::graphics;
 use notefield::Judgement;
 use timingdata::GameplayInfo;
 
+#[derive(PartialEq)]
 pub struct NoteLayout {
     pub arrows_sprite: graphics::Image,
     pub receptor_sprite: graphics::Image,
