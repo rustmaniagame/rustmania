@@ -8,7 +8,7 @@ fn value(fraction: Rational32) -> f64 {
     *fraction.numer() as f64 / *fraction.denom() as f64
 }
 
-#[derive(Debug)]
+#[derive(Debug,PartialEq)]
 pub struct TimingData<T>
 where
     T: TimingInfo,
@@ -18,12 +18,12 @@ where
 
 pub trait TimingInfo {}
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct GameplayInfo(pub i64, pub graphics::Rect);
 
 impl TimingInfo for GameplayInfo {}
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct OffsetInfo(pub i64);
 
 impl TimingInfo for OffsetInfo {}

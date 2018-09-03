@@ -15,7 +15,7 @@ pub struct Notefield<'a> {
     judgment_list: TimingData<OffsetInfo>,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Judgement {
     Hit(usize),
     Miss,
