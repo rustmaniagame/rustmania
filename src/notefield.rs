@@ -53,24 +53,6 @@ impl<'a> Notefield<'a> {
             }
         }
     }
-    pub fn handle_event(&mut self, keycode: ggez::event::Keycode, time: Option<i64>) {
-        let index = match keycode {
-            ggez::event::Keycode::Z => 0,
-            ggez::event::Keycode::X => 1,
-            ggez::event::Keycode::Comma => 2,
-            ggez::event::Keycode::Period => 3,
-            _ => return,
-        };
-        let delta = self.notes.columns().collect::<Vec<_>>()[index].get(self.on_screen[index].0);
-        if let (Some(time), Some(GameplayInfo(delta, _))) = (time, delta) {
-            let offset = delta - time;
-            if offset < 180 {
-                self.on_screen[index].0 += 1;
-                self.handle_judgement(offset, index);
-                self.redraw_batch();
-            }
-        }
-    }
     //noinspection RsUnresolvedReference
     fn handle_judgement(&mut self, offset: i64, column: usize) {
         let abs_offset = offset.abs();
@@ -149,6 +131,25 @@ impl<'a> Element for Notefield<'a> {
             self.layout.draw_judgment(ctx, judgment)?;
         }
         println!("{}", self.judgment_list.calculate_score());
+        Ok(())
+    }
+    fn handle_event(&mut self, keycode: ggez::event::Keycode, time: Option<i64>) -> Result<(),ggez::GameError> {
+        let index = match keycode {
+            ggez::event::Keycode::Z => 0,
+            ggez::event::Keycode::X => 1,
+            ggez::event::Keycode::Comma => 2,
+            ggez::event::Keycode::Period => 3,
+            _ => return Ok(()),
+        };
+        let delta = self.notes.columns().collect::<Vec<_>>()[index].get(self.on_screen[index].0);
+        if let (Some(time), Some(GameplayInfo(delta, _))) = (time, delta) {
+            let offset = delta - time;
+            if offset < 180 {
+                self.on_screen[index].0 += 1;
+                self.handle_judgement(offset, index);
+                self.redraw_batch();
+            }
+        }
         Ok(())
     }
 }

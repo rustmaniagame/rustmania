@@ -6,6 +6,7 @@ use std::time::{Duration, Instant};
 pub trait Element {
     fn run(&mut self, &mut Context, Option<i64>) -> Result<(), GameError>;
     fn start(&mut self) -> Result<(), GameError>;
+    fn handle_event(&mut self, Keycode, Option<i64>) -> Result<(), GameError>;
 }
 
 pub struct Screen<'a> {
@@ -74,6 +75,9 @@ impl Element for Source {
     }
     fn start(&mut self) -> Result<(), GameError> {
         self.play()?;
+        Ok(())
+    }
+    fn handle_event(&mut self, keycode: Keycode, time: Option<i64>) -> Result<(),GameError>{
         Ok(())
     }
 }
