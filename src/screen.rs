@@ -4,13 +4,13 @@ use ggez::{
 use std::time::{Duration, Instant};
 
 pub trait Element {
-    fn run(&self, Option<i64>);
-    fn start(&self);
+    fn run(&mut self, &mut Context, Option<i64>) -> Result<(), GameError>;
+    fn start(&mut self) -> Result<(), GameError>;
 }
 
-pub struct Screen {
+pub struct Screen<'a> {
     start_time: Option<Instant>,
-    elements: Vec<Box<dyn Element>>,
+    elements: Vec<Box<dyn Element + 'a>>,
     key_handler: (),
 }
 
@@ -18,8 +18,8 @@ fn to_milliseconds(dur: Duration) -> i64 {
     dur.as_secs() as i64 * 1000 + dur.subsec_millis() as i64
 }
 
-impl Screen {
-    pub fn new(elements: Vec<Box<dyn Element>>) -> Self {
+impl<'a> Screen<'a> {
+    pub fn new(elements: Vec<Box<dyn Element + 'a>>) -> Self {
         Screen {
             start_time: None,
             elements,
@@ -28,8 +28,8 @@ impl Screen {
     }
     pub fn start(&mut self) -> Result<(), GameError> {
         self.start_time = Some(Instant::now());
-        for element in self.elements.iter() {
-            element.start();
+        for element in self.elements.iter_mut() {
+            element.start()?;
         }
         Ok(())
     }
@@ -41,15 +41,15 @@ impl Screen {
     }
 }
 
-impl<'a> EventHandler for Screen {
+impl<'a> EventHandler for Screen<'a> {
     fn update(&mut self, _ctx: &mut Context) -> Result<(), GameError> {
         Ok(())
     }
     fn draw(&mut self, ctx: &mut Context) -> Result<(), GameError> {
         graphics::clear(ctx);
         let time_delta = self.start_time_to_milliseconds();
-        for element in self.elements.iter() {
-            element.run(time_delta);
+        for element in self.elements.iter_mut() {
+            element.run(ctx, time_delta)?;
         }
         graphics::present(ctx);
         Ok(())

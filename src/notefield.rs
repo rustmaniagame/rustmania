@@ -3,6 +3,7 @@ extern crate ggez;
 use ggez::graphics;
 use ggez::graphics::spritebatch::SpriteBatch;
 use player_config;
+use screen::Element;
 use timingdata::{GameplayInfo, OffsetInfo, TimingData};
 
 #[derive(PartialEq)]
@@ -38,7 +39,55 @@ impl<'a> Notefield<'a> {
             judgment_list: TimingData::<_>::new(),
         }
     }
-    pub fn start(&mut self) -> Result<(), ggez::GameError> {
+    fn redraw_batch(&mut self) {
+        self.batch.clear();
+        for ((column_index, column_data), (draw_start, draw_end)) in
+            self.notes.columns().enumerate().zip(&mut self.on_screen)
+        {
+            if *draw_start < *draw_end {
+                self.layout.add_column_of_notes(
+                    column_data[*draw_start..*draw_end].iter().map(|x| *x),
+                    column_index,
+                    &mut self.batch,
+                );
+            }
+        }
+    }
+    pub fn handle_event(&mut self, keycode: ggez::event::Keycode, time: Option<i64>) {
+        let index = match keycode {
+            ggez::event::Keycode::Z => 0,
+            ggez::event::Keycode::X => 1,
+            ggez::event::Keycode::Comma => 2,
+            ggez::event::Keycode::Period => 3,
+            _ => return,
+        };
+        let delta = self.notes.columns().collect::<Vec<_>>()[index].get(self.on_screen[index].0);
+        if let (Some(time), Some(GameplayInfo(delta, _))) = (time, delta) {
+            let offset = delta - time;
+            if offset < 180 {
+                self.on_screen[index].0 += 1;
+                self.handle_judgement(offset, index);
+                self.redraw_batch();
+            }
+        }
+    }
+    //noinspection RsUnresolvedReference
+    fn handle_judgement(&mut self, offset: i64, column: usize) {
+        let abs_offset = offset.abs();
+        match abs_offset {
+            0...22 => self.last_judgement = Some(Judgement::Hit(0)),
+            23...45 => self.last_judgement = Some(Judgement::Hit(1)),
+            46...90 => self.last_judgement = Some(Judgement::Hit(2)),
+            91...135 => self.last_judgement = Some(Judgement::Hit(3)),
+            136...180 => self.last_judgement = Some(Judgement::Hit(4)),
+            _ => {}
+        }
+        self.judgment_list.add(OffsetInfo(offset), column);
+    }
+}
+
+impl<'a> Element for Notefield<'a> {
+    fn start(&mut self) -> Result<(), ggez::GameError> {
         //self.layout.add_receptors(&mut self.batch)?;
         self.on_screen = self.notes
             .columns()
@@ -56,25 +105,7 @@ impl<'a> Notefield<'a> {
             .collect();
         Ok(())
     }
-    fn redraw_batch(&mut self) {
-        self.batch.clear();
-        for ((column_index, column_data), (draw_start, draw_end)) in
-            self.notes.columns().enumerate().zip(&mut self.on_screen)
-        {
-            if *draw_start < *draw_end {
-                self.layout.add_column_of_notes(
-                    column_data[*draw_start..*draw_end].iter().map(|x| *x),
-                    column_index,
-                    &mut self.batch,
-                );
-            }
-        }
-    }
-    pub fn draw_field(
-        &mut self,
-        ctx: &mut ggez::Context,
-        time: Option<i64>,
-    ) -> Result<(), ggez::GameError> {
+    fn run(&mut self, ctx: &mut ggez::Context, time: Option<i64>) -> Result<(), ggez::GameError> {
         self.layout.draw_receptors(ctx)?;
         let time = match time {
             Some(time) => time,
@@ -119,36 +150,5 @@ impl<'a> Notefield<'a> {
         }
         println!("{}", self.judgment_list.calculate_score());
         Ok(())
-    }
-    pub fn handle_event(&mut self, keycode: ggez::event::Keycode, time: Option<i64>) {
-        let index = match keycode {
-            ggez::event::Keycode::Z => 0,
-            ggez::event::Keycode::X => 1,
-            ggez::event::Keycode::Comma => 2,
-            ggez::event::Keycode::Period => 3,
-            _ => return,
-        };
-        let delta = self.notes.columns().collect::<Vec<_>>()[index].get(self.on_screen[index].0);
-        if let (Some(time), Some(GameplayInfo(delta, _))) = (time, delta) {
-            let offset = delta - time;
-            if offset < 180 {
-                self.on_screen[index].0 += 1;
-                self.handle_judgement(offset, index);
-                self.redraw_batch();
-            }
-        }
-    }
-    //noinspection RsUnresolvedReference
-    fn handle_judgement(&mut self, offset: i64, column: usize) {
-        let abs_offset = offset.abs();
-        match abs_offset {
-            0...22 => self.last_judgement = Some(Judgement::Hit(0)),
-            23...45 => self.last_judgement = Some(Judgement::Hit(1)),
-            46...90 => self.last_judgement = Some(Judgement::Hit(2)),
-            91...135 => self.last_judgement = Some(Judgement::Hit(3)),
-            136...180 => self.last_judgement = Some(Judgement::Hit(4)),
-            _ => {}
-        }
-        self.judgment_list.add(OffsetInfo(offset), column);
     }
 }
