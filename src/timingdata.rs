@@ -109,16 +109,16 @@ mod tests {
     }
     #[test]
     fn wife_peak() {
-        assert_eq!(OffsetInfo(0).wife(1.0),2.0);
-        assert_eq!(OffsetInfo(0).wife(0.5),2.0);
-        assert_eq!(OffsetInfo(0).wife(2.0),2.0);
+        assert_eq!(OffsetInfo(0).wife(1.0), 2.0);
+        assert_eq!(OffsetInfo(0).wife(0.5), 2.0);
+        assert_eq!(OffsetInfo(0).wife(2.0), 2.0);
     }
     #[test]
     fn wife_decreasing() {
         for offset in 0..179 {
-            assert!(OffsetInfo(offset).wife(1.0) > OffsetInfo(offset+1).wife(1.0));
-            assert!(OffsetInfo(offset).wife(0.5) > OffsetInfo(offset+1).wife(0.5));
-            assert!(OffsetInfo(offset).wife(2.0) > OffsetInfo(offset+1).wife(2.0));
+            assert!(OffsetInfo(offset).wife(1.0) > OffsetInfo(offset + 1).wife(1.0));
+            assert!(OffsetInfo(offset).wife(0.5) > OffsetInfo(offset + 1).wife(0.5));
+            assert!(OffsetInfo(offset).wife(2.0) > OffsetInfo(offset + 1).wife(2.0));
         }
     }
 }

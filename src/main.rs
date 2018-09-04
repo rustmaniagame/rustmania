@@ -10,6 +10,7 @@ mod gameplay_screen;
 mod notedata;
 mod notefield;
 mod player_config;
+mod screen;
 mod timingdata;
 
 use clap::{App, Arg};
@@ -111,8 +112,9 @@ fn main() {
 
     let notes = timingdata::TimingData::from_notedata(notedata, sprite_finder);
 
-    let mut game_screen =
-        gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, music, 600);
+    let mut gameplay_screen = screen::Screen::new(vec![]);
+    /*let mut game_screen =
+        gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, music, 600);*/
 
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
         let mut path = std::path::PathBuf::from(manifest_dir);
@@ -120,10 +122,10 @@ fn main() {
         context.filesystem.mount(&path, true);
     }
 
-    if let Err(e) = game_screen.start() {
+    if let Err(e) = gameplay_screen.start() {
         println!("Error starting screen: {}", e)
     }
-    if let Err(e) = ggez::event::run(context, &mut game_screen) {
+    if let Err(e) = ggez::event::run(context, &mut gameplay_screen) {
         println!("Error: {}", e);
     } else {
         println!("Exit successful.");
