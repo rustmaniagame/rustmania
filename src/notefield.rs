@@ -133,13 +133,13 @@ impl<'a> Element for Notefield<'a> {
         println!("{}", self.judgment_list.calculate_score());
         Ok(())
     }
-    fn handle_event(&mut self, keycode: ggez::event::Keycode, time: Option<i64>) -> Result<(),ggez::GameError> {
+    fn handle_event(&mut self, keycode: ggez::event::Keycode, time: Option<i64>) {
         let index = match keycode {
             ggez::event::Keycode::Z => 0,
             ggez::event::Keycode::X => 1,
             ggez::event::Keycode::Comma => 2,
             ggez::event::Keycode::Period => 3,
-            _ => return Ok(()),
+            _ => return,
         };
         let delta = self.notes.columns().collect::<Vec<_>>()[index].get(self.on_screen[index].0);
         if let (Some(time), Some(GameplayInfo(delta, _))) = (time, delta) {
@@ -150,6 +150,5 @@ impl<'a> Element for Notefield<'a> {
                 self.redraw_batch();
             }
         }
-        Ok(())
     }
 }
