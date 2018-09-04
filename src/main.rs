@@ -6,7 +6,6 @@ extern crate clap;
 extern crate ggez;
 extern crate num_rational;
 
-mod gameplay_screen;
 mod notedata;
 mod notefield;
 mod player_config;
