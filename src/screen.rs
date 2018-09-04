@@ -1,5 +1,5 @@
 use ggez::{
-    event::{EventHandler, Keycode, Mod}, graphics, Context, GameError,
+    audio::Source, event::{EventHandler, Keycode, Mod}, graphics, Context, GameError,
 };
 use std::time::{Duration, Instant};
 
@@ -65,5 +65,15 @@ impl<'a> EventHandler for Screen<'a> {
             return;
         }
         let time_delta = self.start_time_to_milliseconds();
+    }
+}
+
+impl Element for Source {
+    fn run(&mut self, ctx: &mut Context, time: Option<i64>) -> Result<(), GameError> {
+        Ok(())
+    }
+    fn start(&mut self) -> Result<(), GameError> {
+        self.play()?;
+        Ok(())
     }
 }

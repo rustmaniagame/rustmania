@@ -113,7 +113,7 @@ fn main() {
 
     let notefield_p1 = notefield::Notefield::new(&p1_layout, &notes, 600);
 
-    let mut gameplay_screen = screen::Screen::new(vec![Box::new(notefield_p1)]);
+    let mut gameplay_screen = screen::Screen::new(vec![Box::new(notefield_p1), Box::new(music)]);
     /*let mut game_screen =
         gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, music, 600);*/
 
