@@ -26,14 +26,13 @@ impl<'a> Notefield<'a> {
     pub fn new(
         layout: &'a player_config::NoteLayout,
         notes: &'a TimingData<GameplayInfo>,
-        batch: SpriteBatch,
         draw_distance: i64,
     ) -> Self {
         Notefield {
             layout,
             notes,
             on_screen: Vec::<_>::new(),
-            batch,
+            batch: SpriteBatch::new(layout.arrows_sprite.clone()),
             draw_distance,
             last_judgement: None,
             judgment_list: TimingData::<_>::new(),
