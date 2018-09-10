@@ -13,7 +13,7 @@ pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
         }
         "BPMS" => {
             data.data.bpm = match bpm_parse(contents) {
-                Ok(thing) => Some(((thing.1).1).1),
+                Ok(thing) => Some(thing.1[0].1),
                 Err(_) => None,
             }
         }
@@ -74,20 +74,13 @@ fn parse_line(contents: &str) -> NoteRow {
     }
 }
 
-named!( bpm_parse<&str,(Vec<(f64,f64)>,(f64,f64))>, many_till!(bpm_line, do_parse!(
-time: double_s >>
-tag!("=")   >>
-bpm: double_s >>
-tag!(";")    >>
-( ( time, bpm ) )
-)));
+named!( bpm_parse<&str,Vec<(f64,f64)>>, separated_list!(tag!(","), bpm_line));
 
 named!(bpm_line<&str, (f64,f64)>,
   do_parse!(
         time: double_s >>
            tag!("=")   >>
            bpm: double_s >>
-           tag!(",")    >>
     ( ( time, bpm ) )
   )
 );
