@@ -43,21 +43,40 @@ impl TimingData<GameplayInfo> {
     where
         U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
     {
-        let bpm = data.data.bpms.get(0).map_or(6.0, |(_, _, x)| *x);
         let offset = data.data.offset.unwrap_or(0.0) * 1000.0;
+        let mut bpms: Vec<_> = data
+            .data
+            .bpms
+            .iter()
+            .map(|(x, y, z)| (*x, *y, *z, 0.0))
+            .collect();
+        bpms[0].3 = offset;
+        for i in 1..bpms.len() {
+            bpms[i].3 =
+                bpms[i - 1].3 + (((bpms[i].0 - bpms[i - 1].0) as f64) * 240_000.0 / bpms[i - 1].2);
+        }
+        println!("{:?}", bpms);
+        let mut bpms = bpms.iter();
+        let mut current_bpm = bpms.next().unwrap();
+        let mut next_bpm = bpms.next();
         let mut output = [Vec::new(), Vec::new(), Vec::new(), Vec::new()];
         for (measure_index, measure) in data.columns().enumerate() {
-            let measure_time = (measure_index * 240_000) as f64 / bpm + offset;
             for (inner_time, row) in measure.iter() {
-                let row_time = measure_time + (240_000.0 * value(*inner_time)) / bpm;
+                if let Some(bpm) = next_bpm {
+                    if measure_index as i32 >= bpm.0 {
+                        current_bpm = next_bpm.unwrap();
+                        next_bpm = bpms.next();
+                        println!("Reach {} {}", bpm.0, measure_index);
+                    }
+                }
+                let row_time = current_bpm.3
+                    + 240_000.0
+                        * ((measure_index - current_bpm.0 as usize) as f64
+                            + value(inner_time - current_bpm.1))
+                        / current_bpm.2;
                 for (note, column_index) in row.notes() {
-                    let sprite = sprite_finder(
-                        measure_index,
-                        measure_time,
-                        *inner_time,
-                        *note,
-                        *column_index,
-                    );
+                    let sprite =
+                        sprite_finder(measure_index, 0.0, *inner_time, *note, *column_index);
                     output[*column_index].push(GameplayInfo(row_time as i64, sprite));
                 }
             }
