@@ -9,7 +9,7 @@ pub struct ChartMetadata {
     pub title: Option<String>,
     pub music_path: Option<String>,
     pub offset: Option<f64>,
-    pub bpm: Option<f64>,
+    pub bpms: Vec<(f64, f64)>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -39,7 +39,7 @@ impl ChartMetadata {
             title: None,
             music_path: None,
             offset: None,
-            bpm: None,
+            bpms: Vec::new(),
         }
     }
 }

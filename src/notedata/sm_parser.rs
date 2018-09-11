@@ -12,9 +12,9 @@ pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
             }
         }
         "BPMS" => {
-            data.data.bpm = match bpm_parse(contents) {
-                Ok(thing) => Some(thing.1[0].1),
-                Err(_) => None,
+            data.data.bpms = match bpm_parse(contents) {
+                Ok(thing) => thing.1,
+                Err(_) => Vec::new(),
             }
         }
         "NOTES" => data.notes = parse_main_block(contents),

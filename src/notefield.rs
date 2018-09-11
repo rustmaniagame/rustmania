@@ -71,12 +71,14 @@ impl<'a> Notefield<'a> {
 impl<'a> Element for Notefield<'a> {
     fn start(&mut self) -> Result<(), ggez::GameError> {
         //self.layout.add_receptors(&mut self.batch)?;
-        self.on_screen = self.notes
+        self.on_screen = self
+            .notes
             .columns()
             .map(|x| {
                 (
                     0,
-                    match x.iter()
+                    match x
+                        .iter()
                         .position(|GameplayInfo(y, _)| *y > self.draw_distance)
                     {
                         Some(num) => num,
@@ -98,7 +100,8 @@ impl<'a> Element for Notefield<'a> {
             self.notes.columns().enumerate().zip(&mut self.on_screen)
         {
             while *draw_end != column_data.len()
-                && self.layout
+                && self
+                    .layout
                     .delta_to_position(column_data[*draw_end].0 - time)
                     < self.draw_distance
             {
