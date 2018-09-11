@@ -9,7 +9,7 @@ pub struct ChartMetadata {
     pub title: Option<String>,
     pub music_path: Option<String>,
     pub offset: Option<f64>,
-    pub bpms: Vec<(f64, f64)>,
+    pub bpms: Vec<(i32, Rational32, f64)>,
 }
 
 #[derive(Debug, PartialEq)]

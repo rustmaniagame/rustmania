@@ -43,7 +43,7 @@ impl TimingData<GameplayInfo> {
     where
         U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
     {
-        let bpm = data.data.bpms.get(0).map_or(6.0, |(_, x)| *x);
+        let bpm = data.data.bpms.get(0).map_or(6.0, |(_, _, x)| *x);
         let offset = data.data.offset.unwrap_or(0.0) * 1000.0;
         let mut output = [Vec::new(), Vec::new(), Vec::new(), Vec::new()];
         for (measure_index, measure) in data.columns().enumerate() {

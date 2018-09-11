@@ -13,7 +13,16 @@ pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
         }
         "BPMS" => {
             data.data.bpms = match bpm_parse(contents) {
-                Ok(thing) => thing.1,
+                Ok(thing) => {
+                    thing
+                        .1
+                        .into_iter()
+                        .map(|(x, y)| {
+                            let time_beater = Rational32::approximate_float(x).expect("Failed to parse bpm time, write real error handling for this later.");
+                            (time_beater.floor().to_integer(), time_beater.fract(), y)
+                        })
+                        .collect()
+                }
                 Err(_) => Vec::new(),
             }
         }
