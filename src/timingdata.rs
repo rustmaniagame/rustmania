@@ -50,13 +50,15 @@ impl TimingData<GameplayInfo> {
             .iter()
             .map(|(x, y, z)| (*x, *y, *z, 0.0))
             .collect();
-        bpms[0].3 = offset;
+        match bpms.get_mut(0) {
+            Some(bpm) => bpm.3 = offset,
+            None => return TimingData::new(),
+        };
         for i in 1..bpms.len() {
             bpms[i].3 =
                 bpms[i - 1].3 + (((bpms[i].0 - bpms[i - 1].0) as f64) * 240_000.0 / bpms[i - 1].2);
         }
-        println!("{:?}", bpms);
-        let mut bpms = bpms.iter();
+        let mut bpms = bpms.into_iter();
         let mut current_bpm = bpms.next().unwrap();
         let mut next_bpm = bpms.next();
         let mut output = [Vec::new(), Vec::new(), Vec::new(), Vec::new()];
@@ -64,9 +66,8 @@ impl TimingData<GameplayInfo> {
             for (inner_time, row) in measure.iter() {
                 if let Some(bpm) = next_bpm {
                     if measure_index as i32 >= bpm.0 {
-                        current_bpm = next_bpm.unwrap();
+                        current_bpm = bpm;
                         next_bpm = bpms.next();
-                        println!("Reach {} {}", bpm.0, measure_index);
                     }
                 }
                 let row_time = current_bpm.3
