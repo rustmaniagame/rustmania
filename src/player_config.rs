@@ -90,11 +90,7 @@ impl NoteLayout {
         }
         Ok(())
     }
-    pub fn draw_judgment(
-        &self,
-        ctx: &mut ggez::Context,
-        judge: Judgement,
-    ) -> Result<(), ggez::GameError> {
+    fn select_judgment(&self, judge: Judgement) -> graphics::DrawParam {
         let src = match judge {
             Judgement::Hit(0) => graphics::Rect::new(0.0, 0.0, 1.0, 0.1666),
             Judgement::Hit(1) => graphics::Rect::new(0.0, 0.1666, 1.0, 0.1666),
@@ -103,12 +99,18 @@ impl NoteLayout {
             Judgement::Hit(_) => graphics::Rect::new(0.0, 0.6666, 1.0, 0.1666),
             Judgement::Miss => graphics::Rect::new(0.0, 0.8333, 1.0, 1.666),
         };
-        let param = graphics::DrawParam {
+        graphics::DrawParam {
             src,
             dest: self.judgment_position,
             ..Default::default()
-        };
-        graphics::draw_ex(ctx, &self.judgment_sprite, param)?;
+        }
+    }
+    pub fn draw_judgment(
+        &self,
+        ctx: &mut ggez::Context,
+        judge: Judgement,
+    ) -> Result<(), ggez::GameError> {
+        graphics::draw_ex(ctx, &self.judgment_sprite, self.select_judgment(judge))?;
         Ok(())
     }
 }
