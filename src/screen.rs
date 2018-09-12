@@ -75,12 +75,12 @@ impl<'a> EventHandler for Screen<'a> {
 }
 
 impl Element for Source {
-    fn run(&mut self, ctx: &mut Context, time: Option<i64>) -> Result<(), GameError> {
+    fn run(&mut self, _ctx: &mut Context, _time: Option<i64>) -> Result<(), GameError> {
         Ok(())
     }
     fn start(&mut self) -> Result<(), GameError> {
         self.play()?;
         Ok(())
     }
-    fn handle_event(&mut self, keycode: Keycode, time: Option<i64>) {}
+    fn handle_event(&mut self, _keycode: Keycode, _time: Option<i64>) {}
 }
