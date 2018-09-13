@@ -109,7 +109,7 @@ fn main() {
         ),
     ).expect("couldnt open audio file");
 
-    let notes = timingdata::TimingData::from_notedata(notedata, sprite_finder);
+    let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder);
 
     let notefield_p1 = notefield::Notefield::new(&p1_layout, &notes, 600);
     let notefield_p2 = notefield::Notefield::new(&p2_layout, &notes, 600);

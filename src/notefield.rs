@@ -46,7 +46,7 @@ impl<'a> Notefield<'a> {
         {
             if *draw_start < *draw_end {
                 self.layout.add_column_of_notes(
-                    column_data[*draw_start..*draw_end].iter().map(|x| *x),
+                    column_data[*draw_start..*draw_end].iter().cloned(),
                     column_index,
                     &mut self.batch,
                 );
@@ -85,8 +85,7 @@ impl<'a> Element for Notefield<'a> {
                         None => x.len(),
                     },
                 )
-            })
-            .collect();
+            }).collect();
         Ok(())
     }
     fn run(&mut self, ctx: &mut ggez::Context, time: Option<i64>) -> Result<(), ggez::GameError> {

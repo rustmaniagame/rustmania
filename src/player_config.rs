@@ -56,7 +56,7 @@ impl NoteLayout {
             ..Default::default()
         });
     }
-    pub fn add_column_of_notes<'a>(
+    pub fn add_column_of_notes(
         &self,
         column: impl Iterator<Item = GameplayInfo>,
         column_index: usize,
@@ -67,7 +67,7 @@ impl NoteLayout {
         }
     }
     pub fn draw_receptors(&self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
-        for &column_position in self.column_positions.iter() {
+        for &column_position in &self.column_positions {
             graphics::draw(
                 ctx,
                 &self.receptor_sprite,
@@ -82,7 +82,7 @@ impl NoteLayout {
         &self,
         batch: &mut graphics::spritebatch::SpriteBatch,
     ) -> Result<(), ggez::GameError> {
-        for &column_position in self.column_positions.iter() {
+        for &column_position in &self.column_positions {
             batch.add(graphics::DrawParam {
                 dest: graphics::Point2::new(column_position as f32, self.receptor_height as f32),
                 ..Default::default()

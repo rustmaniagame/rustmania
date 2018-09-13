@@ -29,7 +29,7 @@ pub struct OffsetInfo(pub i64);
 impl TimingInfo for OffsetInfo {}
 
 impl OffsetInfo {
-    fn wife(&self, ts: f64) -> f64 {
+    fn wife(self, ts: f64) -> f64 {
         let maxms = self.0 as f64;
         let avedeviation = 95.0 * ts;
         let mut y = 1.0 - 2.0_f64.powf(-1.0 * maxms * maxms / (avedeviation * avedeviation));
@@ -39,7 +39,7 @@ impl OffsetInfo {
 }
 
 impl TimingData<GameplayInfo> {
-    pub fn from_notedata<U>(data: NoteData, sprite_finder: U) -> Self
+    pub fn from_notedata<U>(data: &NoteData, sprite_finder: U) -> Self
     where
         U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
     {

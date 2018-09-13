@@ -31,7 +31,7 @@ impl<'a> Screen<'a> {
     }
     pub fn start(&mut self) -> Result<(), GameError> {
         self.start_time = Some(Instant::now());
-        for element in self.elements.iter_mut() {
+        for element in &mut self.elements {
             element.start()?;
         }
         Ok(())
@@ -51,7 +51,7 @@ impl<'a> EventHandler for Screen<'a> {
     fn draw(&mut self, ctx: &mut Context) -> Result<(), GameError> {
         graphics::clear(ctx);
         let time_delta = self.start_time_to_milliseconds();
-        for element in self.elements.iter_mut() {
+        for element in &mut self.elements {
             element.run(ctx, time_delta)?;
         }
         graphics::present(ctx);
@@ -68,7 +68,7 @@ impl<'a> EventHandler for Screen<'a> {
             return;
         }
         let time_delta = self.start_time_to_milliseconds();
-        for element in self.elements.iter_mut() {
+        for element in &mut self.elements {
             element.handle_event(keycode, time_delta);
         }
     }
