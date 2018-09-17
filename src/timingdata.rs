@@ -44,8 +44,7 @@ impl TimingData<GameplayInfo> {
         U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
     {
         let offset = data.data.offset.unwrap_or(0.0) * 1000.0;
-        let mut bpms: Vec<_> = data
-            .data
+        let mut bpms: Vec<_> = data.data
             .bpms
             .iter()
             .map(|(x, y, z)| (*x, *y, *z, 0.0))
@@ -103,9 +102,8 @@ where
 }
 impl TimingData<OffsetInfo> {
     pub fn calculate_score(&self) -> f64 {
-        let max_points =
-            (self.notes[0].len() + self.notes[1].len() + self.notes[2].len() + self.notes[3].len())
-                as f64;
+        let max_points = (self.notes[0].len() + self.notes[1].len() + self.notes[2].len()
+            + self.notes[3].len()) as f64;
         let mut current_points = 0.0;
         for column in self.columns() {
             for offset in column {

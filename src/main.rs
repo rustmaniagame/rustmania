@@ -5,6 +5,7 @@ extern crate chrono;
 extern crate clap;
 extern crate ggez;
 extern crate num_rational;
+extern crate rlua;
 
 mod notedata;
 mod notefield;
@@ -17,7 +18,9 @@ use ggez::conf;
 use ggez::graphics::{set_background_color, Color, Rect};
 use notedata::NoteType;
 use num_rational::Rational32;
+use rlua::{Lua, MultiValue};
 use std::fs::File;
+use std::io::Read;
 
 fn sprite_finder(
     _measure: usize,
@@ -54,6 +57,10 @@ fn main() {
             Arg::with_name("NoteSkin")
                 .help("The path to your NoteSkin image file.")
                 .index(2)
+                .required(true),
+            Arg::with_name("Theme")
+                .help("The path to your theme lua file.")
+                .index(3)
                 .required(true)
         ])
         .after_help("Licenced under MIT.")
@@ -72,6 +79,36 @@ fn main() {
     let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
     let context = &mut ggez::Context::load_from_conf("rustmania", "ixsetf", c).unwrap();
     set_background_color(context, Color::new(0.0, 0.0, 0.0, 1.0));
+
+    let current_theme = Lua::new();
+
+    let theme_address = matches
+        .value_of("Theme")
+        .expect("No path for theme received.");
+    let mut theme_file = File::open(theme_address).unwrap();
+    let mut theme_lines = String::new();
+    theme_file
+        .read_to_string(&mut theme_lines)
+        .expect(&format!("Error Reading: {}", theme_address));
+    let theme_lines = theme_lines.lines();
+    let mut current_chunk = String::new();
+
+    for theme_line in theme_lines {
+        current_chunk += "\n";
+        current_chunk += theme_line;
+        if let Ok(output) = current_theme.eval::<MultiValue>(&current_chunk, None) {
+            println!("{}", current_chunk);
+            println!(
+                "{}",
+                output
+                    .iter()
+                    .map(|value| format!("{:?}", value))
+                    .collect::<Vec<_>>()
+                    .join("\t")
+            );
+            current_chunk.clear();
+        }
+    }
 
     let mut p1_layout = player_config::NoteLayout::new(
         [72, 136, 200, 264],

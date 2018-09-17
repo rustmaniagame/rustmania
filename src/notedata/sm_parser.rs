@@ -21,7 +21,8 @@ pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
                             "Failed to parse bpm time, write real error handling for this later.",
                         );
                         (time_beater.floor().to_integer(), time_beater.fract(), y)
-                    }).collect(),
+                    })
+                    .collect(),
                 Err(_) => Vec::new(),
             }
         }
@@ -66,7 +67,8 @@ fn parse_measure(measure: &[&str]) -> Vec<(Rational32, NoteRow)> {
                 Rational32::new(subindex as i32, division as i32),
                 parse_line(*beat),
             )
-        }).collect()
+        })
+        .collect()
 }
 
 fn parse_line(contents: &str) -> NoteRow {

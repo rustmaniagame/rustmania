@@ -1,8 +1,4 @@
-use ggez::{
-    audio::Source,
-    event::{EventHandler, Keycode, Mod},
-    graphics, Context, GameError,
-};
+use ggez::{graphics, Context, GameError, audio::Source, event::{EventHandler, Keycode, Mod}};
 use std::time::{Duration, Instant};
 
 pub trait Element {
