@@ -7,6 +7,7 @@ extern crate ggez;
 extern crate num_rational;
 extern crate rlua;
 
+mod lua;
 mod notedata;
 mod notefield;
 mod player_config;
@@ -92,6 +93,8 @@ fn main() {
         .expect(&format!("Error Reading: {}", theme_address));
     let theme_lines = theme_lines.lines();
     let mut current_chunk = String::new();
+
+    lua::create_lua_functions(&current_theme).unwrap();
 
     for theme_line in theme_lines {
         current_chunk += "\n";
