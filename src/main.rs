@@ -13,6 +13,7 @@ mod notefield;
 mod player_config;
 mod screen;
 mod timingdata;
+mod gamestate;
 
 use clap::{App, Arg};
 use ggez::conf;
