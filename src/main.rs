@@ -160,8 +160,6 @@ fn main() {
         Box::new(notefield_p2),
         Box::new(music),
     ]);
-    /*let mut game_screen =
-        gameplay_screen::GameplayScreen::new(&p1_layout, &notes, &p2_layout, &notes, music, 600);*/
 
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
         let mut path = std::path::PathBuf::from(manifest_dir);
