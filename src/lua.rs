@@ -1,7 +1,12 @@
+extern crate ggez;
+
 use rlua::{Lua, Result};
+use gamestate::GameState;
 
 pub fn create_lua_functions(lua: &Lua) -> Result<()> {
     let globals = lua.globals();
+
+    globals.set("GameState", GameState::new())?;
 
     let make_defaults = lua.create_function(|_, ()| {
         println!("This function will create a default gameplay screen");

@@ -5,6 +5,7 @@ use ggez::graphics::spritebatch::SpriteBatch;
 use player_config;
 use screen::Element;
 use timingdata::{GameplayInfo, OffsetInfo, TimingData};
+use rlua::UserData;
 
 #[derive(PartialEq)]
 pub struct Notefield<'a> {
@@ -152,3 +153,5 @@ impl<'a> Element for Notefield<'a> {
         }
     }
 }
+
+impl UserData for Notefield<'static> {}

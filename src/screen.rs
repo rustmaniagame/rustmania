@@ -1,7 +1,7 @@
 use ggez::{graphics, Context, GameError, audio::Source, event::{EventHandler, Keycode, Mod}};
 use std::time::{Duration, Instant};
 
-pub trait Element {
+pub trait Element: Send {
     fn run(&mut self, &mut Context, Option<i64>) -> Result<(), GameError>;
     fn start(&mut self) -> Result<(), GameError>;
     fn handle_event(&mut self, Keycode, Option<i64>);
