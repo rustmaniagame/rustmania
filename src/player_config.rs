@@ -14,15 +14,23 @@ pub struct NoteLayout {
     pub scroll_speed: f32,
 }
 
+#[derive(PartialEq, Clone)]
+pub struct NoteSkin {
+    pub arrows_sprite: graphics::Image,
+    pub receptor_sprite: graphics::Image,
+    pub judgment_sprite: graphics::Image,
+}
+
 impl NoteLayout {
     pub fn new(
         column_positions: [i64; 4],
-        arrows_sprite: graphics::Image,
-        receptor_sprite: graphics::Image,
-        judgment_sprite: graphics::Image,
+        skin: &NoteSkin,
         receptor_height: i64,
         judgment_position: graphics::Point2,
     ) -> NoteLayout {
+        let(        arrows_sprite,
+        receptor_sprite,
+        judgment_sprite,) = (skin.arrows_sprite.clone(),skin.receptor_sprite.clone(),skin.judgment_sprite.clone());
         NoteLayout {
             column_positions,
             arrows_sprite,
@@ -112,5 +120,15 @@ impl NoteLayout {
     ) -> Result<(), ggez::GameError> {
         graphics::draw_ex(ctx, &self.judgment_sprite, self.select_judgment(judge))?;
         Ok(())
+    }
+}
+
+impl NoteSkin {
+    pub fn new(arrows_sprite: graphics::Image, receptor_sprite: graphics::Image, judgment_sprite: graphics::Image) -> Self {
+        NoteSkin {
+            arrows_sprite,
+            receptor_sprite,
+            judgment_sprite,
+        }
     }
 }
