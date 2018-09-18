@@ -131,7 +131,7 @@ impl<'a> Element for Notefield<'a> {
         if let Some(judgment) = self.last_judgement {
             self.layout.draw_judgment(ctx, judgment)?;
         }
-        //println!("{}", self.judgment_list.calculate_score());
+        println!("{}", self.judgment_list.calculate_score());
         Ok(())
     }
     fn handle_event(&mut self, keycode: ggez::event::Keycode, time: Option<i64>) {
