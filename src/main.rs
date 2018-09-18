@@ -7,23 +7,23 @@ extern crate ggez;
 extern crate num_rational;
 extern crate rlua;
 
+mod gamestate;
 mod lua;
 mod notedata;
 mod notefield;
 mod player_config;
 mod screen;
 mod timingdata;
-mod gamestate;
 
 use clap::{App, Arg};
 use ggez::conf;
 use ggez::graphics::{set_background_color, Color, Rect};
 use notedata::NoteType;
 use num_rational::Rational32;
+use player_config::NoteSkin;
 use rlua::{Lua, MultiValue};
 use std::fs::File;
 use std::io::Read;
-use player_config::NoteSkin;
 
 fn sprite_finder(
     _measure: usize,
@@ -115,9 +115,11 @@ fn main() {
         }
     }
 
-    let default_note_skin = NoteSkin::new(ggez::graphics::Image::new(context, noteskin).expect("Could not parse noteskin from path."),
-                                     ggez::graphics::Image::new(context, "/receptor.png").expect("Could not parse receptor."),
-                                     ggez::graphics::Image::new(context, "/Judgments.png").expect("Could not parse judgments."));
+    let default_note_skin = NoteSkin::new(
+        ggez::graphics::Image::new(context, noteskin).expect("Could not parse noteskin from path."),
+        ggez::graphics::Image::new(context, "/receptor.png").expect("Could not parse receptor."),
+        ggez::graphics::Image::new(context, "/Judgments.png").expect("Could not parse judgments."),
+    );
 
     let mut p1_layout = player_config::NoteLayout::new(
         [72, 136, 200, 264],

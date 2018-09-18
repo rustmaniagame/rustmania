@@ -28,9 +28,11 @@ impl NoteLayout {
         receptor_height: i64,
         judgment_position: graphics::Point2,
     ) -> NoteLayout {
-        let(        arrows_sprite,
-        receptor_sprite,
-        judgment_sprite,) = (skin.arrows_sprite.clone(),skin.receptor_sprite.clone(),skin.judgment_sprite.clone());
+        let (arrows_sprite, receptor_sprite, judgment_sprite) = (
+            skin.arrows_sprite.clone(),
+            skin.receptor_sprite.clone(),
+            skin.judgment_sprite.clone(),
+        );
         NoteLayout {
             column_positions,
             arrows_sprite,
@@ -124,7 +126,11 @@ impl NoteLayout {
 }
 
 impl NoteSkin {
-    pub fn new(arrows_sprite: graphics::Image, receptor_sprite: graphics::Image, judgment_sprite: graphics::Image) -> Self {
+    pub fn new(
+        arrows_sprite: graphics::Image,
+        receptor_sprite: graphics::Image,
+        judgment_sprite: graphics::Image,
+    ) -> Self {
         NoteSkin {
             arrows_sprite,
             receptor_sprite,

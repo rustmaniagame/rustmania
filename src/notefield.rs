@@ -3,9 +3,9 @@ extern crate ggez;
 use ggez::graphics;
 use ggez::graphics::spritebatch::SpriteBatch;
 use player_config;
+use rlua::UserData;
 use screen::Element;
 use timingdata::{GameplayInfo, OffsetInfo, TimingData};
-use rlua::UserData;
 
 #[derive(PartialEq)]
 pub struct Notefield<'a> {

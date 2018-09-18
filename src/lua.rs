@@ -1,7 +1,7 @@
 extern crate ggez;
 
-use rlua::{Lua, Result};
 use gamestate::GameState;
+use rlua::{Lua, Result};
 
 pub fn create_lua_functions(lua: &Lua) -> Result<()> {
     let globals = lua.globals();
