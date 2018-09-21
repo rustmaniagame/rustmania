@@ -1,7 +1,12 @@
 extern crate ggez;
+use ggez::error::GameResult;
 use ggez::graphics;
 use notefield::Judgement;
+use std::fs::File;
+use std::io::Read;
+use std::path::PathBuf;
 use timingdata::GameplayInfo;
+use toml;
 
 #[derive(PartialEq)]
 pub struct NoteLayout {
@@ -125,16 +130,58 @@ impl NoteLayout {
     }
 }
 
+#[derive(Deserialize)]
+struct NoteSkinInfo {
+    arrows: String,
+    receptor: String,
+    judgment: String,
+}
+
 impl NoteSkin {
-    pub fn new(
-        arrows_sprite: graphics::Image,
-        receptor_sprite: graphics::Image,
-        judgment_sprite: graphics::Image,
-    ) -> Self {
-        NoteSkin {
-            arrows_sprite,
-            receptor_sprite,
-            judgment_sprite,
+    pub fn from_path(path: &str, context: &mut ggez::Context) -> Option<Self> {
+        let mut path = PathBuf::from(path);
+        path.push("config.toml");
+        let mut config_file = match File::open(path.clone()) {
+            Ok(file) => file,
+            Err(_) => return None,
+        };
+        path.pop();
+        let mut config_string = String::new();
+        match config_file.read_to_string(&mut config_string) {
+            Ok(_) => {}
+            Err(_) => return None,
+        };
+        let NoteSkinInfo {
+            arrows,
+            receptor,
+            judgment,
+        } = match toml::from_str(&config_string) {
+            Ok(skin) => skin,
+            Err(_) => return None,
+        };
+        if let (Ok(arrows_sprite), Ok(receptor_sprite), Ok(judgment_sprite)) = (
+            image_from_subdirectory(context, &mut path, arrows),
+            image_from_subdirectory(context, &mut path, receptor),
+            image_from_subdirectory(context, &mut path, judgment),
+        ) {
+            Some(NoteSkin {
+                arrows_sprite,
+                receptor_sprite,
+                judgment_sprite,
+            })
+        } else {
+            None
         }
     }
+}
+
+fn image_from_subdirectory(
+    context: &mut ggez::Context,
+    path: &mut PathBuf,
+    extension: String,
+) -> GameResult<graphics::Image> {
+    path.push(extension.clone());
+    let output = graphics::Image::new(context, format!("/{}", path.clone().to_str().unwrap()));
+    path.pop();
+    output
 }

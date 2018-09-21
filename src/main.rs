@@ -6,6 +6,9 @@ extern crate clap;
 extern crate ggez;
 extern crate num_rational;
 extern crate rlua;
+#[macro_use]
+extern crate serde_derive;
+extern crate toml;
 
 mod gamestate;
 mod lua;
@@ -16,7 +19,7 @@ mod screen;
 mod timingdata;
 
 use clap::{App, Arg};
-use ggez::conf;
+use ggez::ContextBuilder;
 use ggez::graphics::{set_background_color, Color, Rect};
 use notedata::NoteType;
 use num_rational::Rational32;
@@ -58,11 +61,11 @@ fn main() {
                 .index(1)
                 .required(true),
             Arg::with_name("NoteSkin")
-                .help("The path to your NoteSkin image file.")
+                .help("The name of your NoteSkin folder.")
                 .index(2)
                 .required(true),
             Arg::with_name("Theme")
-                .help("The path to your theme lua file.")
+                .help("The path to your lua theme file.")
                 .index(3)
                 .required(true)
         ])
@@ -79,8 +82,10 @@ fn main() {
         .value_of("NoteSkin")
         .expect("No path for NoteSkin specified");
 
-    let c = conf::Conf::from_toml_file(&mut File::open("src/config.toml").unwrap()).unwrap();
-    let context = &mut ggez::Context::load_from_conf("rustmania", "ixsetf", c).unwrap();
+    let context = &mut ContextBuilder::new("rustmania", "ixsetf")
+        .add_resource_path("")
+        .build()
+        .expect("Failed to build context");
     set_background_color(context, Color::new(0.0, 0.0, 0.0, 1.0));
 
     let current_theme = Lua::new();
@@ -115,11 +120,8 @@ fn main() {
         }
     }
 
-    let default_note_skin = NoteSkin::new(
-        ggez::graphics::Image::new(context, noteskin).expect("Could not parse noteskin from path."),
-        ggez::graphics::Image::new(context, "/receptor.png").expect("Could not parse receptor."),
-        ggez::graphics::Image::new(context, "/Judgments.png").expect("Could not parse judgments."),
-    );
+    let default_note_skin = NoteSkin::from_path(&format!("Noteskins\\{}", noteskin), context)
+        .expect("Could not open default noteskin");
 
     let mut p1_layout = player_config::NoteLayout::new(
         [72, 136, 200, 264],
@@ -135,9 +137,9 @@ fn main() {
         ggez::graphics::Point2::new(472.0, 383.0),
     );
 
-    p1_layout.set_scroll_speed(-0.7);
+    p1_layout.set_scroll_speed(-0.8);
 
-    p2_layout.set_scroll_speed(1.0);
+    p2_layout.set_scroll_speed(1.1);
 
     let notedata = notedata::NoteData::from_sm(simfile).expect("Failed to parse .sm file.");
 
