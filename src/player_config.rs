@@ -139,13 +139,10 @@ struct NoteSkinInfo {
 
 impl NoteSkin {
     pub fn from_path(path: &str, context: &mut ggez::Context) -> Option<Self> {
-        let mut path = PathBuf::from(path);
-        path.push("config.toml");
-        let mut config_file = match File::open(path.clone()) {
+        let mut config_file = match File::open(format!("{}/config.toml",path)) {
             Ok(file) => file,
             Err(_) => return None,
         };
-        path.pop();
         let mut config_string = String::new();
         match config_file.read_to_string(&mut config_string) {
             Ok(_) => {}
@@ -160,9 +157,9 @@ impl NoteSkin {
             Err(_) => return None,
         };
         if let (Ok(arrows_sprite), Ok(receptor_sprite), Ok(judgment_sprite)) = (
-            image_from_subdirectory(context, &mut path, arrows),
-            image_from_subdirectory(context, &mut path, receptor),
-            image_from_subdirectory(context, &mut path, judgment),
+            image_from_subdirectory(context, path, arrows),
+            image_from_subdirectory(context, path, receptor),
+            image_from_subdirectory(context, path, judgment),
         ) {
             Some(NoteSkin {
                 arrows_sprite,
@@ -177,11 +174,8 @@ impl NoteSkin {
 
 fn image_from_subdirectory(
     context: &mut ggez::Context,
-    path: &mut PathBuf,
+    path: &str,
     extension: String,
 ) -> GameResult<graphics::Image> {
-    path.push(extension.clone());
-    let output = graphics::Image::new(context, format!("/{}", path.clone().to_str().unwrap()));
-    path.pop();
-    output
+    graphics::Image::new(context, format!("/{}/{}", path, extension))
 }
