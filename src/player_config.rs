@@ -48,7 +48,6 @@ impl NoteLayout {
             scroll_speed: 1.0,
         }
     }
-    //noinspection RsUnresolvedReference
     pub fn set_scroll_speed(&mut self, new_speed: f32) {
         self.scroll_speed = new_speed;
     }
@@ -139,7 +138,7 @@ struct NoteSkinInfo {
 
 impl NoteSkin {
     pub fn from_path(path: &str, context: &mut ggez::Context) -> Option<Self> {
-        let mut config_file = match File::open(format!("{}/config.toml",path)) {
+        let mut config_file = match File::open(format!("{}/config.toml", path)) {
             Ok(file) => file,
             Err(_) => return None,
         };

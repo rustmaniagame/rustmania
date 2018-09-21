@@ -54,7 +54,6 @@ impl<'a> Notefield<'a> {
             }
         }
     }
-    //noinspection RsUnresolvedReference
     fn handle_judgement(&mut self, offset: i64, column: usize) {
         let abs_offset = offset.abs();
         match abs_offset {
