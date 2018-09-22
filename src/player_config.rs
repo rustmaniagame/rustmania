@@ -21,9 +21,11 @@ pub struct NoteLayout {
 
 #[derive(PartialEq, Clone)]
 pub struct NoteSkin {
-    pub arrows_sprite: graphics::Image,
-    pub receptor_sprite: graphics::Image,
-    pub judgment_sprite: graphics::Image,
+    arrows_sprite: graphics::Image,
+    receptor_sprite: graphics::Image,
+    judgment_sprite: graphics::Image,
+    column_positions: [i64; 4],
+    column_rotations: [f32; 4],
 }
 
 #[derive(PartialEq, Clone)]
@@ -143,6 +145,8 @@ struct NoteSkinInfo {
     arrows: String,
     receptor: String,
     judgment: String,
+    column_positions: [i64; 4],
+    column_rotations: [f32; 4],
 }
 
 impl NoteSkin {
@@ -160,6 +164,8 @@ impl NoteSkin {
             arrows,
             receptor,
             judgment,
+            column_positions,
+            column_rotations,
         } = match toml::from_str(&config_string) {
             Ok(skin) => skin,
             Err(_) => return None,
@@ -173,6 +179,8 @@ impl NoteSkin {
                 arrows_sprite,
                 receptor_sprite,
                 judgment_sprite,
+                column_positions,
+                column_rotations,
             })
         } else {
             None
