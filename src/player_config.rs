@@ -28,7 +28,7 @@ pub struct NoteSkin {
     column_rotations: [f32; 4],
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Copy, Clone)]
 pub struct PlayerOptions {
     notefield_position: i64,
     receptor_height: i64,
@@ -38,17 +38,31 @@ pub struct PlayerOptions {
 }
 
 impl NoteLayout {
-    pub fn new(
-        column_positions: [i64; 4],
-        skin: &NoteSkin,
-        receptor_height: i64,
-        judgment_position: graphics::Point2,
-    ) -> NoteLayout {
-        let (arrows_sprite, receptor_sprite, judgment_sprite) = (
-            skin.arrows_sprite.clone(),
-            skin.receptor_sprite.clone(),
-            skin.judgment_sprite.clone(),
-        );
+    pub fn new(skin: &NoteSkin, screen_height: i64, player_options: PlayerOptions) -> NoteLayout {
+        let NoteSkin {
+            arrows_sprite,
+            receptor_sprite,
+            judgment_sprite,
+            mut column_positions,
+            column_rotations,
+        } = skin.clone();
+        let PlayerOptions {
+            notefield_position,
+            mut receptor_height,
+            mut scroll_speed,
+            is_reverse,
+            mut judgment_position,
+        } = player_options;
+        column_positions
+            .iter_mut()
+            .for_each(|x| *x += notefield_position);
+        judgment_position.0 += notefield_position as f32;
+        if is_reverse {
+            receptor_height = screen_height - receptor_height;
+            judgment_position.1 = screen_height as f32 - judgment_position.1;
+            scroll_speed *= -1.0;
+        }
+        let judgment_position = graphics::Point2::new(judgment_position.0, judgment_position.1);
         NoteLayout {
             column_positions,
             arrows_sprite,
@@ -56,7 +70,7 @@ impl NoteLayout {
             judgment_sprite,
             receptor_height,
             judgment_position,
-            scroll_speed: 1.0,
+            scroll_speed,
         }
     }
     pub fn set_scroll_speed(&mut self, new_speed: f32) {

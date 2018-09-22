@@ -123,23 +123,12 @@ fn main() {
     let default_note_skin = NoteSkin::from_path(&format!("Noteskins\\{}", noteskin), context)
         .expect("Could not open default noteskin");
 
-    let mut p1_layout = player_config::NoteLayout::new(
-        [72, 136, 200, 264],
-        &default_note_skin,
-        436,
-        ggez::graphics::Point2::new(72.0, 183.0),
-    );
+    let p1_options = player_config::PlayerOptions::new(200, 164, 0.8, true, (-128.0, 383.0));
+    let p2_options = player_config::PlayerOptions::new(600, 100, 1.1, false, (-128.0, 383.0));
 
-    let mut p2_layout = player_config::NoteLayout::new(
-        [472, 536, 600, 664],
-        &default_note_skin,
-        100,
-        ggez::graphics::Point2::new(472.0, 383.0),
-    );
+    let p1_layout = player_config::NoteLayout::new(&default_note_skin, 600, p1_options);
 
-    p1_layout.set_scroll_speed(-0.8);
-
-    p2_layout.set_scroll_speed(1.1);
+    let p2_layout = player_config::NoteLayout::new(&default_note_skin, 600, p2_options);
 
     let notedata = notedata::NoteData::from_sm(simfile).expect("Failed to parse .sm file.");
 
