@@ -26,6 +26,15 @@ pub struct NoteSkin {
     pub judgment_sprite: graphics::Image,
 }
 
+#[derive(PartialEq, Clone)]
+pub struct PlayerOptions {
+    notefield_position: i64,
+    receptor_height: i64,
+    scroll_speed: f32,
+    is_reverse: bool,
+    judgment_position: (f32, f32),
+}
+
 impl NoteLayout {
     pub fn new(
         column_positions: [i64; 4],
@@ -177,4 +186,22 @@ fn image_from_subdirectory(
     extension: String,
 ) -> GameResult<graphics::Image> {
     graphics::Image::new(context, format!("/{}/{}", path, extension))
+}
+
+impl PlayerOptions {
+    pub fn new(
+        notefield_position: i64,
+        receptor_height: i64,
+        scroll_speed: f32,
+        is_reverse: bool,
+        judgment_position: (f32, f32),
+    ) -> Self {
+        PlayerOptions {
+            notefield_position,
+            receptor_height,
+            scroll_speed,
+            is_reverse,
+            judgment_position,
+        }
+    }
 }
