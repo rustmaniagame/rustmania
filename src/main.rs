@@ -24,7 +24,7 @@ use ggez::graphics::{set_background_color, Color, Rect};
 use notedata::NoteType;
 use num_rational::Rational32;
 use player_config::NoteSkin;
-use rlua::{Lua, MultiValue};
+use rlua::{Error, Lua, MultiValue};
 use std::fs::File;
 use std::io::Read;
 
@@ -110,7 +110,8 @@ fn main() {
     for theme_line in theme_lines {
         current_chunk += "\n";
         current_chunk += theme_line;
-        if let Ok(output) = current_theme.eval::<MultiValue>(&current_chunk, None) {
+        match current_theme.eval::<MultiValue>(&current_chunk, None) {
+            Ok(output) => {
             println!("{}", current_chunk);
             println!(
                 "{}",
@@ -121,6 +122,11 @@ fn main() {
                     .join("\t")
             );
             current_chunk.clear();
+            },
+            Err(Error::SyntaxError {
+                    incomplete_input: true,
+                    ..}) => {}
+            _ => break,
         }
     }
 
