@@ -4,7 +4,6 @@ use ggez::graphics;
 use notefield::Judgement;
 use std::fs::File;
 use std::io::Read;
-use std::path::PathBuf;
 use timingdata::GameplayInfo;
 use toml;
 
@@ -14,6 +13,7 @@ pub struct NoteLayout {
     pub receptor_sprite: graphics::Image,
     pub judgment_sprite: graphics::Image,
     pub column_positions: [i64; 4],
+    pub column_rotations: [f32; 4],
     pub receptor_height: i64,
     pub judgment_position: graphics::Point2,
     pub scroll_speed: f32,
@@ -44,7 +44,7 @@ impl NoteLayout {
             receptor_sprite,
             judgment_sprite,
             mut column_positions,
-            column_rotations,
+            mut column_rotations,
         } = skin.clone();
         let PlayerOptions {
             notefield_position,
@@ -56,6 +56,7 @@ impl NoteLayout {
         column_positions
             .iter_mut()
             .for_each(|x| *x += notefield_position);
+        column_rotations.iter_mut().for_each(|x| *x *= 6.28 / 360.0);
         judgment_position.0 += notefield_position as f32;
         if is_reverse {
             receptor_height = screen_height - receptor_height;
@@ -65,6 +66,7 @@ impl NoteLayout {
         let judgment_position = graphics::Point2::new(judgment_position.0, judgment_position.1);
         NoteLayout {
             column_positions,
+            column_rotations,
             arrows_sprite,
             receptor_sprite,
             judgment_sprite,
@@ -92,6 +94,8 @@ impl NoteLayout {
         batch.add(graphics::DrawParam {
             src: coords,
             dest: graphics::Point2::new(self.column_positions[column] as f32, position as f32),
+            rotation: self.column_rotations[column],
+            offset: graphics::Point2::new(0.5, 0.5),
             ..Default::default()
         });
     }
@@ -106,12 +110,19 @@ impl NoteLayout {
         }
     }
     pub fn draw_receptors(&self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
-        for &column_position in &self.column_positions {
-            graphics::draw(
+        for (index, &column_position) in self.column_positions.iter().enumerate() {
+            graphics::draw_ex(
                 ctx,
                 &self.receptor_sprite,
-                graphics::Point2::new(column_position as f32, self.receptor_height as f32),
-                0.0,
+                graphics::DrawParam {
+                    dest: graphics::Point2::new(
+                        column_position as f32,
+                        self.receptor_height as f32,
+                    ),
+                    rotation: self.column_rotations[index],
+                    offset: graphics::Point2::new(0.5, 0.5),
+                    ..Default::default()
+                },
             )?;
         }
         Ok(())

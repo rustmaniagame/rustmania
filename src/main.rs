@@ -123,8 +123,8 @@ fn main() {
     let default_note_skin = NoteSkin::from_path(&format!("Noteskins\\{}", noteskin), context)
         .expect("Could not open default noteskin");
 
-    let p1_options = player_config::PlayerOptions::new(200, 164, 0.8, true, (-128.0, 383.0));
-    let p2_options = player_config::PlayerOptions::new(600, 100, 1.1, false, (-128.0, 383.0));
+    let p1_options = player_config::PlayerOptions::new(200, 125, 0.8, true, (-128.0, 383.0));
+    let p2_options = player_config::PlayerOptions::new(600, 125, 1.1, false, (-128.0, 383.0));
 
     let p1_layout = player_config::NoteLayout::new(&default_note_skin, 600, p1_options);
 
