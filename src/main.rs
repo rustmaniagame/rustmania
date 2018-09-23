@@ -84,6 +84,10 @@ fn main() {
 
     let context = &mut ContextBuilder::new("rustmania", "ixsetf")
         .add_resource_path("")
+        .window_setup(ggez::conf::WindowSetup {
+            title: "Rustmania".to_string(),
+            ..Default::default()
+        })
         .build()
         .expect("Failed to build context");
     set_background_color(context, Color::new(0.0, 0.0, 0.0, 1.0));
