@@ -69,24 +69,6 @@ impl<'a> Notefield<'a> {
 }
 
 impl<'a> Element for Notefield<'a> {
-    fn start(&mut self) -> Result<(), ggez::GameError> {
-        //self.layout.add_receptors(&mut self.batch)?;
-        self.on_screen = self.notes
-            .columns()
-            .map(|x| {
-                (
-                    0,
-                    match x.iter()
-                        .position(|GameplayInfo(y, _)| *y > self.draw_distance)
-                    {
-                        Some(num) => num,
-                        None => x.len(),
-                    },
-                )
-            })
-            .collect();
-        Ok(())
-    }
     fn run(&mut self, ctx: &mut ggez::Context, time: Option<i64>) -> Result<(), ggez::GameError> {
         self.layout.draw_receptors(ctx)?;
         let time = match time {
@@ -131,6 +113,24 @@ impl<'a> Element for Notefield<'a> {
             self.layout.draw_judgment(ctx, judgment)?;
         }
         println!("{}", self.judgment_list.calculate_score());
+        Ok(())
+    }
+    fn start(&mut self) -> Result<(), ggez::GameError> {
+        //self.layout.add_receptors(&mut self.batch)?;
+        self.on_screen = self.notes
+            .columns()
+            .map(|x| {
+                (
+                    0,
+                    match x.iter()
+                        .position(|GameplayInfo(y, _)| *y > self.draw_distance)
+                    {
+                        Some(num) => num,
+                        None => x.len(),
+                    },
+                )
+            })
+            .collect();
         Ok(())
     }
     fn handle_event(&mut self, keycode: ggez::event::Keycode, time: Option<i64>) {
