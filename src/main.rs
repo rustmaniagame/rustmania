@@ -112,20 +112,21 @@ fn main() {
         current_chunk += theme_line;
         match current_theme.eval::<MultiValue>(&current_chunk, None) {
             Ok(output) => {
-            println!("{}", current_chunk);
-            println!(
-                "{}",
-                output
-                    .iter()
-                    .map(|value| format!("{:?}", value))
-                    .collect::<Vec<_>>()
-                    .join("\t")
-            );
-            current_chunk.clear();
-            },
+                println!("{}", current_chunk);
+                println!(
+                    "{}",
+                    output
+                        .iter()
+                        .map(|value| format!("{:?}", value))
+                        .collect::<Vec<_>>()
+                        .join("\t")
+                );
+                current_chunk.clear();
+            }
             Err(Error::SyntaxError {
-                    incomplete_input: true,
-                    ..}) => {}
+                incomplete_input: true,
+                ..
+            }) => {}
             _ => break,
         }
     }
