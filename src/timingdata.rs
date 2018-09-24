@@ -39,7 +39,7 @@ impl OffsetInfo {
 }
 
 impl TimingData<GameplayInfo> {
-    pub fn from_notedata<U>(data: &NoteData, sprite_finder: U) -> Self
+    pub fn from_notedata<U>(data: &NoteData, sprite_finder: U, rate: f64) -> Self
     where
         U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
     {
@@ -69,11 +69,11 @@ impl TimingData<GameplayInfo> {
                         next_bpm = bpms.next();
                     }
                 }
-                let row_time = current_bpm.3
+                let row_time = (current_bpm.3
                     + 240_000.0
                         * ((measure_index - current_bpm.0 as usize) as f64
                             + value(inner_time - current_bpm.1))
-                        / current_bpm.2;
+                        / current_bpm.2) / rate;
                 for (note, column_index) in row.notes() {
                     let sprite =
                         sprite_finder(measure_index, 0.0, *inner_time, *note, *column_index);
