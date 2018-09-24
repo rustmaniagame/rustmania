@@ -1,5 +1,5 @@
 use ggez::{graphics, Context, GameError, audio::Source, event::{EventHandler, Keycode, Mod}};
-use std::time::{Duration, Instant};
+use std::time::{Duration, SystemTime};
 
 pub trait Element: Send {
     fn run(&mut self, &mut Context, Option<i64>) -> Result<(), GameError>;
@@ -8,7 +8,7 @@ pub trait Element: Send {
 }
 
 pub struct Screen<'a> {
-    start_time: Option<Instant>,
+    start_time: Option<SystemTime>,
     elements: Vec<Box<dyn Element + 'a>>,
     key_handler: (),
 }
@@ -20,13 +20,12 @@ fn to_milliseconds(dur: Duration) -> i64 {
 impl<'a> Screen<'a> {
     pub fn new(elements: Vec<Box<dyn Element + 'a>>) -> Self {
         Screen {
-            start_time: None,
+            start_time: Some(SystemTime::now() + Duration::from_secs(3)),
             elements,
             key_handler: (),
         }
     }
     pub fn start(&mut self) -> Result<(), GameError> {
-        self.start_time = Some(Instant::now());
         for element in &mut self.elements {
             element.start()?;
         }
@@ -34,7 +33,10 @@ impl<'a> Screen<'a> {
     }
     fn start_time_to_milliseconds(&self) -> Option<i64> {
         match self.start_time {
-            Some(time) => Some(to_milliseconds(Instant::now().duration_since(time))),
+            Some(time) => match SystemTime::now().duration_since(time) {
+                Ok(time) => Some(to_milliseconds(time)),
+                Err(negtime) => Some(-to_milliseconds(negtime.duration())),
+            },
             None => None,
         }
     }
