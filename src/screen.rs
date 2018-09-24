@@ -77,7 +77,7 @@ impl Element for Source {
         Ok(())
     }
     fn start(&mut self) -> Result<(), GameError> {
-        self.play()?;
+        //self.play()?;
         Ok(())
     }
     fn handle_event(&mut self, _keycode: Keycode, _time: Option<i64>) {}
