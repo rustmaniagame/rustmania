@@ -2,9 +2,9 @@ use ggez::{graphics, Context, GameError, audio::Source, event::{EventHandler, Ke
 use std::time::{Duration, SystemTime};
 
 pub trait Element: Send {
-    fn run(&mut self, &mut Context, Option<i64>) -> Result<(), GameError>;
+    fn run(&mut self, context: &mut Context, time: Option<i64>) -> Result<(), GameError>;
     fn start(&mut self) -> Result<(), GameError>;
-    fn handle_event(&mut self, Keycode, Option<i64>);
+    fn handle_event(&mut self, key: Keycode, time: Option<i64>);
 }
 
 pub struct Screen<'a> {
