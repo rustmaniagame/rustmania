@@ -27,7 +27,7 @@ fn do_stuff(start_time: Instant) {
 
     let sample_rate = format.sample_rate.0 as f64;
     println!("{}", sample_rate);
-    let mut sample_clock = -1_000.0;
+    let mut sample_clock = 0.0;
 
     let to_sample_number = |dur: Duration| {
         dur.as_secs() as f64 * sample_rate + dur.subsec_nanos() as f64 * (sample_rate / 1000_000_000.0)
