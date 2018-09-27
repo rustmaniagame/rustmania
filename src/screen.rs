@@ -1,14 +1,14 @@
-use ggez::{graphics, Context, GameError, audio::Source, event::{EventHandler, Keycode, Mod}};
-use std::time::{Duration, SystemTime};
+use ggez::{graphics, Context, GameError, event::{EventHandler, Keycode, Mod}};
+use std::time::{Duration, Instant};
 
 pub trait Element: Send {
     fn run(&mut self, context: &mut Context, time: Option<i64>) -> Result<(), GameError>;
-    fn start(&mut self) -> Result<(), GameError>;
+    fn start(&mut self, time: Option<Instant>) -> Result<(), GameError>;
     fn handle_event(&mut self, key: Keycode, time: Option<i64>);
 }
 
 pub struct Screen<'a> {
-    start_time: Option<SystemTime>,
+    start_time: Option<Instant>,
     elements: Vec<Box<dyn Element + 'a>>,
     key_handler: (),
 }
@@ -20,23 +20,27 @@ fn to_milliseconds(dur: Duration) -> i64 {
 impl<'a> Screen<'a> {
     pub fn new(elements: Vec<Box<dyn Element + 'a>>) -> Self {
         Screen {
-            start_time: Some(SystemTime::now() + Duration::from_secs(3)),
+            start_time: Some(Instant::now() + Duration::from_secs(3)),
             elements,
             key_handler: (),
         }
     }
     pub fn start(&mut self) -> Result<(), GameError> {
         for element in &mut self.elements {
-            element.start()?;
+            element.start(self.start_time)?;
         }
         Ok(())
     }
     fn start_time_to_milliseconds(&self) -> Option<i64> {
         match self.start_time {
-            Some(time) => match SystemTime::now().duration_since(time) {
-                Ok(time) => Some(to_milliseconds(time)),
-                Err(negtime) => Some(-to_milliseconds(negtime.duration())),
-            },
+            Some(time) => {
+                let now = Instant::now();
+                if time > now {
+                    Some(-to_milliseconds(time.duration_since(now)))
+                } else {
+                    Some(to_milliseconds(now.duration_since(time)))
+                }
+            }
             None => None,
         }
     }
@@ -70,15 +74,4 @@ impl<'a> EventHandler for Screen<'a> {
             element.handle_event(keycode, time_delta);
         }
     }
-}
-
-impl Element for Source {
-    fn run(&mut self, _ctx: &mut Context, _time: Option<i64>) -> Result<(), GameError> {
-        Ok(())
-    }
-    fn start(&mut self) -> Result<(), GameError> {
-        //self.play()?;
-        Ok(())
-    }
-    fn handle_event(&mut self, _keycode: Keycode, _time: Option<i64>) {}
 }

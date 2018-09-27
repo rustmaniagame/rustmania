@@ -5,6 +5,7 @@ use ggez::graphics::spritebatch::SpriteBatch;
 use player_config;
 use rlua::UserData;
 use screen::Element;
+use std::time::Instant;
 use timingdata::{GameplayInfo, OffsetInfo, TimingData};
 
 #[derive(PartialEq)]
@@ -115,7 +116,7 @@ impl<'a> Element for Notefield<'a> {
         println!("{}", self.judgment_list.calculate_score());
         Ok(())
     }
-    fn start(&mut self) -> Result<(), ggez::GameError> {
+    fn start(&mut self, _time: Option<Instant>) -> Result<(), ggez::GameError> {
         //self.layout.add_receptors(&mut self.batch)?;
         self.on_screen = self.notes.columns().map(|_| (0, 0)).collect();
         Ok(())

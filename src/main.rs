@@ -8,10 +8,12 @@ extern crate num_rational;
 extern crate rlua;
 #[macro_use]
 extern crate serde_derive;
+extern crate cpal;
 extern crate toml;
 
 mod gamestate;
 mod lua;
+mod music;
 mod notedata;
 mod notefield;
 mod player_config;
@@ -143,22 +145,10 @@ fn main() {
 
     let notedata = notedata::NoteData::from_sm(simfile).expect("Failed to parse .sm file.");
 
-    let music = ggez::audio::Source::new(
-        context,
-        format!(
-            "/{}",
-            notedata
-                .data
-                .music_path
-                .clone()
-                .expect("No valid music path")
-        ),
-    ).expect("couldnt open audio file");
-
     let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, 1.0);
-
     let notefield_p1 = notefield::Notefield::new(&p1_layout, &notes, 600);
     let notefield_p2 = notefield::Notefield::new(&p2_layout, &notes, 600);
+    let music = music::Music::new();
 
     let mut gameplay_screen = screen::Screen::new(vec![
         Box::new(notefield_p1),
