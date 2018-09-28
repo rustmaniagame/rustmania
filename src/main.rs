@@ -9,6 +9,7 @@ extern crate rlua;
 #[macro_use]
 extern crate serde_derive;
 extern crate cpal;
+extern crate lewton;
 extern crate toml;
 
 mod gamestate;
@@ -148,7 +149,13 @@ fn main() {
     let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, 1.0);
     let notefield_p1 = notefield::Notefield::new(&p1_layout, &notes, 600);
     let notefield_p2 = notefield::Notefield::new(&p2_layout, &notes, 600);
-    let music = music::Music::new();
+    let music = music::Music::new(
+        1.0,
+        format!(
+            "Songs/Mu/{}",
+            notedata.data.music_path.expect("No music path specified")
+        ),
+    );
 
     let mut gameplay_screen = screen::Screen::new(vec![
         Box::new(notefield_p1),
