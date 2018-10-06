@@ -113,7 +113,7 @@ fn main() {
     for theme_line in theme_lines {
         current_chunk += "\n";
         current_chunk += theme_line;
-        match current_theme.eval::<MultiValue>(&current_chunk, None) {
+        match current_theme.eval::<_, MultiValue>(&current_chunk, None) {
             Ok(output) => {
                 println!("{}", current_chunk);
                 println!(
