@@ -44,7 +44,8 @@ impl TimingData<GameplayInfo> {
         U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
     {
         let offset = data.data.offset.unwrap_or(0.0) * 1000.0;
-        let mut bpms: Vec<_> = data.data
+        let mut bpms: Vec<_> = data
+            .data
             .bpms
             .iter()
             .map(|(x, y, z)| (*x, *y, *z, 0.0))
@@ -54,8 +55,10 @@ impl TimingData<GameplayInfo> {
             None => return TimingData::new(),
         };
         for i in 1..bpms.len() {
-            bpms[i].3 =
-                bpms[i - 1].3 + (((bpms[i].0 - bpms[i - 1].0) as f64) * 240_000.0 / bpms[i - 1].2);
+            bpms[i].3 = bpms[i - 1].3
+                + (((bpms[i].0 - bpms[i - 1].0) as f64 + value(bpms[i].1 - bpms[i - 1].1))
+                    * 240_000.0
+                    / bpms[i - 1].2);
         }
         let mut bpms = bpms.into_iter();
         let mut current_bpm = bpms.next().unwrap();
@@ -64,7 +67,9 @@ impl TimingData<GameplayInfo> {
         for (measure_index, measure) in data.columns().enumerate() {
             for (inner_time, row) in measure.iter() {
                 if let Some(bpm) = next_bpm {
-                    if measure_index as i32 >= bpm.0 {
+                    if measure_index as i32 > bpm.0
+                        || (measure_index as i32 == bpm.0 && bpm.1 <= inner_time.fract())
+                    {
                         current_bpm = bpm;
                         next_bpm = bpms.next();
                     }
@@ -73,7 +78,8 @@ impl TimingData<GameplayInfo> {
                     + 240_000.0
                         * ((measure_index - current_bpm.0 as usize) as f64
                             + value(inner_time - current_bpm.1))
-                        / current_bpm.2) / rate;
+                        / current_bpm.2)
+                    / rate;
                 for (note, column_index) in row.notes() {
                     let sprite =
                         sprite_finder(measure_index, 0.0, *inner_time, *note, *column_index);
@@ -102,8 +108,9 @@ where
 }
 impl TimingData<OffsetInfo> {
     pub fn calculate_score(&self) -> f64 {
-        let max_points = (self.notes[0].len() + self.notes[1].len() + self.notes[2].len()
-            + self.notes[3].len()) as f64;
+        let max_points =
+            (self.notes[0].len() + self.notes[1].len() + self.notes[2].len() + self.notes[3].len())
+                as f64;
         let mut current_points = 0.0;
         for column in self.columns() {
             for offset in column {

@@ -17,12 +17,11 @@ pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
                     .1
                     .into_iter()
                     .map(|(x, y)| {
-                        let time_beater = Rational32::approximate_float(x).expect(
+                        let time_beater = Rational32::approximate_float(x as f64).expect(
                             "Failed to parse bpm time, write real error handling for this later.",
                         );
                         (time_beater.floor().to_integer(), time_beater.fract(), y)
-                    })
-                    .collect(),
+                    }).collect(),
                 Err(_) => Vec::new(),
             }
         }
@@ -67,8 +66,7 @@ fn parse_measure(measure: &[&str]) -> Vec<(Rational32, NoteRow)> {
                 Rational32::new(subindex as i32, division as i32),
                 parse_line(*beat),
             )
-        })
-        .collect()
+        }).collect()
 }
 
 fn parse_line(contents: &str) -> NoteRow {
@@ -86,11 +84,11 @@ fn parse_line(contents: &str) -> NoteRow {
 named!( bpm_parse<&str,Vec<(f64,f64)>>, separated_list!(tag!(","), bpm_line));
 
 named!(bpm_line<&str, (f64,f64)>,
-  do_parse!(
+  ws!(do_parse!(
         time: double_s >>
            tag!("=")   >>
            bpm: double_s >>
-    ( ( time, bpm ) )
+    ( time / 4.0, bpm ) )
   )
 );
 

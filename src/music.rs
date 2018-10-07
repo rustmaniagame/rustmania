@@ -1,5 +1,5 @@
 use cpal;
-use ggez::{Context, GameError, event::Keycode};
+use ggez::{event::Keycode, Context, GameError};
 use lewton::inside_ogg::OggStreamReader;
 use screen::Element;
 use std;

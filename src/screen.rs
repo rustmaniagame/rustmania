@@ -1,4 +1,7 @@
-use ggez::{graphics, Context, GameError, event::{EventHandler, Keycode, Mod}};
+use ggez::{
+    event::{EventHandler, Keycode, Mod},
+    graphics, Context, GameError,
+};
 use std::time::{Duration, Instant};
 
 pub trait Element: Send {

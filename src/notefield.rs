@@ -81,7 +81,8 @@ impl<'a> Element for Notefield<'a> {
             self.notes.columns().enumerate().zip(&mut self.on_screen)
         {
             while *draw_end != column_data.len()
-                && self.layout
+                && self
+                    .layout
                     .delta_to_position(column_data[*draw_end].0 - time)
                     < self.draw_distance
             {

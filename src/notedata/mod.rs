@@ -96,14 +96,12 @@ mod tests {
             NoteData::from_sm(File::open("test_files/notes_test.sm").unwrap()).unwrap(),
             NoteData {
                 notes: vec![
-                    vec![
-                        (
-                            Rational32::new(0, 1),
-                            NoteRow {
-                                row: vec![(NoteType::Tap, 3)],
-                            },
-                        ),
-                    ],
+                    vec![(
+                        Rational32::new(0, 1),
+                        NoteRow {
+                            row: vec![(NoteType::Tap, 3)],
+                        },
+                    ),],
                     vec![],
                     vec![
                         (

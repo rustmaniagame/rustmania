@@ -22,8 +22,8 @@ mod screen;
 mod timingdata;
 
 use clap::{App, Arg};
-use ggez::ContextBuilder;
 use ggez::graphics::{set_background_color, Color, Rect};
+use ggez::ContextBuilder;
 use notedata::NoteType;
 use num_rational::Rational32;
 use player_config::NoteSkin;
@@ -90,8 +90,7 @@ fn main() {
         .window_setup(ggez::conf::WindowSetup {
             title: "Rustmania".to_string(),
             ..Default::default()
-        })
-        .build()
+        }).build()
         .expect("Failed to build context");
     set_background_color(context, Color::new(0.0, 0.0, 0.0, 1.0));
 
