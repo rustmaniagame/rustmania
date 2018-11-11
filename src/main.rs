@@ -70,7 +70,11 @@ fn main() {
             Arg::with_name("Theme")
                 .help("The path to your lua theme file.")
                 .index(3)
-                .required(true)
+                .required(true),
+            Arg::with_name("Rate")
+                .help("The rate of the music.")
+                .index(4)
+                .required(false)
         ])
         .after_help("Licenced under MIT.")
         .get_matches();
@@ -85,6 +89,13 @@ fn main() {
         .value_of("NoteSkin")
         .expect("No path for NoteSkin specified");
 
+    let theme_address = matches
+        .value_of("Theme")
+        .expect("No path for theme received.");
+
+    let music_rate = matches
+        .value_of("Rate").unwrap_or("1.0").parse().unwrap_or(1.0);
+
     let context = &mut ContextBuilder::new("rustmania", "ixsetf")
         .add_resource_path("")
         .window_setup(ggez::conf::WindowSetup {
@@ -96,9 +107,6 @@ fn main() {
 
     let current_theme = Lua::new();
 
-    let theme_address = matches
-        .value_of("Theme")
-        .expect("No path for theme received.");
     let mut theme_file = File::open(theme_address).unwrap();
     let mut theme_lines = String::new();
     theme_file
@@ -145,11 +153,11 @@ fn main() {
 
     let notedata = notedata::NoteData::from_sm(simfile).expect("Failed to parse .sm file.");
 
-    let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, 1.0);
+    let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, music_rate);
     let notefield_p1 = notefield::Notefield::new(&p1_layout, &notes, 600);
     let notefield_p2 = notefield::Notefield::new(&p2_layout, &notes, 600);
     let music = music::Music::new(
-        1.0,
+        music_rate,
         format!(
             "Songs/Mu/{}",
             notedata.data.music_path.expect("No music path specified")
