@@ -11,6 +11,7 @@ extern crate serde_derive;
 extern crate cpal;
 extern crate lewton;
 extern crate toml;
+extern crate walkdir;
 
 mod gamestate;
 mod lua;
@@ -28,6 +29,7 @@ use notedata::NoteType;
 use num_rational::Rational32;
 use player_config::NoteSkin;
 use rlua::{Error, Lua, MultiValue};
+use std::ffi::OsStr;
 use std::fs::File;
 use std::io::Read;
 
@@ -79,11 +81,17 @@ fn main() {
         .after_help("Licenced under MIT.")
         .get_matches();
 
-    let simfile = File::open(
+    let simfile_folder = format!(
+        "Songs/{}",
         matches
             .value_of("SimFile")
-            .expect("No path for simfile received."),
-    ).expect("Could not open simfile.");
+            .expect("No path for simfile received.")
+    );
+
+    let mut simfile = walkdir::WalkDir::new(simfile_folder.clone())
+        .into_iter()
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.path().extension() == Some(OsStr::new("sm")));
 
     let noteskin = matches
         .value_of("NoteSkin")
@@ -94,7 +102,10 @@ fn main() {
         .expect("No path for theme received.");
 
     let music_rate = matches
-        .value_of("Rate").unwrap_or("1.0").parse().unwrap_or(1.0);
+        .value_of("Rate")
+        .unwrap_or("1.0")
+        .parse()
+        .unwrap_or(1.0);
 
     let context = &mut ContextBuilder::new("rustmania", "ixsetf")
         .add_resource_path("")
@@ -151,7 +162,9 @@ fn main() {
 
     let p2_layout = player_config::NoteLayout::new(&default_note_skin, 600, p2_options);
 
-    let notedata = notedata::NoteData::from_sm(simfile).expect("Failed to parse .sm file.");
+    let notedata = simfile
+        .find_map(|sim| notedata::NoteData::from_sm(File::open(sim.path()).unwrap()).ok())
+        .unwrap();
 
     let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, music_rate);
     let notefield_p1 = notefield::Notefield::new(&p1_layout, &notes, 600);
@@ -159,7 +172,8 @@ fn main() {
     let music = music::Music::new(
         music_rate,
         format!(
-            "Songs/Mu/{}",
+            "{}/{}",
+            simfile_folder,
             notedata.data.music_path.expect("No music path specified")
         ),
     );
