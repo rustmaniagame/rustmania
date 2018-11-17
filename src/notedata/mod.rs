@@ -5,6 +5,11 @@ use std::io;
 use std::slice;
 
 #[derive(Debug, PartialEq)]
+pub struct ChartData {
+    notes: Vec<Vec<(Rational32, NoteRow)>>,
+}
+
+#[derive(Debug, PartialEq)]
 pub struct ChartMetadata {
     pub title: Option<String>,
     pub music_path: Option<String>,
@@ -14,7 +19,7 @@ pub struct ChartMetadata {
 
 #[derive(Debug, PartialEq)]
 pub struct NoteData {
-    notes: Vec<Vec<(Rational32, NoteRow)>>,
+    notes: Vec<ChartData>,
     pub data: ChartMetadata,
 }
 
@@ -51,8 +56,16 @@ fn split_once(contents: &str, letter: char) -> (&str, &str) {
     (first, second)
 }
 
+impl ChartData {
+    fn new(notes: Vec<Vec<(Rational32, NoteRow)>>) -> Self {
+        ChartData { notes }
+    }
+    pub fn columns(&self) -> slice::Iter<Vec<(Rational32, NoteRow)>> {
+        self.notes.iter()
+    }
+}
+
 impl NoteData {
-    //noinspection RsUnresolvedReference
     pub fn from_sm<T>(mut simfile: T) -> Result<Self, io::Error>
     where
         T: io::Read,
@@ -69,7 +82,7 @@ impl NoteData {
         }
         Ok(chart)
     }
-    pub fn columns(&self) -> slice::Iter<Vec<(Rational32, NoteRow)>> {
+    pub fn charts(&self) -> slice::Iter<ChartData> {
         self.notes.iter()
     }
 }
@@ -95,7 +108,7 @@ mod tests {
         assert_eq!(
             NoteData::from_sm(File::open("test_files/notes_test.sm").unwrap()).unwrap(),
             NoteData {
-                notes: vec![
+                notes: vec![ChartData::new(vec![
                     vec![(
                         Rational32::new(0, 1),
                         NoteRow {
@@ -117,7 +130,7 @@ mod tests {
                             },
                         ),
                     ],
-                ],
+                ])],
                 data: ChartMetadata::new(),
             }
         );

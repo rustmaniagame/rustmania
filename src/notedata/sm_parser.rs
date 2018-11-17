@@ -25,22 +25,24 @@ pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
                 Err(_) => Vec::new(),
             }
         }
-        "NOTES" => data.notes = parse_main_block(contents),
+        "NOTES" => data.notes.push(parse_main_block(contents)),
         _ => {}
     }
 }
 
-fn parse_main_block(contents: &str) -> Vec<Vec<(Rational32, NoteRow)>> {
+fn parse_main_block(contents: &str) -> ChartData {
     let forbidden: &[_] = &[';', '\n', '\r'];
-    contents
-        .trim_right_matches(forbidden)
-        .lines()
-        .filter(|x| *x != "")
-        .skip(5)
-        .collect::<Vec<_>>()
-        .split(|&x| x == ",")
-        .map(|measure| parse_measure(measure))
-        .collect::<Vec<_>>()
+    ChartData::new(
+        contents
+            .trim_right_matches(forbidden)
+            .lines()
+            .filter(|x| *x != "")
+            .skip(5)
+            .collect::<Vec<_>>()
+            .split(|&x| x == ",")
+            .map(|measure| parse_measure(measure))
+            .collect::<Vec<_>>(),
+    )
 }
 
 fn char_to_notetype(character: char) -> Option<NoteType> {

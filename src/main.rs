@@ -167,8 +167,8 @@ fn main() {
         .unwrap();
 
     let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, music_rate);
-    let notefield_p1 = notefield::Notefield::new(&p1_layout, &notes, 600);
-    let notefield_p2 = notefield::Notefield::new(&p2_layout, &notes, 600);
+    let notefield_p1 = notefield::Notefield::new(&p1_layout, &notes[0], 600);
+    let notefield_p2 = notefield::Notefield::new(&p2_layout, &notes[0], 600);
     let music = music::Music::new(
         music_rate,
         format!(

@@ -1,6 +1,5 @@
 use ggez::graphics;
-use notedata::NoteData;
-use notedata::NoteType;
+use notedata::{ChartData, ChartMetadata, NoteData, NoteType};
 use num_rational::Rational32;
 use std::slice;
 
@@ -39,13 +38,24 @@ impl OffsetInfo {
 }
 
 impl TimingData<GameplayInfo> {
-    pub fn from_notedata<U>(data: &NoteData, sprite_finder: U, rate: f64) -> Self
+    pub fn from_notedata<U>(data: &NoteData, sprite_finder: U, rate: f64) -> Vec<Self>
     where
         U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
     {
-        let offset = data.data.offset.unwrap_or(0.0) * 1000.0;
-        let mut bpms: Vec<_> = data
-            .data
+        let metadata = &data.data;
+        data.charts().map(|chart| TimingData::from_chartdata::<U>(chart, metadata, &sprite_finder, rate)).collect()
+    }
+    pub fn from_chartdata<U>(
+        data: &ChartData,
+        meta: &ChartMetadata,
+        sprite_finder: &U,
+        rate: f64,
+    ) -> Self
+    where
+        U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
+    {
+        let offset = meta.offset.unwrap_or(0.0) * 1000.0;
+        let mut bpms: Vec<_> = meta
             .bpms
             .iter()
             .map(|(x, y, z)| (*x, *y, *z, 0.0))
@@ -90,6 +100,8 @@ impl TimingData<GameplayInfo> {
         TimingData { notes: output }
     }
 }
+
+
 impl<T> TimingData<T>
 where
     T: TimingInfo,
