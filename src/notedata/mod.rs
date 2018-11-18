@@ -93,10 +93,6 @@ mod tests {
     use std::fs::File;
 
     #[test]
-    fn split_once_correctly() {
-        assert_eq!(split_once("left$right", '$'), (("left", "right")))
-    }
-    #[test]
     fn simple_file_parse() {
         assert_eq!(
             NoteData::from_sm(File::open("test_files/notes_test.sm").unwrap()).unwrap(),
