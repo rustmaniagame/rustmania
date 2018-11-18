@@ -49,13 +49,6 @@ impl ChartMetadata {
     }
 }
 
-fn split_once(contents: &str, letter: char) -> (&str, &str) {
-    let mut split = contents.splitn(2, letter);
-    let first = split.next().unwrap_or("");
-    let second = split.next().unwrap_or("");
-    (first, second)
-}
-
 impl ChartData {
     fn new(notes: Vec<Vec<(Rational32, NoteRow)>>) -> Self {
         ChartData { notes }
@@ -76,8 +69,8 @@ impl NoteData {
         };
         let mut chart_string = String::new();
         simfile.read_to_string(&mut chart_string)?;
-        let tags = chart_string.split(|x| x == '#').map(|x| split_once(x, ':'));
-        for (tag, contents) in tags {
+        let (_, tags) = sm_parser::break_to_tags(&chart_string).unwrap();
+        for (tag, contents) in tags.iter() {
             sm_parser::parse_tag(tag, contents, &mut chart);
         }
         Ok(chart)

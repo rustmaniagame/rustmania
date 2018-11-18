@@ -1,18 +1,21 @@
 use super::*;
 use nom::double_s;
 
+//This parser should be rewritten, as the current solution is inelegant and likely incurs a
+//performance cost as a result.
+
 pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
     match tag {
-        "TITLE" => data.data.title = Some(str_tag_parse(contents).unwrap().1.to_string()),
-        "MUSIC" => data.data.music_path = Some(str_tag_parse(contents).unwrap().1.to_string()),
+        "TITLE" => data.data.title = Some(contents.to_string()),
+        "MUSIC" => data.data.music_path = Some(contents.to_string()),
         "OFFSET" => {
-            data.data.offset = match float_tag_parse(contents) {
-                Ok(thing) => Some(-1.0 * thing.1),
+            data.data.offset = match contents.parse::<f64>() {
+                Ok(thing) => Some(-1.0 * thing),
                 Err(_) => None,
             }
         }
         "BPMS" => {
-            data.data.bpms = match bpm_parse(contents) {
+            data.data.bpms = match bpm_parse(&format!("{};", contents)) {
                 Ok(thing) => thing
                     .1
                     .into_iter()
@@ -83,6 +86,16 @@ fn parse_line(contents: &str) -> NoteRow {
     }
 }
 
+named!(pub break_to_tags<&str, Vec<(&str,&str)>>,many0!(complete!(read_sm_tag)));
+
+named!(read_sm_tag<&str,(&str,&str)>,
+    do_parse!(
+        take_until_and_consume!("#") >>
+        name: take_until_and_consume!(":") >>
+        contents: take_until!(";") >>
+        (name, contents)
+    ));
+
 named!( bpm_parse<&str,Vec<(f64,f64)>>, separated_list!(tag!(","), bpm_line));
 
 named!(bpm_line<&str, (f64,f64)>,
@@ -92,17 +105,6 @@ named!(bpm_line<&str, (f64,f64)>,
            bpm: double_s >>
     ( time / 4.0, bpm ) )
   )
-);
-
-named!(float_tag_parse<&str, f64>,
-    do_parse!(
-        value: double_s >>
-        tag!(";") >>
-    ( value )
-));
-
-named!(str_tag_parse<&str, &str>,
-    take_until!(";")
 );
 
 #[cfg(test)]

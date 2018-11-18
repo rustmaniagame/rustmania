@@ -43,7 +43,9 @@ impl TimingData<GameplayInfo> {
         U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
     {
         let metadata = &data.data;
-        data.charts().map(|chart| TimingData::from_chartdata::<U>(chart, metadata, &sprite_finder, rate)).collect()
+        data.charts()
+            .map(|chart| TimingData::from_chartdata::<U>(chart, metadata, &sprite_finder, rate))
+            .collect()
     }
     pub fn from_chartdata<U>(
         data: &ChartData,
@@ -100,7 +102,6 @@ impl TimingData<GameplayInfo> {
         TimingData { notes: output }
     }
 }
-
 
 impl<T> TimingData<T>
 where
