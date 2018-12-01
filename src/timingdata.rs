@@ -95,7 +95,11 @@ impl TimingData<GameplayInfo> {
                 for (note, column_index) in row.notes() {
                     let sprite =
                         sprite_finder(measure_index, 0.0, *inner_time, *note, *column_index);
-                    output[*column_index].push(GameplayInfo(row_time as i64, sprite));
+                    //This if let can hide errors in the parser or .sm file
+                    // An else clause should be added where errors are handled
+                    if let Some(column) = output.get_mut(*column_index) {
+                        column.push(GameplayInfo(row_time as i64, sprite));
+                    }
                 }
             }
         }
