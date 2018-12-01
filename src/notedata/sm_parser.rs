@@ -42,7 +42,7 @@ fn parse_main_block(contents: &str) -> ChartData {
             .filter(|x| *x != "")
             .skip(5)
             .collect::<Vec<_>>()
-            .split(|&x| x.chars().next() == Some(','))
+            .split(|&x| x.starts_with(','))
             .map(|measure| parse_measure(measure))
             .collect::<Vec<_>>(),
     )
