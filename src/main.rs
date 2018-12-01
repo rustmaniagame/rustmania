@@ -10,6 +10,7 @@ extern crate rlua;
 extern crate serde_derive;
 extern crate cpal;
 extern crate lewton;
+extern crate minimp3;
 extern crate toml;
 extern crate walkdir;
 
@@ -165,7 +166,6 @@ fn main() {
     let notedata = simfile
         .find_map(|sim| notedata::NoteData::from_sm(File::open(sim.path()).unwrap()).ok())
         .unwrap();
-
     let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, music_rate);
     let notefield_p1 = notefield::Notefield::new(&p1_layout, &notes[0], 600);
     let notefield_p2 = notefield::Notefield::new(&p2_layout, &notes[0], 600);

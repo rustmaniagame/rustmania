@@ -1,9 +1,11 @@
 use cpal;
 use ggez::{event::Keycode, Context, GameError};
 use lewton::inside_ogg::OggStreamReader;
+use minimp3::Decoder;
 use screen::Element;
 use std;
 use std::fs::File;
+use std::path::PathBuf;
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -20,7 +22,9 @@ impl Music {
     }
 }
 
-fn play_ogg(start_time: Instant, rate: f64, path: String) {
+//Known issue: playback only operates correctly on two channel audio
+//single channel audio needs to be accounted for
+fn play_file(start_time: Instant, rate: f64, path: String) {
     let device = cpal::default_output_device().expect("Failed to get default output device");
     let format = device
         .default_output_format()
@@ -28,19 +32,18 @@ fn play_ogg(start_time: Instant, rate: f64, path: String) {
     let event_loop = cpal::EventLoop::new();
     let stream_id = event_loop.build_output_stream(&device, &format).unwrap();
 
-    let f = File::open(path).unwrap();
     let sample_rate = format.sample_rate.0 as f64;
 
-    let mut srr = OggStreamReader::new(f).unwrap();
-    let stream_sample_rate = srr.ident_hdr.audio_sample_rate as i32;
-
-    let mut coolvec = Vec::<i16>::new();
-    while let Some(pck_samples) = srr.read_dec_packet_itl().unwrap() {
-        match srr.ident_hdr.audio_channels {
-            2 => coolvec.append(&mut pck_samples.clone()),
-            n => panic!("unsupported number of channels: {}", n),
-        };
-    }
+    let mut ext = PathBuf::new();
+    ext.push(&path);
+    let (stream_sample_rate, samples) = match ext.extension() {
+        Some(ext) => match ext.to_str() {
+            Some("ogg") => decode_ogg(path),
+            Some("mp3") => decode_mp3(path),
+            _ => panic!("Unrecognized file type"),
+        },
+        _ => panic!("No file type found"),
+    };
 
     let mut sample_index = 0.0;
 
@@ -72,11 +75,44 @@ fn play_ogg(start_time: Instant, rate: f64, path: String) {
             for sample in buffer.chunks_mut(format.channels as usize) {
                 let value = next_value(start_time);
                 for (i, out) in sample.iter_mut().enumerate() {
-                    *out = *coolvec.get(value + i).unwrap_or(&0) as f32 / std::i16::MAX as f32;
+                    *out = *samples.get(value + i).unwrap_or(&0) as f32 / std::i16::MAX as f32;
                 }
             }
         }
     });
+}
+
+fn decode_ogg(path: String) -> (i32, Vec<i16>) {
+    let mut srr = OggStreamReader::new(File::open(path).unwrap()).unwrap();
+    let stream_sample_rate = srr.ident_hdr.audio_sample_rate as i32;
+
+    let mut coolvec = Vec::<i16>::new();
+    while let Some(pck_samples) = srr.read_dec_packet_itl().unwrap() {
+        match srr.ident_hdr.audio_channels {
+            2 => coolvec.append(&mut pck_samples.clone()),
+            n => panic!("unsupported number of channels: {}", n),
+        };
+    }
+    (stream_sample_rate, coolvec)
+}
+
+//Known issue: the last frame seems to be dropped from the end of the file
+fn decode_mp3(path: String) -> (i32, Vec<i16>) {
+    let mut decoder = Decoder::new(File::open(path).unwrap());
+
+    let mut frames = Vec::new();
+
+    let stream_sample_rate = if let Ok(frame) = decoder.next_frame() {
+        frames.append(&mut frame.data.clone());
+        frame.sample_rate
+    } else {
+        0
+    };
+
+    while let Ok(frame) = decoder.next_frame() {
+        frames.append(&mut frame.data.clone());
+    }
+    (stream_sample_rate, frames)
 }
 
 impl Element for Music {
@@ -87,7 +123,7 @@ impl Element for Music {
         if let Some(time) = time {
             let rate = self.rate;
             let path = self.path.clone();
-            thread::spawn(move || play_ogg(time, rate, path));
+            thread::spawn(move || play_file(time, rate, path));
         }
         Ok(())
     }
