@@ -18,7 +18,7 @@ where
 pub trait TimingInfo {}
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct GameplayInfo(pub i64, pub graphics::Rect);
+pub struct GameplayInfo(pub i64, pub graphics::Rect, pub NoteType);
 
 impl TimingInfo for GameplayInfo {}
 
@@ -98,7 +98,7 @@ impl TimingData<GameplayInfo> {
                     //This if let can hide errors in the parser or .sm file
                     // An else clause should be added where errors are handled
                     if let Some(column) = output.get_mut(*column_index) {
-                        column.push(GameplayInfo(row_time as i64, sprite));
+                        column.push(GameplayInfo(row_time as i64, sprite, *note));
                     }
                 }
             }

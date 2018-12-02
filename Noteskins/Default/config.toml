@@ -1,5 +1,7 @@
 arrows = "notes.png"
 receptor = "receptor.png"
 judgment = "judgment.png"
+hold_body = "holdbody.png"
+hold_head = "holdhead.png"
 column_positions = [-96, -32, 32, 96]
 column_rotations = [90,0,180,270]

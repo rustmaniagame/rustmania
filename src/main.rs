@@ -39,22 +39,30 @@ fn sprite_finder(
     _measure: usize,
     _row_time: f64,
     row_alignment: Rational32,
-    _note_type: NoteType,
+    note_type: NoteType,
     _column: usize,
 ) -> Rect {
-    let &division = (row_alignment * 4).denom();
-    match division {
-        1 => Rect::new(0.0, 0.0, 1.0, 0.125),
-        2 => Rect::new(0.0, 0.125, 1.0, 0.125),
-        3 => Rect::new(0.0, 0.25, 1.0, 0.125),
-        4 => Rect::new(0.0, 0.375, 1.0, 0.125),
-        6 => Rect::new(0.0, 0.5, 1.0, 0.125),
-        8 => Rect::new(0.0, 0.625, 1.0, 0.125),
-        12 => Rect::new(0.0, 0.75, 1.0, 0.125),
-        16 => Rect::new(0.0, 0.875, 1.0, 0.125),
-        24 => Rect::new(0.0, 0.875, 1.0, 0.125),
-        _ => Rect::new(0.0, 0.875, 1.0, 0.125),
+    match note_type {
+        NoteType::Tap | NoteType::Hold => {
+            let &division = (row_alignment * 4).denom();
+            match division {
+                1 => Rect::new(0.0, 0.0, 1.0, 0.125),
+                2 => Rect::new(0.0, 0.125, 1.0, 0.125),
+                3 => Rect::new(0.0, 0.25, 1.0, 0.125),
+                4 => Rect::new(0.0, 0.375, 1.0, 0.125),
+                6 => Rect::new(0.0, 0.5, 1.0, 0.125),
+                8 => Rect::new(0.0, 0.625, 1.0, 0.125),
+                12 => Rect::new(0.0, 0.75, 1.0, 0.125),
+                16 => Rect::new(0.0, 0.875, 1.0, 0.125),
+                24 => Rect::new(0.0, 0.875, 1.0, 0.125),
+                _ => Rect::new(0.0, 0.875, 1.0, 0.125),
+            }
+        },
+        _ => {
+            Rect::new(0.0,0.0,0.0,0.0)
+        }
     }
+
 }
 
 fn main() {

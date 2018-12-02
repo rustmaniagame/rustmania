@@ -12,6 +12,8 @@ pub struct NoteLayout {
     pub arrows_sprite: graphics::Image,
     pub receptor_sprite: graphics::Image,
     pub judgment_sprite: graphics::Image,
+    pub hold_body_sprite: graphics::Image,
+    pub hold_head_sprite: graphics::Image,
     pub column_positions: [i64; 4],
     pub column_rotations: [f32; 4],
     pub receptor_height: i64,
@@ -24,6 +26,8 @@ pub struct NoteSkin {
     arrows_sprite: graphics::Image,
     receptor_sprite: graphics::Image,
     judgment_sprite: graphics::Image,
+    hold_body_sprite: graphics::Image,
+    hold_head_sprite: graphics::Image,
     column_positions: [i64; 4],
     column_rotations: [f32; 4],
 }
@@ -43,6 +47,8 @@ impl NoteLayout {
             arrows_sprite,
             receptor_sprite,
             judgment_sprite,
+            hold_body_sprite,
+            hold_head_sprite,
             mut column_positions,
             mut column_rotations,
         } = skin.clone();
@@ -70,6 +76,8 @@ impl NoteLayout {
             arrows_sprite,
             receptor_sprite,
             judgment_sprite,
+            hold_body_sprite,
+            hold_head_sprite,
             receptor_height,
             judgment_position,
             scroll_speed,
@@ -102,7 +110,7 @@ impl NoteLayout {
         column_index: usize,
         batch: &mut graphics::spritebatch::SpriteBatch,
     ) {
-        for GameplayInfo(note, coords) in column {
+        for GameplayInfo(note, coords,_) in column {
             self.add_note(column_index, self.delta_to_position(note), coords, batch);
         }
     }
@@ -167,6 +175,8 @@ struct NoteSkinInfo {
     arrows: String,
     receptor: String,
     judgment: String,
+    hold_body: String,
+    hold_head: String,
     column_positions: [i64; 4],
     column_rotations: [f32; 4],
 }
@@ -186,21 +196,27 @@ impl NoteSkin {
             arrows,
             receptor,
             judgment,
+            hold_body,
+            hold_head,
             column_positions,
             column_rotations,
         } = match toml::from_str(&config_string) {
             Ok(skin) => skin,
             Err(_) => return None,
         };
-        if let (Ok(arrows_sprite), Ok(receptor_sprite), Ok(judgment_sprite)) = (
+        if let (Ok(arrows_sprite), Ok(receptor_sprite), Ok(judgment_sprite), Ok(hold_body_sprite), Ok(hold_head_sprite)) = (
             image_from_subdirectory(context, path, arrows),
             image_from_subdirectory(context, path, receptor),
             image_from_subdirectory(context, path, judgment),
+            image_from_subdirectory(context, path, hold_body),
+            image_from_subdirectory(context, path, hold_head),
         ) {
             Some(NoteSkin {
                 arrows_sprite,
                 receptor_sprite,
                 judgment_sprite,
+                hold_body_sprite,
+                hold_head_sprite,
                 column_positions,
                 column_rotations,
             })
