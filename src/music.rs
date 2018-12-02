@@ -40,6 +40,7 @@ fn play_file(start_time: Instant, rate: f64, path: String) {
         Some(ext) => match ext.to_str() {
             Some("ogg") => decode_ogg(path),
             Some("mp3") => decode_mp3(path),
+            Some("wav") => decode_wav(path),
             _ => panic!("Unrecognized file type"),
         },
         _ => panic!("No file type found"),
@@ -113,6 +114,17 @@ fn decode_mp3(path: String) -> (i32, Vec<i16>) {
         frames.append(&mut frame.data.clone());
     }
     (stream_sample_rate, frames)
+}
+
+fn decode_wav(path: String) -> (i32, Vec<i16>) {
+    let mut reader = hound::WavReader::open(path).unwrap();
+    (
+        reader.spec().sample_rate as i32,
+        reader
+            .samples::<i16>()
+            .filter_map(|x| x.ok())
+            .collect::<Vec<_>>(),
+    )
 }
 
 impl Element for Music {

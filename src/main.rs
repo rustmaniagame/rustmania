@@ -9,6 +9,7 @@ extern crate rlua;
 #[macro_use]
 extern crate serde_derive;
 extern crate cpal;
+extern crate hound;
 extern crate lewton;
 extern crate minimp3;
 extern crate toml;
