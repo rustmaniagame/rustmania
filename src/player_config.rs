@@ -10,12 +10,7 @@ use toml;
 
 #[derive(PartialEq)]
 pub struct NoteLayout {
-    pub arrows_sprite: graphics::Image,
-    pub receptor_sprite: graphics::Image,
-    pub judgment_sprite: graphics::Image,
-    pub hold_body_sprite: graphics::Image,
-    pub hold_head_sprite: graphics::Image,
-    pub mine_sprite: graphics::Image,
+    pub sprites: NoteSprites,
     pub column_positions: [i64; 4],
     pub column_rotations: [f32; 4],
     pub receptor_height: i64,
@@ -25,14 +20,19 @@ pub struct NoteLayout {
 
 #[derive(PartialEq, Clone)]
 pub struct NoteSkin {
-    arrows_sprite: graphics::Image,
-    receptor_sprite: graphics::Image,
-    judgment_sprite: graphics::Image,
-    hold_body_sprite: graphics::Image,
-    hold_head_sprite: graphics::Image,
-    mine_sprite: graphics::Image,
-    column_positions: [i64; 4],
-    column_rotations: [f32; 4],
+    pub sprites: NoteSprites,
+    pub column_positions: [i64; 4],
+    pub column_rotations: [f32; 4],
+}
+
+#[derive(PartialEq, Clone)]
+pub struct NoteSprites {
+    pub arrows: graphics::Image,
+    pub receptor: graphics::Image,
+    pub judgment: graphics::Image,
+    pub hold_body: graphics::Image,
+    pub hold_head: graphics::Image,
+    pub mine: graphics::Image,
 }
 
 #[derive(PartialEq, Copy, Clone)]
@@ -47,12 +47,7 @@ pub struct PlayerOptions {
 impl NoteLayout {
     pub fn new(skin: &NoteSkin, screen_height: i64, player_options: PlayerOptions) -> NoteLayout {
         let NoteSkin {
-            arrows_sprite,
-            receptor_sprite,
-            judgment_sprite,
-            hold_body_sprite,
-            hold_head_sprite,
-            mine_sprite,
+            sprites,
             mut column_positions,
             mut column_rotations,
         } = skin.clone();
@@ -75,14 +70,9 @@ impl NoteLayout {
         }
         let judgment_position = graphics::Point2::new(judgment_position.0, judgment_position.1);
         NoteLayout {
+            sprites,
             column_positions,
             column_rotations,
-            arrows_sprite,
-            receptor_sprite,
-            judgment_sprite,
-            hold_body_sprite,
-            hold_head_sprite,
-            mine_sprite,
             receptor_height,
             judgment_position,
             scroll_speed,
@@ -134,7 +124,7 @@ impl NoteLayout {
         for (index, &column_position) in self.column_positions.iter().enumerate() {
             graphics::draw_ex(
                 ctx,
-                &self.receptor_sprite,
+                &self.sprites.receptor,
                 graphics::DrawParam {
                     dest: graphics::Point2::new(
                         column_position as f32,
@@ -181,7 +171,7 @@ impl NoteLayout {
         ctx: &mut ggez::Context,
         judge: Judgement,
     ) -> Result<(), ggez::GameError> {
-        graphics::draw_ex(ctx, &self.judgment_sprite, self.select_judgment(judge))?;
+        graphics::draw_ex(ctx, &self.sprites.judgment, self.select_judgment(judge))?;
         Ok(())
     }
 }
@@ -222,14 +212,7 @@ impl NoteSkin {
             Ok(skin) => skin,
             Err(_) => return None,
         };
-        if let (
-            Ok(arrows_sprite),
-            Ok(receptor_sprite),
-            Ok(judgment_sprite),
-            Ok(hold_body_sprite),
-            Ok(hold_head_sprite),
-            Ok(mine_sprite),
-        ) = (
+        if let (Ok(arrows), Ok(receptor), Ok(judgment), Ok(hold_body), Ok(hold_head), Ok(mine)) = (
             image_from_subdirectory(context, path, arrows),
             image_from_subdirectory(context, path, receptor),
             image_from_subdirectory(context, path, judgment),
@@ -237,13 +220,16 @@ impl NoteSkin {
             image_from_subdirectory(context, path, hold_head),
             image_from_subdirectory(context, path, mine),
         ) {
+            let sprites = NoteSprites {
+                arrows,
+                receptor,
+                judgment,
+                hold_body,
+                hold_head,
+                mine,
+            };
             Some(NoteSkin {
-                arrows_sprite,
-                receptor_sprite,
-                judgment_sprite,
-                hold_body_sprite,
-                hold_head_sprite,
-                mine_sprite,
+                sprites,
                 column_positions,
                 column_rotations,
             })

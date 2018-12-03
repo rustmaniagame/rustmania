@@ -36,8 +36,8 @@ impl<'a> Notefield<'a> {
             notes,
             on_screen: Vec::<_>::new(),
             batches: vec![
-                SpriteBatch::new(layout.arrows_sprite.clone()),
-                SpriteBatch::new(layout.mine_sprite.clone()),
+                SpriteBatch::new(layout.sprites.arrows.clone()),
+                SpriteBatch::new(layout.sprites.mine.clone()),
             ],
             draw_distance,
             last_judgement: None,
