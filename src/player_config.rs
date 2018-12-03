@@ -1,6 +1,7 @@
 extern crate ggez;
 use ggez::error::GameResult;
 use ggez::graphics;
+use notedata::NoteType;
 use notefield::Judgement;
 use std::fs::File;
 use std::io::Read;
@@ -14,6 +15,7 @@ pub struct NoteLayout {
     pub judgment_sprite: graphics::Image,
     pub hold_body_sprite: graphics::Image,
     pub hold_head_sprite: graphics::Image,
+    pub mine_sprite: graphics::Image,
     pub column_positions: [i64; 4],
     pub column_rotations: [f32; 4],
     pub receptor_height: i64,
@@ -28,6 +30,7 @@ pub struct NoteSkin {
     judgment_sprite: graphics::Image,
     hold_body_sprite: graphics::Image,
     hold_head_sprite: graphics::Image,
+    mine_sprite: graphics::Image,
     column_positions: [i64; 4],
     column_rotations: [f32; 4],
 }
@@ -49,6 +52,7 @@ impl NoteLayout {
             judgment_sprite,
             hold_body_sprite,
             hold_head_sprite,
+            mine_sprite,
             mut column_positions,
             mut column_rotations,
         } = skin.clone();
@@ -78,6 +82,7 @@ impl NoteLayout {
             judgment_sprite,
             hold_body_sprite,
             hold_head_sprite,
+            mine_sprite,
             receptor_height,
             judgment_position,
             scroll_speed,
@@ -94,9 +99,14 @@ impl NoteLayout {
         column: usize,
         position: i64,
         coords: graphics::Rect,
-        batch: &mut graphics::spritebatch::SpriteBatch,
+        batches: &mut Vec<graphics::spritebatch::SpriteBatch>,
+        note_type: NoteType,
     ) {
-        batch.add(graphics::DrawParam {
+        let batch_index = match note_type {
+            NoteType::Tap | NoteType::Hold => 0,
+            _ => 1,
+        };
+        batches[batch_index].add(graphics::DrawParam {
             src: coords,
             dest: graphics::Point2::new(self.column_positions[column] as f32, position as f32),
             rotation: self.column_rotations[column],
@@ -108,10 +118,16 @@ impl NoteLayout {
         &self,
         column: impl Iterator<Item = GameplayInfo>,
         column_index: usize,
-        batch: &mut graphics::spritebatch::SpriteBatch,
+        batches: &mut Vec<graphics::spritebatch::SpriteBatch>,
     ) {
-        for GameplayInfo(note, coords,_) in column {
-            self.add_note(column_index, self.delta_to_position(note), coords, batch);
+        for GameplayInfo(note, coords, note_type) in column {
+            self.add_note(
+                column_index,
+                self.delta_to_position(note),
+                coords,
+                batches,
+                note_type,
+            );
         }
     }
     pub fn draw_receptors(&self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
@@ -177,6 +193,7 @@ struct NoteSkinInfo {
     judgment: String,
     hold_body: String,
     hold_head: String,
+    mine: String,
     column_positions: [i64; 4],
     column_rotations: [f32; 4],
 }
@@ -198,18 +215,27 @@ impl NoteSkin {
             judgment,
             hold_body,
             hold_head,
+            mine,
             column_positions,
             column_rotations,
         } = match toml::from_str(&config_string) {
             Ok(skin) => skin,
             Err(_) => return None,
         };
-        if let (Ok(arrows_sprite), Ok(receptor_sprite), Ok(judgment_sprite), Ok(hold_body_sprite), Ok(hold_head_sprite)) = (
+        if let (
+            Ok(arrows_sprite),
+            Ok(receptor_sprite),
+            Ok(judgment_sprite),
+            Ok(hold_body_sprite),
+            Ok(hold_head_sprite),
+            Ok(mine_sprite),
+        ) = (
             image_from_subdirectory(context, path, arrows),
             image_from_subdirectory(context, path, receptor),
             image_from_subdirectory(context, path, judgment),
             image_from_subdirectory(context, path, hold_body),
             image_from_subdirectory(context, path, hold_head),
+            image_from_subdirectory(context, path, mine),
         ) {
             Some(NoteSkin {
                 arrows_sprite,
@@ -217,6 +243,7 @@ impl NoteSkin {
                 judgment_sprite,
                 hold_body_sprite,
                 hold_head_sprite,
+                mine_sprite,
                 column_positions,
                 column_rotations,
             })

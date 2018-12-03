@@ -13,7 +13,7 @@ pub struct Notefield<'a> {
     layout: &'a super::player_config::NoteLayout,
     notes: &'a TimingData<GameplayInfo>,
     on_screen: Vec<(usize, usize)>,
-    batch: SpriteBatch,
+    batches: Vec<SpriteBatch>,
     draw_distance: i64,
     last_judgement: Option<Judgement>,
     judgment_list: TimingData<OffsetInfo>,
@@ -35,14 +35,17 @@ impl<'a> Notefield<'a> {
             layout,
             notes,
             on_screen: Vec::<_>::new(),
-            batch: SpriteBatch::new(layout.arrows_sprite.clone()),
+            batches: vec![
+                SpriteBatch::new(layout.arrows_sprite.clone()),
+                SpriteBatch::new(layout.mine_sprite.clone()),
+            ],
             draw_distance,
             last_judgement: None,
             judgment_list: TimingData::<_>::new(),
         }
     }
     fn redraw_batch(&mut self) {
-        self.batch.clear();
+        self.batches.iter_mut().for_each(|x| x.clear());
         for ((column_index, column_data), (draw_start, draw_end)) in
             self.notes.columns().enumerate().zip(&mut self.on_screen)
         {
@@ -50,7 +53,7 @@ impl<'a> Notefield<'a> {
                 self.layout.add_column_of_notes(
                     column_data[*draw_start..*draw_end].iter().cloned(),
                     column_index,
-                    &mut self.batch,
+                    &mut self.batches,
                 );
             }
         }
@@ -91,7 +94,8 @@ impl<'a> Element for Notefield<'a> {
                         column_index,
                         self.layout.delta_to_position(column_data[*draw_end].0),
                         column_data[*draw_end].1,
-                        &mut self.batch,
+                        &mut self.batches,
+                        column_data[*draw_end].2,
                     );
                 }
                 *draw_end += 1;
@@ -110,7 +114,10 @@ impl<'a> Element for Notefield<'a> {
             dest: graphics::Point2::new(0.0, -1.0 * (self.layout.delta_to_offset(time))),
             ..Default::default()
         };
-        graphics::draw_ex(ctx, &self.batch, target_parameter)?;
+
+        for batch in self.batches.iter() {
+            graphics::draw_ex(ctx, batch, target_parameter)?;
+        }
         if let Some(judgment) = self.last_judgement {
             self.layout.draw_judgment(ctx, judgment)?;
         }
