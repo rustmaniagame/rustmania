@@ -2,6 +2,7 @@ extern crate ggez;
 
 use ggez::graphics;
 use ggez::graphics::spritebatch::SpriteBatch;
+use notedata::NoteType;
 use player_config;
 use rlua::UserData;
 use screen::Element;
@@ -58,16 +59,20 @@ impl<'a> Notefield<'a> {
             }
         }
     }
-    fn handle_judgement(&mut self, offset: i64, column: usize) {
+    fn handle_judgement(&mut self, offset: i64, column: usize, note_type: NoteType) {
         let abs_offset = offset.abs();
-        match abs_offset {
-            0...22 => self.last_judgement = Some(Judgement::Hit(0)),
-            23...45 => self.last_judgement = Some(Judgement::Hit(1)),
-            46...90 => self.last_judgement = Some(Judgement::Hit(2)),
-            91...135 => self.last_judgement = Some(Judgement::Hit(3)),
-            136...180 => self.last_judgement = Some(Judgement::Hit(4)),
+        match note_type {
+            NoteType::Tap | NoteType::Hold => match abs_offset {
+                0...22 => self.last_judgement = Some(Judgement::Hit(0)),
+                23...45 => self.last_judgement = Some(Judgement::Hit(1)),
+                46...90 => self.last_judgement = Some(Judgement::Hit(2)),
+                91...135 => self.last_judgement = Some(Judgement::Hit(3)),
+                136...180 => self.last_judgement = Some(Judgement::Hit(4)),
+                _ => {}
+            },
             _ => {}
         }
+
         self.judgment_list.add(OffsetInfo(offset), column);
     }
 }
@@ -138,11 +143,11 @@ impl<'a> Element for Notefield<'a> {
             _ => return,
         };
         let delta = self.notes.columns().collect::<Vec<_>>()[index].get(self.on_screen[index].0);
-        if let (Some(time), Some(GameplayInfo(delta, _, _))) = (time, delta) {
+        if let (Some(time), Some(GameplayInfo(delta, _, note_type))) = (time, delta) {
             let offset = delta - time;
             if offset < 180 {
                 self.on_screen[index].0 += 1;
-                self.handle_judgement(offset, index);
+                self.handle_judgement(offset, index, *note_type);
                 self.redraw_batch();
             }
         }
