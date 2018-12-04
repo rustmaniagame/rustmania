@@ -23,13 +23,16 @@ pub struct GameplayInfo(pub i64, pub graphics::Rect, pub NoteType);
 impl TimingInfo for GameplayInfo {}
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct OffsetInfo(pub i64);
+pub struct OffsetInfo(pub Option<i64>);
 
 impl TimingInfo for OffsetInfo {}
 
 impl OffsetInfo {
     fn wife(self, ts: f64) -> f64 {
-        let maxms = self.0 as f64;
+        let maxms = match self.0 {
+            Some(offset) => offset,
+            None => return -8.0,
+        } as f64;
         let avedeviation = 95.0 * ts;
         let mut y = 1.0 - 2.0_f64.powf(-1.0 * maxms * maxms / (avedeviation * avedeviation));
         y *= y;
@@ -144,23 +147,23 @@ mod tests {
     #[test]
     fn wife_symmetry() {
         for offset in 0..180 {
-            let early = OffsetInfo(-offset);
-            let late = OffsetInfo(offset);
+            let early = OffsetInfo(Some(-offset));
+            let late = OffsetInfo(Some(offset));
             assert_eq!(early.wife(1.0), late.wife(1.0));
         }
     }
     #[test]
     fn wife_peak() {
-        assert_eq!(OffsetInfo(0).wife(1.0), 2.0);
-        assert_eq!(OffsetInfo(0).wife(0.5), 2.0);
-        assert_eq!(OffsetInfo(0).wife(2.0), 2.0);
+        assert_eq!(OffsetInfo(Some(0)).wife(1.0), 2.0);
+        assert_eq!(OffsetInfo(Some(0)).wife(0.5), 2.0);
+        assert_eq!(OffsetInfo(Some(0)).wife(2.0), 2.0);
     }
     #[test]
     fn wife_decreasing() {
         for offset in 0..179 {
-            assert!(OffsetInfo(offset).wife(1.0) > OffsetInfo(offset + 1).wife(1.0));
-            assert!(OffsetInfo(offset).wife(0.5) > OffsetInfo(offset + 1).wife(0.5));
-            assert!(OffsetInfo(offset).wife(2.0) > OffsetInfo(offset + 1).wife(2.0));
+            assert!(OffsetInfo(Some(offset)).wife(1.0) > OffsetInfo(Some(offset + 1)).wife(1.0));
+            assert!(OffsetInfo(Some(offset)).wife(0.5) > OffsetInfo(Some(offset + 1)).wife(0.5));
+            assert!(OffsetInfo(Some(offset)).wife(2.0) > OffsetInfo(Some(offset + 1)).wife(2.0));
         }
     }
 }

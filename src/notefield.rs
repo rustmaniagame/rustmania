@@ -59,16 +59,18 @@ impl<'a> Notefield<'a> {
             }
         }
     }
-    fn handle_judgement(&mut self, offset: i64, column: usize, note_type: NoteType) {
-        let abs_offset = offset.abs();
+    fn handle_judgement(&mut self, offset: Option<i64>, column: usize, note_type: NoteType) {
         match note_type {
-            NoteType::Tap | NoteType::Hold => match abs_offset {
-                0...22 => self.last_judgement = Some(Judgement::Hit(0)),
-                23...45 => self.last_judgement = Some(Judgement::Hit(1)),
-                46...90 => self.last_judgement = Some(Judgement::Hit(2)),
-                91...135 => self.last_judgement = Some(Judgement::Hit(3)),
-                136...180 => self.last_judgement = Some(Judgement::Hit(4)),
-                _ => {}
+            NoteType::Tap | NoteType::Hold => match offset {
+                Some(off) => match off.abs() {
+                    0...22 => self.last_judgement = Some(Judgement::Hit(0)),
+                    23...45 => self.last_judgement = Some(Judgement::Hit(1)),
+                    46...90 => self.last_judgement = Some(Judgement::Hit(2)),
+                    91...135 => self.last_judgement = Some(Judgement::Hit(3)),
+                    136...180 => self.last_judgement = Some(Judgement::Hit(4)),
+                    _ => {}
+                },
+                None => self.last_judgement = Some(Judgement::Miss),
             },
             _ => {}
         }
@@ -85,35 +87,35 @@ impl<'a> Element for Notefield<'a> {
             None => return Ok(()),
         };
         let mut clear_batch = false;
-        for ((column_index, column_data), (draw_start, draw_end)) in
-            self.notes.columns().enumerate().zip(&mut self.on_screen)
+        for ((column_index, column_data), (mut draw_start, mut draw_end)) in
+            self.notes.columns().enumerate().zip(self.on_screen.clone())
         {
-            while *draw_end != column_data.len()
+            while draw_end != column_data.len()
                 && self
                     .layout
-                    .delta_to_position(column_data[*draw_end].0 - time)
+                    .delta_to_position(column_data[draw_end].0 - time)
                     < self.draw_distance
             {
-                if *draw_start <= *draw_end {
+                if draw_start <= draw_end {
                     self.layout.add_note(
                         column_index,
-                        self.layout.delta_to_position(column_data[*draw_end].0),
-                        column_data[*draw_end].1,
+                        self.layout.delta_to_position(column_data[draw_end].0),
+                        column_data[draw_end].1,
                         &mut self.batches,
-                        column_data[*draw_end].2,
+                        column_data[draw_end].2,
                     );
                 }
-                *draw_end += 1;
+                draw_end += 1;
             }
-            while *draw_start != column_data.len() && column_data[*draw_start].0 - time < -180 {
-                self.judgment_list.add(OffsetInfo(-200), column_index); //this is extremely temporary
-                *draw_start += 1;
+            while draw_start != column_data.len() && column_data[draw_start].0 - time < -180 {
+                self.handle_judgement(None, column_index, column_data[draw_start].2); //this is extremely temporary
+                draw_start += 1;
                 clear_batch = true;
             }
+            self.on_screen[column_index] = (draw_start, draw_end);
         }
         if clear_batch {
             self.redraw_batch();
-            self.last_judgement = Some(Judgement::Miss);
         }
         let target_parameter = graphics::DrawParam {
             dest: graphics::Point2::new(0.0, -1.0 * (self.layout.delta_to_offset(time))),
@@ -147,7 +149,7 @@ impl<'a> Element for Notefield<'a> {
             let offset = delta - time;
             if offset < 180 {
                 self.on_screen[index].0 += 1;
-                self.handle_judgement(offset, index, *note_type);
+                self.handle_judgement(Some(offset), index, *note_type);
                 self.redraw_batch();
             }
         }
