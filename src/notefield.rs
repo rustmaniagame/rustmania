@@ -68,7 +68,11 @@ impl<'a> Notefield<'a> {
                     46...90 => self.last_judgement = Some(Judgement::Hit(2)),
                     91...135 => self.last_judgement = Some(Judgement::Hit(3)),
                     136...180 => self.last_judgement = Some(Judgement::Hit(4)),
-                    _ => {}
+                    //Attempting to register a hit outside the acceptable window would mean
+                    // the validity of the score is compromised, therefore it is preferable to panic
+                    // rather than attempt recovery.  Alternatives should be evaluated prior to a
+                    // public release.
+                    _ => panic!("Should not be able to hit note outside registration window"),
                 },
                 None => self.last_judgement = Some(Judgement::Miss),
             },
@@ -144,14 +148,21 @@ impl<'a> Element for Notefield<'a> {
             ggez::event::Keycode::Period => 3,
             _ => return,
         };
-        let delta = self.notes.columns().collect::<Vec<_>>()[index].get(self.on_screen[index].0);
-        if let (Some(time), Some(GameplayInfo(delta, _, note_type))) = (time, delta) {
-            let offset = delta - time;
-            if offset < 180 {
-                self.on_screen[index].0 += 1;
-                self.handle_judgement(Some(offset), index, *note_type);
-                self.redraw_batch();
+        loop {
+            let delta =
+                self.notes.columns().collect::<Vec<_>>()[index].get(self.on_screen[index].0);
+            if let (Some(time), Some(GameplayInfo(delta, _, note_type))) = (time, delta) {
+                let offset = delta - time;
+                if offset < 180 {
+                    self.on_screen[index].0 += 1;
+                    if offset < -180 {
+                        continue;
+                    }
+                    self.handle_judgement(Some(offset), index, *note_type);
+                    self.redraw_batch();
+                }
             }
+            break;
         }
     }
 }
