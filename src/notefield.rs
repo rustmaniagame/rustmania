@@ -2,12 +2,12 @@ extern crate ggez;
 
 use ggez::graphics;
 use ggez::graphics::spritebatch::SpriteBatch;
-use notedata::NoteType;
-use player_config;
+use crate::notedata::NoteType;
+use crate::player_config;
 use rlua::UserData;
-use screen::Element;
+use crate::screen::Element;
 use std::time::Instant;
-use timingdata::{GameplayInfo, OffsetInfo, TimingData};
+use crate::timingdata::{GameplayInfo, OffsetInfo, TimingData};
 
 #[derive(PartialEq)]
 pub struct Notefield<'a> {

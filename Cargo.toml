@@ -3,6 +3,7 @@ name = "rustmania"
 version = "0.1.0"
 authors = ["ixsetf"]
 build = "build.rs"
+edition = "2018"
 
 [dependencies]
 ggez = "0.4.4"

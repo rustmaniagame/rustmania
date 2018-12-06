@@ -1,5 +1,5 @@
 use ggez::graphics;
-use notedata::{ChartData, ChartMetadata, NoteData, NoteType};
+use crate::notedata::{ChartData, ChartMetadata, NoteData, NoteType};
 use num_rational::Rational32;
 use std::slice;
 

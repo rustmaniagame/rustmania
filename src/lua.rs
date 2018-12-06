@@ -1,6 +1,6 @@
 extern crate ggez;
 
-use gamestate::GameState;
+use crate::gamestate::GameState;
 use rlua::{Lua, Result};
 
 pub fn create_lua_functions(lua: &Lua) -> Result<()> {

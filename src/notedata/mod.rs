@@ -89,7 +89,7 @@ impl NoteRow {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use notedata::NoteType;
+    use crate::notedata::NoteType;
     use std::fs::File;
 
     #[test]

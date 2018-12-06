@@ -2,7 +2,7 @@ use cpal;
 use ggez::{event::Keycode, Context, GameError};
 use lewton::inside_ogg::OggStreamReader;
 use minimp3::Decoder;
-use screen::Element;
+use crate::screen::Element;
 use std;
 use std::fs::File;
 use std::path::PathBuf;
