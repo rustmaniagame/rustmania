@@ -1,8 +1,8 @@
+use crate::screen::Element;
 use cpal;
 use ggez::{event::Keycode, Context, GameError};
 use lewton::inside_ogg::OggStreamReader;
 use minimp3::Decoder;
-use crate::screen::Element;
 use std;
 use std::fs::File;
 use std::path::PathBuf;

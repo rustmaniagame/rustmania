@@ -1,5 +1,5 @@
-use rlua::UserData;
 use crate::screen::{Element, Screen};
+use rlua::UserData;
 
 pub struct GameState<'a> {
     scene_stack: Vec<Screen<'a>>,

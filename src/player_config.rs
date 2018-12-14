@@ -1,11 +1,11 @@
 extern crate ggez;
-use ggez::error::GameResult;
-use ggez::graphics;
 use crate::notedata::NoteType;
 use crate::notefield::Judgement;
+use crate::timingdata::GameplayInfo;
+use ggez::error::GameResult;
+use ggez::graphics;
 use std::fs::File;
 use std::io::Read;
-use crate::timingdata::GameplayInfo;
 use toml;
 
 #[derive(PartialEq)]

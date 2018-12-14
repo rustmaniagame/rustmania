@@ -1,13 +1,13 @@
 extern crate ggez;
 
-use ggez::graphics;
-use ggez::graphics::spritebatch::SpriteBatch;
 use crate::notedata::NoteType;
 use crate::player_config;
-use rlua::UserData;
 use crate::screen::Element;
-use std::time::Instant;
 use crate::timingdata::{GameplayInfo, OffsetInfo, TimingData};
+use ggez::graphics;
+use ggez::graphics::spritebatch::SpriteBatch;
+use rlua::UserData;
+use std::time::Instant;
 
 #[derive(PartialEq)]
 pub struct Notefield<'a> {
@@ -79,7 +79,8 @@ impl<'a> Notefield<'a> {
             _ => {}
         }
 
-        self.judgment_list.add(OffsetInfo(offset), column);
+        self.judgment_list
+            .add(OffsetInfo(offset, note_type), column);
     }
 }
 
@@ -132,6 +133,7 @@ impl<'a> Element for Notefield<'a> {
         if let Some(judgment) = self.last_judgement {
             self.layout.draw_judgment(ctx, judgment)?;
         }
+            println!("FPS: {}", ggez::timer::get_fps(ctx));
         println!("{}", self.judgment_list.calculate_score());
         Ok(())
     }

@@ -24,12 +24,12 @@ mod player_config;
 mod screen;
 mod timingdata;
 
+use crate::notedata::NoteType;
+use crate::player_config::NoteSkin;
 use clap::{App, Arg};
 use ggez::graphics::{set_background_color, Color, Rect};
 use ggez::ContextBuilder;
-use crate::notedata::NoteType;
 use num_rational::Rational32;
-use crate::player_config::NoteSkin;
 use rlua::{Error, Lua, MultiValue};
 use std::ffi::OsStr;
 use std::fs::File;
@@ -119,7 +119,8 @@ fn main() {
         .window_setup(ggez::conf::WindowSetup {
             title: "Rustmania".to_string(),
             ..Default::default()
-        }).build()
+        })
+        .build()
         .expect("Failed to build context");
     set_background_color(context, Color::new(0.0, 0.0, 0.0, 1.0));
 
