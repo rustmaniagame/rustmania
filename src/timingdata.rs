@@ -1,5 +1,5 @@
-use ggez::graphics;
 use crate::notedata::{ChartData, ChartMetadata, NoteData, NoteType};
+use ggez::graphics;
 use num_rational::Rational32;
 use std::slice;
 
@@ -23,20 +23,36 @@ pub struct GameplayInfo(pub i64, pub graphics::Rect, pub NoteType);
 impl TimingInfo for GameplayInfo {}
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct OffsetInfo(pub Option<i64>);
+pub struct OffsetInfo(pub Option<i64>, pub NoteType);
 
 impl TimingInfo for OffsetInfo {}
 
 impl OffsetInfo {
     fn wife(self, ts: f64) -> f64 {
-        let maxms = match self.0 {
-            Some(offset) => offset,
-            None => return -8.0,
-        } as f64;
-        let avedeviation = 95.0 * ts;
-        let mut y = 1.0 - 2.0_f64.powf(-1.0 * maxms * maxms / (avedeviation * avedeviation));
-        y *= y;
-        (10.0) * (1.0 - y) - 8.0
+        match self.1 {
+            NoteType::Tap | NoteType::Hold | NoteType::Roll | NoteType::Lift => {
+                let maxms = match self.0 {
+                    Some(offset) => offset,
+                    None => return -8.0,
+                } as f64;
+                let avedeviation = 95.0 * ts;
+                let mut y =
+                    1.0 - 2.0_f64.powf(-1.0 * maxms * maxms / (avedeviation * avedeviation));
+                y *= y;
+                (10.0) * (1.0 - y) - 8.0
+            }
+            NoteType::Fake => 0.0,
+            NoteType::Mine => match self.0 {
+                Some(_) => -8.0,
+                None => 0.0,
+            },
+        }
+    }
+    fn max_points(self) -> f64 {
+        match self.1 {
+            NoteType::Tap | NoteType::Hold | NoteType::Roll | NoteType::Lift => 2.0,
+            NoteType::Fake | NoteType::Mine => 0.0,
+        }
     }
 }
 
@@ -128,15 +144,8 @@ where
 }
 impl TimingData<OffsetInfo> {
     pub fn calculate_score(&self) -> f64 {
-        let max_points =
-            (self.notes[0].len() + self.notes[1].len() + self.notes[2].len() + self.notes[3].len())
-                as f64;
-        let mut current_points = 0.0;
-        for column in self.columns() {
-            for offset in column {
-                current_points += offset.wife(1.0);
-            }
-        }
+        let max_points = self.columns().flat_map(|x| x.iter() ).map(|x| x.max_points()).sum::<f64>();
+        let current_points = self.columns().flat_map(|x| x.iter() ).map(|x| x.wife(1.0)).sum::<f64>();
         current_points / max_points
     }
 }
@@ -147,23 +156,32 @@ mod tests {
     #[test]
     fn wife_symmetry() {
         for offset in 0..180 {
-            let early = OffsetInfo(Some(-offset));
-            let late = OffsetInfo(Some(offset));
+            let early = OffsetInfo(Some(-offset), NoteType::Tap);
+            let late = OffsetInfo(Some(offset), NoteType::Tap);
             assert_eq!(early.wife(1.0), late.wife(1.0));
         }
     }
     #[test]
     fn wife_peak() {
-        assert_eq!(OffsetInfo(Some(0)).wife(1.0), 2.0);
-        assert_eq!(OffsetInfo(Some(0)).wife(0.5), 2.0);
-        assert_eq!(OffsetInfo(Some(0)).wife(2.0), 2.0);
+        assert_eq!(OffsetInfo(Some(0), NoteType::Tap).wife(1.0), 2.0);
+        assert_eq!(OffsetInfo(Some(0), NoteType::Tap).wife(0.5), 2.0);
+        assert_eq!(OffsetInfo(Some(0), NoteType::Tap).wife(2.0), 2.0);
     }
     #[test]
     fn wife_decreasing() {
         for offset in 0..179 {
-            assert!(OffsetInfo(Some(offset)).wife(1.0) > OffsetInfo(Some(offset + 1)).wife(1.0));
-            assert!(OffsetInfo(Some(offset)).wife(0.5) > OffsetInfo(Some(offset + 1)).wife(0.5));
-            assert!(OffsetInfo(Some(offset)).wife(2.0) > OffsetInfo(Some(offset + 1)).wife(2.0));
+            assert!(
+                OffsetInfo(Some(offset), NoteType::Tap).wife(1.0)
+                    > OffsetInfo(Some(offset + 1), NoteType::Tap).wife(1.0)
+            );
+            assert!(
+                OffsetInfo(Some(offset), NoteType::Tap).wife(0.5)
+                    > OffsetInfo(Some(offset + 1), NoteType::Tap).wife(0.5)
+            );
+            assert!(
+                OffsetInfo(Some(offset), NoteType::Tap).wife(2.0)
+                    > OffsetInfo(Some(offset + 1), NoteType::Tap).wife(2.0)
+            );
         }
     }
 }
