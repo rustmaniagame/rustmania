@@ -133,7 +133,7 @@ impl<'a> Element for Notefield<'a> {
         if let Some(judgment) = self.last_judgement {
             self.layout.draw_judgment(ctx, judgment)?;
         }
-            println!("FPS: {}", ggez::timer::get_fps(ctx));
+        println!("FPS: {}", ggez::timer::get_fps(ctx));
         println!("{}", self.judgment_list.calculate_score());
         Ok(())
     }

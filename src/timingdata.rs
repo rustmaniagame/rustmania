@@ -144,8 +144,16 @@ where
 }
 impl TimingData<OffsetInfo> {
     pub fn calculate_score(&self) -> f64 {
-        let max_points = self.columns().flat_map(|x| x.iter() ).map(|x| x.max_points()).sum::<f64>();
-        let current_points = self.columns().flat_map(|x| x.iter() ).map(|x| x.wife(1.0)).sum::<f64>();
+        let max_points = self
+            .columns()
+            .flat_map(|x| x.iter())
+            .map(|x| x.max_points())
+            .sum::<f64>();
+        let current_points = self
+            .columns()
+            .flat_map(|x| x.iter())
+            .map(|x| x.wife(1.0))
+            .sum::<f64>();
         current_points / max_points
     }
 }
