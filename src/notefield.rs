@@ -133,8 +133,8 @@ impl<'a> Element for Notefield<'a> {
         if let Some(judgment) = self.last_judgement {
             self.layout.draw_judgment(ctx, judgment)?;
         }
-        println!("FPS: {}", ggez::timer::get_fps(ctx));
-        println!("{}", self.judgment_list.calculate_score());
+        println!("FPS: {:.2}", ggez::timer::get_fps(ctx));
+        println!("Score: {:.2}%", self.judgment_list.calculate_score() * 100.0);
         Ok(())
     }
     fn start(&mut self, _time: Option<Instant>) -> Result<(), ggez::GameError> {
