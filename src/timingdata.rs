@@ -41,7 +41,7 @@ impl OffsetInfo {
                 y *= y;
                 (10.0) * (1.0 - y) - 8.0
             }
-            NoteType::Fake => 0.0,
+            NoteType::Fake | NoteType::HoldEnd => 0.0,
             NoteType::Mine => match self.0 {
                 Some(_) => -8.0,
                 None => 0.0,
@@ -51,7 +51,7 @@ impl OffsetInfo {
     fn max_points(self) -> f64 {
         match self.1 {
             NoteType::Tap | NoteType::Hold | NoteType::Roll | NoteType::Lift => 2.0,
-            NoteType::Fake | NoteType::Mine => 0.0,
+            NoteType::Fake | NoteType::Mine | NoteType::HoldEnd => 0.0,
         }
     }
 }

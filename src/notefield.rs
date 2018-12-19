@@ -36,7 +36,10 @@ impl<'a> Notefield<'a> {
             layout,
             notes,
             on_screen: Vec::<_>::new(),
+            //Using a Vec of SpriteBatch should be temporary, optimally we want to reference these
+            // by a NoteType key, but this would require ggez refactoring.
             batches: vec![
+                SpriteBatch::new(layout.sprites.hold_end.clone()),
                 SpriteBatch::new(layout.sprites.arrows.clone()),
                 SpriteBatch::new(layout.sprites.mine.clone()),
             ],

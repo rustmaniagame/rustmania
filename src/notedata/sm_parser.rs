@@ -54,6 +54,7 @@ fn char_to_notetype(character: char) -> Option<NoteType> {
         '0' => None,
         '1' => Some(NoteType::Tap),
         '2' => Some(NoteType::Hold),
+        '3' => Some(NoteType::HoldEnd),
         '4' => Some(NoteType::Roll),
         'M' => Some(NoteType::Mine),
         'L' => Some(NoteType::Lift),

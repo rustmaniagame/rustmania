@@ -36,6 +36,7 @@ pub enum NoteType {
     Mine,
     Lift,
     Fake,
+    HoldEnd,
 }
 
 impl ChartMetadata {
