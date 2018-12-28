@@ -1,20 +1,3 @@
-#[macro_use]
-extern crate nom;
-extern crate chrono;
-#[macro_use]
-extern crate clap;
-extern crate ggez;
-extern crate num_rational;
-extern crate rlua;
-#[macro_use]
-extern crate serde_derive;
-extern crate cpal;
-extern crate hound;
-extern crate lewton;
-extern crate minimp3;
-extern crate toml;
-extern crate walkdir;
-
 mod gamestate;
 mod lua;
 mod music;
@@ -26,7 +9,7 @@ mod timingdata;
 
 use crate::notedata::NoteType;
 use crate::player_config::NoteSkin;
-use clap::{App, Arg};
+use clap::{crate_authors, App, Arg};
 use ggez::graphics::{set_background_color, Color, Rect};
 use ggez::ContextBuilder;
 use num_rational::Rational32;

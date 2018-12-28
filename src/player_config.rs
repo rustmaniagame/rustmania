@@ -4,6 +4,7 @@ use crate::notefield::Judgement;
 use crate::timingdata::GameplayInfo;
 use ggez::error::GameResult;
 use ggez::graphics;
+use serde_derive::Deserialize;
 use std::fs::File;
 use std::io::Read;
 use toml;
@@ -100,7 +101,11 @@ impl NoteLayout {
         batches[batch_index].add(graphics::DrawParam {
             src: coords,
             dest: graphics::Point2::new(self.column_positions[column] as f32, position as f32),
-            rotation: if note_type == NoteType::Tap {self.column_rotations[column]} else {0.0},
+            rotation: if note_type == NoteType::Tap {
+                self.column_rotations[column]
+            } else {
+                0.0
+            },
             offset: graphics::Point2::new(0.5, 0.5),
             ..Default::default()
         });
