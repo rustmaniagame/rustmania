@@ -94,8 +94,8 @@ impl NoteLayout {
         note_type: NoteType,
     ) {
         let batch_index = match note_type {
-            NoteType::Tap | NoteType::Hold => 1,
-            NoteType::Mine => 2,
+            NoteType::Tap | NoteType::Hold => 2,
+            NoteType::Mine => 3,
             _ => 0,
         };
         batches[batch_index].add(graphics::DrawParam {

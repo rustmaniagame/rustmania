@@ -40,6 +40,7 @@ impl<'a> Notefield<'a> {
             // by a NoteType key, but this would require ggez refactoring.
             batches: vec![
                 SpriteBatch::new(layout.sprites.hold_end.clone()),
+                SpriteBatch::new(layout.sprites.hold_body.clone()),
                 SpriteBatch::new(layout.sprites.arrows.clone()),
                 SpriteBatch::new(layout.sprites.mine.clone()),
             ],
