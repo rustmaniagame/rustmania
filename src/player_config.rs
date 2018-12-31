@@ -88,15 +88,22 @@ impl NoteLayout {
     pub fn add_note(
         &self,
         column: usize,
-        position: i64,
-        coords: graphics::Rect,
+        column_data: &[GameplayInfo],
         batches: &mut Vec<graphics::spritebatch::SpriteBatch>,
-        note_type: NoteType,
     ) {
+        let GameplayInfo(position, coords, note_type) = match column_data.get(0) {
+            Some(val) => *val,
+            None => return,
+        };
+        let position = self.delta_to_position(position);
         let batch_index = match note_type {
-            NoteType::Tap | NoteType::Hold => 2,
+            NoteType::Tap => 2,
+            NoteType::Hold => {2},
+            NoteType::Roll => 2,
             NoteType::Mine => 3,
-            _ => 0,
+            NoteType::Lift => 2,
+            NoteType::Fake => 2,
+            NoteType::HoldEnd => 0,
         };
         batches[batch_index].add(graphics::DrawParam {
             src: coords,
@@ -112,17 +119,15 @@ impl NoteLayout {
     }
     pub fn add_column_of_notes(
         &self,
-        column: impl Iterator<Item = GameplayInfo>,
+        column: &[GameplayInfo],
         column_index: usize,
         batches: &mut Vec<graphics::spritebatch::SpriteBatch>,
     ) {
-        for GameplayInfo(note, coords, note_type) in column {
+        for index in 0..column.len() {
             self.add_note(
                 column_index,
-                self.delta_to_position(note),
-                coords,
+                &column[index..],
                 batches,
-                note_type,
             );
         }
     }
