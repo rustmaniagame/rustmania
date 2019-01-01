@@ -133,7 +133,7 @@ impl<'a> Element for Notefield<'a> {
             graphics::draw_ex(ctx, batch, target_parameter)?;
         }
         if let Some(judgment) = self.last_judgement {
-            self.layout.draw_judgment(ctx, judgment);
+            self.layout.draw_judgment(ctx, judgment)?;
         }
         println!("FPS: {:.2}", ggez::timer::get_fps(ctx));
         println!(
