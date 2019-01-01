@@ -56,7 +56,7 @@ impl<'a> Notefield<'a> {
         {
             if *draw_start < *draw_end {
                 self.layout.add_column_of_notes(
-                    &column_data[*draw_start..*draw_end],
+                    &column_data[*draw_start..],
                     column_index,
                     &mut self.batches,
                 );
