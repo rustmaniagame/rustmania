@@ -3,7 +3,7 @@ use crate::notedata::NoteType;
 use crate::notefield::Judgement;
 use crate::timingdata::GameplayInfo;
 use ggez::error::GameResult;
-use ggez::graphics;
+use ggez::graphics::{self,Rect};
 use serde_derive::Deserialize;
 use std::fs::File;
 use std::io::Read;
@@ -98,7 +98,22 @@ impl NoteLayout {
         let position = self.delta_to_position(position);
         let batch_index = match note_type {
             NoteType::Tap => 2,
-            NoteType::Hold => {2},
+            NoteType::Hold => {
+                if let Some(GameplayInfo(end, _, _)) = column_data.get(1) {
+                    batches[1].add(graphics::DrawParam {
+                        src: Rect::new(0.0,0.0,1.0,(position - self.delta_to_position(*end)) as f32 / 64.0 - 0.25),
+                        dest: graphics::Point2::new(self.column_positions[column] as f32, position as f32),
+                        rotation: if note_type == NoteType::Tap {
+                            self.column_rotations[column]
+                        } else {
+                            0.0
+                        },
+                        offset: graphics::Point2::new(0.5, 1.0),
+                        ..Default::default()
+                    });
+                };
+                2
+            },
             NoteType::Roll => 2,
             NoteType::Mine => 3,
             NoteType::Lift => 2,
