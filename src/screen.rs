@@ -13,7 +13,7 @@ pub trait Element: Send {
 pub struct Screen<'a> {
     start_time: Option<Instant>,
     elements: Vec<Box<dyn Element + 'a>>,
-    key_handler: (),
+    _key_handler: (),
 }
 
 fn to_milliseconds(dur: Duration) -> i64 {
@@ -25,7 +25,7 @@ impl<'a> Screen<'a> {
         Screen {
             start_time: Some(Instant::now() + Duration::from_secs(3)),
             elements,
-            key_handler: (),
+            _key_handler: (),
         }
     }
     pub fn start(&mut self) -> Result<(), GameError> {
