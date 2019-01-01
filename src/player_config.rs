@@ -8,6 +8,7 @@ use serde_derive::Deserialize;
 use std::fs::File;
 use std::io::Read;
 use toml;
+use gfx_core::texture::WrapMode;
 
 #[derive(PartialEq)]
 pub struct NoteLayout {
@@ -238,7 +239,7 @@ impl NoteSkin {
             Ok(skin) => skin,
             Err(_) => return None,
         };
-        if let (Ok(arrows), Ok(receptor), Ok(judgment), Ok(hold_body), Ok(hold_head), Ok(mine)) = (
+        if let (Ok(arrows), Ok(receptor), Ok(judgment), Ok(mut hold_body), Ok(hold_head), Ok(mine)) = (
             image_from_subdirectory(context, path, arrows),
             image_from_subdirectory(context, path, receptor),
             image_from_subdirectory(context, path, judgment),
@@ -246,6 +247,7 @@ impl NoteSkin {
             image_from_subdirectory(context, path, hold_head),
             image_from_subdirectory(context, path, mine),
         ) {
+            hold_body.set_wrap(WrapMode::Tile,WrapMode::Tile);
             let sprites = NoteSprites {
                 arrows,
                 receptor,
