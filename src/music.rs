@@ -1,6 +1,6 @@
 use crate::screen::Element;
 use cpal;
-use ggez::{event::Keycode, Context, GameError};
+use ggez::{event::KeyCode, Context, GameError};
 use lewton::inside_ogg::OggStreamReader;
 use minimp3::Decoder;
 use std;
@@ -139,5 +139,5 @@ impl Element for Music {
         }
         Ok(())
     }
-    fn handle_event(&mut self, _keycode: Keycode, _time: Option<i64>) {}
+    fn handle_event(&mut self, _keycode: KeyCode, _time: Option<i64>) {}
 }

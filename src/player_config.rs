@@ -2,13 +2,13 @@ extern crate ggez;
 use crate::notedata::NoteType;
 use crate::notefield::Judgement;
 use crate::timingdata::GameplayInfo;
+use gfx_core::texture::WrapMode;
 use ggez::error::GameResult;
-use ggez::graphics::{self,Rect};
+use ggez::graphics::{self, Rect};
 use serde_derive::Deserialize;
 use std::fs::File;
 use std::io::Read;
 use toml;
-use gfx_core::texture::WrapMode;
 
 #[derive(PartialEq)]
 pub struct NoteLayout {
@@ -16,7 +16,7 @@ pub struct NoteLayout {
     pub column_positions: [i64; 4],
     pub column_rotations: [f32; 4],
     pub receptor_height: i64,
-    pub judgment_position: graphics::Point2,
+    pub judgment_position: [f32; 2],
     pub scroll_speed: f32,
 }
 
@@ -70,7 +70,7 @@ impl NoteLayout {
             judgment_position.1 = screen_height as f32 - judgment_position.1;
             scroll_speed *= -1.0;
         }
-        let judgment_position = graphics::Point2::new(judgment_position.0, judgment_position.1);
+        let judgment_position = [judgment_position.0, judgment_position.1];
         NoteLayout {
             sprites,
             column_positions,
@@ -101,37 +101,42 @@ impl NoteLayout {
             NoteType::Tap => 2,
             NoteType::Hold => {
                 if let Some(GameplayInfo(end, _, _)) = column_data.get(1) {
-                    batches[1].add(graphics::DrawParam {
-                        src: Rect::new(0.0,0.0,1.0,(position - self.delta_to_position(*end)) as f32 / 64.0 - 0.5),
-                        dest: graphics::Point2::new(self.column_positions[column] as f32, position as f32),
-                        rotation: if note_type == NoteType::Tap {
-                            self.column_rotations[column]
-                        } else {
-                            0.0
-                        },
-                        offset: graphics::Point2::new(0.5, 1.0),
-                        ..Default::default()
-                    });
+                    batches[1].add(
+                        graphics::DrawParam::new()
+                            .src(Rect::new(
+                                0.0,
+                                0.0,
+                                1.0,
+                                (position - self.delta_to_position(*end)) as f32 / 64.0 - 0.5,
+                            ))
+                            .dest([self.column_positions[column] as f32, position as f32])
+                            .rotation(if note_type == NoteType::Tap {
+                                self.column_rotations[column]
+                            } else {
+                                0.0
+                            })
+                            .offset([0.5, 1.0]),
+                    );
                 };
                 2
-            },
+            }
             NoteType::Roll => 2,
             NoteType::Mine => 3,
             NoteType::Lift => 2,
             NoteType::Fake => 2,
             NoteType::HoldEnd => 0,
         };
-        batches[batch_index].add(graphics::DrawParam {
-            src: coords,
-            dest: graphics::Point2::new(self.column_positions[column] as f32, position as f32),
-            rotation: if note_type == NoteType::Tap {
-                self.column_rotations[column]
-            } else {
-                0.0
-            },
-            offset: graphics::Point2::new(0.5, 0.5),
-            ..Default::default()
-        });
+        batches[batch_index].add(
+            graphics::DrawParam::new()
+                .src(coords)
+                .dest([self.column_positions[column] as f32, position as f32])
+                .rotation(if note_type == NoteType::Tap {
+                    self.column_rotations[column]
+                } else {
+                    0.0
+                })
+                .offset([0.5, 0.5]),
+        );
     }
     pub fn add_column_of_notes(
         &self,
@@ -140,27 +145,21 @@ impl NoteLayout {
         batches: &mut Vec<graphics::spritebatch::SpriteBatch>,
     ) {
         for index in 0..column.len() {
-            self.add_note(
-                column_index,
-                &column[index..],
-                batches,
-            );
+            self.add_note(column_index, &column[index..], batches);
         }
     }
     pub fn draw_receptors(&self, ctx: &mut ggez::Context) -> Result<(), ggez::GameError> {
         for (index, &column_position) in self.column_positions.iter().enumerate() {
-            graphics::draw_ex(
+            graphics::draw(
                 ctx,
                 &self.sprites.receptor,
-                graphics::DrawParam {
-                    dest: graphics::Point2::new(
+                graphics::DrawParam::new()
+                    .dest([
                         column_position as f32,
-                        self.receptor_height as f32,
-                    ),
-                    rotation: self.column_rotations[index],
-                    offset: graphics::Point2::new(0.5, 0.5),
-                    ..Default::default()
-                },
+                        self.receptor_height as f32]
+                    )
+                    .rotation(self.column_rotations[index])
+                    .offset([0.5, 0.5])
             )?;
         }
         Ok(())
@@ -171,10 +170,9 @@ impl NoteLayout {
         batch: &mut graphics::spritebatch::SpriteBatch,
     ) -> Result<(), ggez::GameError> {
         for &column_position in &self.column_positions {
-            batch.add(graphics::DrawParam {
-                dest: graphics::Point2::new(column_position as f32, self.receptor_height as f32),
-                ..Default::default()
-            });
+            batch.add(graphics::DrawParam::new()
+                          .dest([column_position as f32, self.receptor_height as f32])
+            );
         }
         Ok(())
     }
@@ -187,18 +185,16 @@ impl NoteLayout {
             Judgement::Hit(_) => graphics::Rect::new(0.0, 0.6666, 1.0, 0.1666),
             Judgement::Miss => graphics::Rect::new(0.0, 0.8333, 1.0, 1.666),
         };
-        graphics::DrawParam {
-            src,
-            dest: self.judgment_position,
-            ..Default::default()
-        }
+        graphics::DrawParam::new()
+            .src(src)
+            .dest(self.judgment_position)
     }
     pub fn draw_judgment(
         &self,
         ctx: &mut ggez::Context,
         judge: Judgement,
     ) -> Result<(), ggez::GameError> {
-        graphics::draw_ex(ctx, &self.sprites.judgment, self.select_judgment(judge))?;
+        graphics::draw(ctx, &self.sprites.judgment, self.select_judgment(judge))?;
         Ok(())
     }
 }
@@ -239,7 +235,14 @@ impl NoteSkin {
             Ok(skin) => skin,
             Err(_) => return None,
         };
-        if let (Ok(arrows), Ok(receptor), Ok(judgment), Ok(mut hold_body), Ok(hold_head), Ok(mine)) = (
+        if let (
+            Ok(arrows),
+            Ok(receptor),
+            Ok(judgment),
+            Ok(mut hold_body),
+            Ok(hold_head),
+            Ok(mine),
+        ) = (
             image_from_subdirectory(context, path, arrows),
             image_from_subdirectory(context, path, receptor),
             image_from_subdirectory(context, path, judgment),
@@ -247,7 +250,7 @@ impl NoteSkin {
             image_from_subdirectory(context, path, hold_head),
             image_from_subdirectory(context, path, mine),
         ) {
-            hold_body.set_wrap(WrapMode::Tile,WrapMode::Tile);
+            hold_body.set_wrap(WrapMode::Tile, WrapMode::Tile);
             let sprites = NoteSprites {
                 arrows,
                 receptor,

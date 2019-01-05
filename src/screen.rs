@@ -1,13 +1,13 @@
 use ggez::{
-    event::{EventHandler, Keycode, Mod},
-    graphics, Context, GameError,
+    event::{EventHandler, KeyCode, KeyMods},
+    graphics::{self,Color}, Context, GameError,
 };
 use std::time::{Duration, Instant};
 
 pub trait Element: Send {
     fn run(&mut self, context: &mut Context, time: Option<i64>) -> Result<(), GameError>;
     fn start(&mut self, time: Option<Instant>) -> Result<(), GameError>;
-    fn handle_event(&mut self, key: Keycode, time: Option<i64>);
+    fn handle_event(&mut self, key: KeyCode, time: Option<i64>);
 }
 
 pub struct Screen<'a> {
@@ -54,7 +54,7 @@ impl<'a> EventHandler for Screen<'a> {
         Ok(())
     }
     fn draw(&mut self, ctx: &mut Context) -> Result<(), GameError> {
-        graphics::clear(ctx);
+        graphics::clear(ctx, Color::new(0.0,0.0,0.0,1.0));
         let time_delta = self.start_time_to_milliseconds();
         for element in &mut self.elements {
             element.run(ctx, time_delta)?;
@@ -65,8 +65,8 @@ impl<'a> EventHandler for Screen<'a> {
     fn key_down_event(
         &mut self,
         _ctx: &mut Context,
-        keycode: Keycode,
-        _keymod: Mod,
+        keycode: KeyCode,
+        _keymod: KeyMods,
         _repeat: bool,
     ) {
         if _repeat {

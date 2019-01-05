@@ -10,13 +10,14 @@ mod timingdata;
 use crate::notedata::NoteType;
 use crate::player_config::NoteSkin;
 use clap::{crate_authors, App, Arg};
-use ggez::graphics::{set_background_color, Color, Rect};
+use ggez::graphics::{Color, Rect};
 use ggez::ContextBuilder;
 use num_rational::Rational32;
 use rlua::{Error, Lua, MultiValue};
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::Read;
+use ggez::filesystem::mount;
 
 fn sprite_finder(
     _measure: usize,
@@ -97,7 +98,7 @@ fn main() {
         .parse()
         .unwrap_or(1.0);
 
-    let context = &mut ContextBuilder::new("rustmania", "ixsetf")
+    let (context, events_loop) = &mut ContextBuilder::new("rustmania", "ixsetf")
         .add_resource_path("")
         .window_setup(ggez::conf::WindowSetup {
             title: "Rustmania".to_string(),
@@ -105,7 +106,7 @@ fn main() {
         })
         .build()
         .expect("Failed to build context");
-    set_background_color(context, Color::new(0.0, 0.0, 0.0, 1.0));
+    //set_background_color(context, Color::new(0.0, 0.0, 0.0, 1.0));
 
     let current_theme = Lua::new();
 
@@ -177,13 +178,13 @@ fn main() {
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
         let mut path = std::path::PathBuf::from(manifest_dir);
         path.push("resources");
-        context.filesystem.mount(&path, true);
+        mount(context, &path, true);
     }
 
     if let Err(e) = gameplay_screen.start() {
         println!("Error starting screen: {}", e)
     }
-    if let Err(e) = ggez::event::run(context, &mut gameplay_screen) {
+    if let Err(e) = ggez::event::run(context, events_loop,&mut gameplay_screen) {
         println!("Error: {}", e);
     } else {
         println!("Exit successful.");

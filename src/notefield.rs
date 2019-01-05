@@ -106,11 +106,8 @@ impl<'a> Element for Notefield<'a> {
                     < self.draw_distance
             {
                 if draw_start <= draw_end {
-                    self.layout.add_note(
-                        column_index,
-                        &column_data[draw_end..],
-                        &mut self.batches,
-                    );
+                    self.layout
+                        .add_note(column_index, &column_data[draw_end..], &mut self.batches);
                 }
                 draw_end += 1;
             }
@@ -124,18 +121,16 @@ impl<'a> Element for Notefield<'a> {
         if clear_batch {
             self.redraw_batch();
         }
-        let target_parameter = graphics::DrawParam {
-            dest: graphics::Point2::new(0.0, -1.0 * (self.layout.delta_to_offset(time))),
-            ..Default::default()
-        };
+        let target_parameter =
+            graphics::DrawParam::new().dest([0.0, -1.0 * (self.layout.delta_to_offset(time))]);
 
         for batch in self.batches.iter() {
-            graphics::draw_ex(ctx, batch, target_parameter)?;
+            graphics::draw(ctx, batch, target_parameter)?;
         }
         if let Some(judgment) = self.last_judgement {
             self.layout.draw_judgment(ctx, judgment)?;
         }
-        println!("FPS: {:.2}", ggez::timer::get_fps(ctx));
+        println!("FPS: {:.2}", ggez::timer::fps(ctx));
         println!(
             "Score: {:.2}%",
             self.judgment_list.calculate_score() * 100.0
@@ -147,12 +142,12 @@ impl<'a> Element for Notefield<'a> {
         self.on_screen = self.notes.columns().map(|_| (0, 0)).collect();
         Ok(())
     }
-    fn handle_event(&mut self, keycode: ggez::event::Keycode, time: Option<i64>) {
+    fn handle_event(&mut self, keycode: ggez::event::KeyCode, time: Option<i64>) {
         let index = match keycode {
-            ggez::event::Keycode::Z => 0,
-            ggez::event::Keycode::X => 1,
-            ggez::event::Keycode::Comma => 2,
-            ggez::event::Keycode::Period => 3,
+            ggez::event::KeyCode::Z => 0,
+            ggez::event::KeyCode::X => 1,
+            ggez::event::KeyCode::Comma => 2,
+            ggez::event::KeyCode::Period => 3,
             _ => return,
         };
         loop {
