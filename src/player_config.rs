@@ -102,7 +102,7 @@ impl NoteLayout {
             NoteType::Hold => {
                 if let Some(GameplayInfo(end, _, _)) = column_data.get(1) {
                     batches[1].add(graphics::DrawParam {
-                        src: Rect::new(0.0,0.0,1.0,(position - self.delta_to_position(*end)) as f32 / 64.0 - 0.25),
+                        src: Rect::new(0.0,0.0,1.0,(position - self.delta_to_position(*end)) as f32 / 64.0 - 0.5),
                         dest: graphics::Point2::new(self.column_positions[column] as f32, position as f32),
                         rotation: if note_type == NoteType::Tap {
                             self.column_rotations[column]
