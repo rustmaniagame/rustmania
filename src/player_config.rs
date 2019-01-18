@@ -107,7 +107,8 @@ impl NoteLayout {
                                 0.0,
                                 0.0,
                                 1.0,
-                                (position - self.delta_to_position(*end)) as f32 / 64.0 - 0.5,
+                                (position - self.delta_to_position(*end)) as f32 / 64.0
+                                    + if self.scroll_speed > 0.0 { 0.5 } else { -0.5 },
                             ))
                             .dest([self.column_positions[column] as f32, position as f32])
                             .rotation(if note_type == NoteType::Tap {
@@ -135,7 +136,12 @@ impl NoteLayout {
                 } else {
                     0.0
                 })
-                .offset([0.5, 0.5]),
+                .offset([0.5, 0.5])
+                .scale(if batch_index == 0 && self.scroll_speed > 0.0 {
+                    [1.0, -1.0]
+                } else {
+                    [1.0, 1.0]
+                }),
         );
     }
     pub fn add_column_of_notes(
@@ -154,12 +160,9 @@ impl NoteLayout {
                 ctx,
                 &self.sprites.receptor,
                 graphics::DrawParam::new()
-                    .dest([
-                        column_position as f32,
-                        self.receptor_height as f32]
-                    )
+                    .dest([column_position as f32, self.receptor_height as f32])
                     .rotation(self.column_rotations[index])
-                    .offset([0.5, 0.5])
+                    .offset([0.5, 0.5]),
             )?;
         }
         Ok(())
@@ -170,8 +173,9 @@ impl NoteLayout {
         batch: &mut graphics::spritebatch::SpriteBatch,
     ) -> Result<(), ggez::GameError> {
         for &column_position in &self.column_positions {
-            batch.add(graphics::DrawParam::new()
-                          .dest([column_position as f32, self.receptor_height as f32])
+            batch.add(
+                graphics::DrawParam::new()
+                    .dest([column_position as f32, self.receptor_height as f32]),
             );
         }
         Ok(())

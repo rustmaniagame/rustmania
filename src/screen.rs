@@ -1,6 +1,7 @@
 use ggez::{
     event::{EventHandler, KeyCode, KeyMods},
-    graphics::{self,Color}, Context, GameError,
+    graphics::{self, Color},
+    Context, GameError,
 };
 use std::time::{Duration, Instant};
 
@@ -54,7 +55,7 @@ impl<'a> EventHandler for Screen<'a> {
         Ok(())
     }
     fn draw(&mut self, ctx: &mut Context) -> Result<(), GameError> {
-        graphics::clear(ctx, Color::new(0.0,0.0,0.0,1.0));
+        graphics::clear(ctx, Color::new(0.0, 0.0, 0.0, 1.0));
         let time_delta = self.start_time_to_milliseconds();
         for element in &mut self.elements {
             element.run(ctx, time_delta)?;

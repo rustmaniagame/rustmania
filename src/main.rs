@@ -10,6 +10,7 @@ mod timingdata;
 use crate::notedata::NoteType;
 use crate::player_config::NoteSkin;
 use clap::{crate_authors, App, Arg};
+use ggez::filesystem::mount;
 use ggez::graphics::{Color, Rect};
 use ggez::ContextBuilder;
 use num_rational::Rational32;
@@ -17,7 +18,6 @@ use rlua::{Error, Lua, MultiValue};
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::Read;
-use ggez::filesystem::mount;
 
 fn sprite_finder(
     _measure: usize,
@@ -184,7 +184,7 @@ fn main() {
     if let Err(e) = gameplay_screen.start() {
         println!("Error starting screen: {}", e)
     }
-    if let Err(e) = ggez::event::run(context, events_loop,&mut gameplay_screen) {
+    if let Err(e) = ggez::event::run(context, events_loop, &mut gameplay_screen) {
         println!("Error: {}", e);
     } else {
         println!("Exit successful.");
