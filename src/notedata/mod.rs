@@ -116,7 +116,7 @@ mod tests {
                         (
                             Rational32::new(1, 2),
                             NoteRow {
-                                row: vec![(NoteType::Fake, 0)],
+                                row: vec![(NoteType::Fake, 0), (NoteType::HoldEnd, 3)],
                             },
                         ),
                     ],
