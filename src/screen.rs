@@ -60,7 +60,7 @@ impl<'a> EventHandler for Screen<'a> {
         for element in &mut self.elements {
             element.run(ctx, time_delta)?;
         }
-        graphics::present(ctx);
+        graphics::present(ctx)?;
         Ok(())
     }
     fn key_down_event(

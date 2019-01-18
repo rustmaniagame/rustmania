@@ -11,7 +11,7 @@ use crate::notedata::NoteType;
 use crate::player_config::NoteSkin;
 use clap::{crate_authors, App, Arg};
 use ggez::filesystem::mount;
-use ggez::graphics::{Color, Rect};
+use ggez::graphics::Rect;
 use ggez::ContextBuilder;
 use num_rational::Rational32;
 use rlua::{Error, Lua, MultiValue};
