@@ -1,6 +1,8 @@
 extern crate ggez;
 
+use self::ggez::graphics::draw;
 use crate::notedata::NoteType;
+use crate::notedata::NoteType::HoldEnd;
 use crate::player_config;
 use crate::screen::Element;
 use crate::timingdata::{GameplayInfo, OffsetInfo, TimingData};
@@ -99,6 +101,39 @@ impl<'a> Element for Notefield<'a> {
         for ((column_index, column_data), (mut draw_start, mut draw_end)) in
             self.notes.columns().enumerate().zip(self.on_screen.clone())
         {
+            if column_data[draw_start].2 == HoldEnd {
+                let is_reverse = if self.layout.scroll_speed > 0.0 {
+                    1.0
+                } else {
+                    -1.0
+                };
+                graphics::draw(
+                    ctx,
+                    &self.layout.sprites.hold_body,
+                    graphics::DrawParam::new()
+                        .src(graphics::Rect::new(0.0, 0.0, 1.0, {
+                            let dist = self
+                                .layout
+                                .delta_to_offset(column_data[draw_start].0 - time)
+                                / 64.0
+                                * is_reverse;
+                            if dist < 0.0 {
+                                0.0
+                            } else {
+                                dist
+                            }
+                        }))
+                        .dest([
+                            self.layout.column_positions[column_index] as f32,
+                            (self
+                                .layout
+                                .delta_to_position(column_data[draw_start].0 - time))
+                                as f32,
+                        ])
+                        .offset([0.5, 0.0])
+                        .scale([1.0, -is_reverse]),
+                )?;
+            }
             while draw_end != column_data.len()
                 && self
                     .layout
