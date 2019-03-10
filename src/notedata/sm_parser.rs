@@ -1,6 +1,6 @@
 use super::*;
 use nom::{
-    call, complete, do_parse, do_parse_sep, double_s, error_position, many0, named, sep,
+    call, complete, do_parse, do_parse_sep, double, error_position, many0, named, sep,
     separated_list, tag, take_until, take_until_and_consume, wrap_sep, ws,
 };
 
@@ -41,7 +41,7 @@ fn parse_main_block(contents: &str) -> ChartData {
     let forbidden: &[_] = &[';', '\n', '\r'];
     ChartData::new(
         contents
-            .trim_right_matches(forbidden)
+            .trim_end_matches(forbidden)
             .lines()
             .filter(|x| *x != "")
             .skip(5)
@@ -106,9 +106,9 @@ named!( bpm_parse<&str,Vec<(f64,f64)>>, separated_list!(tag!(","), bpm_line));
 
 named!(bpm_line<&str, (f64,f64)>,
   ws!(do_parse!(
-        time: double_s >>
+        time: double >>
            tag!("=")   >>
-           bpm: double_s >>
+           bpm: double >>
     ( time / 4.0, bpm ) )
   )
 );
