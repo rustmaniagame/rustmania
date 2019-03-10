@@ -1,6 +1,5 @@
 extern crate ggez;
 
-use self::ggez::graphics::draw;
 use crate::notedata::NoteType;
 use crate::notedata::NoteType::HoldEnd;
 use crate::player_config;
