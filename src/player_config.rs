@@ -167,6 +167,34 @@ impl NoteLayout {
         }
         Ok(())
     }
+    pub fn add_hold(
+        &self,
+        ctx: &mut ggez::Context,
+        column_index: usize,
+        delta: i64,
+    ) -> Result<(), ggez::GameError> {
+        let is_reverse = if self.scroll_speed > 0.0 { 1.0 } else { -1.0 };
+        graphics::draw(
+            ctx,
+            &self.sprites.hold_body,
+            graphics::DrawParam::new()
+                .src(graphics::Rect::new(0.0, 0.0, 1.0, {
+                    let dist = self.delta_to_offset(delta) / 64.0 * is_reverse;
+                    if dist < 0.0 {
+                        0.0
+                    } else {
+                        dist
+                    }
+                }))
+                .dest([
+                    self.column_positions[column_index] as f32,
+                    (self.delta_to_position(delta)) as f32,
+                ])
+                .offset([0.5, 0.0])
+                .scale([1.0, -is_reverse]),
+        )?;
+        Ok(())
+    }
     //this will likely be the method to draw receptors in the future, but it is not currently in use
     pub fn _add_receptors(
         &self,

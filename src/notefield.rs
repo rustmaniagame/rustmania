@@ -101,43 +101,16 @@ impl<'a> Element for Notefield<'a> {
             self.notes.columns().enumerate().zip(self.on_screen.clone())
         {
             if column_data[draw_start].2 == HoldEnd {
-                let is_reverse = if self.layout.scroll_speed > 0.0 {
-                    1.0
-                } else {
-                    -1.0
-                };
-                graphics::draw(
-                    ctx,
-                    &self.layout.sprites.hold_body,
-                    graphics::DrawParam::new()
-                        .src(graphics::Rect::new(0.0, 0.0, 1.0, {
-                            let dist = self
-                                .layout
-                                .delta_to_offset(column_data[draw_start].0 - time)
-                                / 64.0
-                                * is_reverse;
-                            if dist < 0.0 {
-                                0.0
-                            } else {
-                                dist
-                            }
-                        }))
-                        .dest([
-                            self.layout.column_positions[column_index] as f32,
-                            (self
-                                .layout
-                                .delta_to_position(column_data[draw_start].0 - time))
-                                as f32,
-                        ])
-                        .offset([0.5, 0.0])
-                        .scale([1.0, -is_reverse]),
-                )?;
+                self.layout
+                    .add_hold(ctx, column_index, column_data[draw_start].0 - time)?;
             }
             while draw_end != column_data.len()
-                && self
+                && (self
                     .layout
                     .delta_to_position(column_data[draw_end].0 - time)
-                    < self.draw_distance
+                    < self.draw_distance || self
+                .layout
+                .delta_to_position(column_data[draw_end].0 - time) > 0)
             {
                 if draw_start <= draw_end {
                     self.layout
