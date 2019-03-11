@@ -104,21 +104,20 @@ impl<'a> Element for Notefield<'a> {
                 self.layout
                     .add_hold(ctx, column_index, column_data[draw_start].0 - time)?;
             }
-            while draw_end != column_data.len()
+            while draw_end != column_data.len() - 1
                 && (self
                     .layout
                     .delta_to_position(column_data[draw_end].0 - time)
-                    < self.draw_distance || self
-                .layout
-                .delta_to_position(column_data[draw_end].0 - time) > 0)
+                    < self.draw_distance
+                    || self
+                        .layout
+                        .delta_to_position(column_data[draw_end].0 - time)
+                        > 0)
             {
-                if draw_start <= draw_end {
-                    self.layout
-                        .add_note(column_index, &column_data[draw_end..], &mut self.batches);
-                }
                 draw_end += 1;
+                clear_batch = true;
             }
-            while draw_start != column_data.len() && column_data[draw_start].0 - time < -180 {
+            while draw_start != column_data.len() - 1 && column_data[draw_start].0 - time < -180 {
                 self.handle_judgement(None, column_index, column_data[draw_start].2); //this is extremely temporary
                 draw_start += 1;
                 clear_batch = true;
