@@ -118,7 +118,7 @@ impl<'a> Element for Notefield<'a> {
                 clear_batch = true;
             }
             while draw_start != column_data.len() - 1 && column_data[draw_start].0 - time < -180 {
-                self.handle_judgement(None, column_index, column_data[draw_start].2); //this is extremely temporary
+                self.handle_judgement(None, column_index, column_data[draw_start].2);
                 draw_start += 1;
                 clear_batch = true;
             }
