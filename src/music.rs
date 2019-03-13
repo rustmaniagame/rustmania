@@ -139,5 +139,5 @@ impl Element for Music {
         }
         Ok(())
     }
-    fn handle_event(&mut self, _keycode: KeyCode, _time: Option<i64>) {}
+    fn handle_event(&mut self, _keycode: KeyCode, _time: Option<i64>, key_down: bool) {}
 }

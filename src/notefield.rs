@@ -165,7 +165,7 @@ impl<'a> Element for Notefield<'a> {
     fn start(&mut self, _time: Option<Instant>) -> Result<(), ggez::GameError> {
         Ok(())
     }
-    fn handle_event(&mut self, keycode: ggez::event::KeyCode, time: Option<i64>) {
+    fn handle_event(&mut self, keycode: ggez::event::KeyCode, time: Option<i64>, key_down: bool) {
         let index = match keycode {
             ggez::event::KeyCode::Z => 0,
             ggez::event::KeyCode::X => 1,
