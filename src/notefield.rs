@@ -14,11 +14,22 @@ use std::time::Instant;
 pub struct Notefield<'a> {
     layout: &'a super::player_config::NoteLayout,
     notes: &'a TimingData<GameplayInfo>,
-    on_screen: Vec<(usize, usize)>,
+    column_info: [ColumnInfo; 4],
     batches: Vec<SpriteBatch>,
     draw_distance: i64,
     last_judgement: Option<Judgement>,
     judgment_list: TimingData<OffsetInfo>,
+}
+
+#[derive(Copy, Clone, PartialEq)]
+struct ColumnInfo {
+    on_screen: (usize, usize),
+}
+
+impl ColumnInfo {
+    fn new() -> Self {
+        ColumnInfo { on_screen: (0, 0) }
+    }
 }
 
 #[derive(Copy, Clone, PartialEq)]
@@ -36,7 +47,7 @@ impl<'a> Notefield<'a> {
         Notefield {
             layout,
             notes,
-            on_screen: Vec::<_>::new(),
+            column_info: [ColumnInfo::new(); 4],
             //Using a Vec of SpriteBatch should be temporary, optimally we want to reference these
             // by a NoteType key, but this would require ggez refactoring.
             batches: vec![
@@ -52,12 +63,11 @@ impl<'a> Notefield<'a> {
     }
     fn redraw_batch(&mut self) {
         self.batches.iter_mut().for_each(|x| x.clear());
-        for ((column_index, column_data), (draw_start, draw_end)) in
-            self.notes.columns().enumerate().zip(&mut self.on_screen)
-        {
-            if *draw_start < *draw_end {
+        for (column_index, column_data) in self.notes.columns().enumerate() {
+            let (draw_start, draw_end) = self.column_info[column_index].on_screen;
+            if draw_start < draw_end {
                 self.layout.add_column_of_notes(
-                    &column_data[*draw_start..],
+                    &column_data[draw_start..],
                     column_index,
                     &mut self.batches,
                 );
@@ -97,9 +107,8 @@ impl<'a> Element for Notefield<'a> {
             None => return Ok(()),
         };
         let mut clear_batch = false;
-        for ((column_index, column_data), (mut draw_start, mut draw_end)) in
-            self.notes.columns().enumerate().zip(self.on_screen.clone())
-        {
+        for (column_index, column_data) in self.notes.columns().enumerate() {
+            let (mut draw_start, mut draw_end) = self.column_info[column_index].on_screen;
             if column_data[draw_start].2 == HoldEnd {
                 self.layout
                     .add_hold(ctx, column_index, column_data[draw_start].0 - time)?;
@@ -122,7 +131,7 @@ impl<'a> Element for Notefield<'a> {
                 draw_start += 1;
                 clear_batch = true;
             }
-            self.on_screen[column_index] = (draw_start, draw_end);
+            self.column_info[column_index].on_screen = (draw_start, draw_end);
         }
         if clear_batch {
             self.redraw_batch();
@@ -145,7 +154,6 @@ impl<'a> Element for Notefield<'a> {
     }
     fn start(&mut self, _time: Option<Instant>) -> Result<(), ggez::GameError> {
         //self.layout.add_receptors(&mut self.batch)?;
-        self.on_screen = self.notes.columns().map(|_| (0, 0)).collect();
         Ok(())
     }
     fn handle_event(&mut self, keycode: ggez::event::KeyCode, time: Option<i64>) {
@@ -157,12 +165,12 @@ impl<'a> Element for Notefield<'a> {
             _ => return,
         };
         loop {
-            let delta =
-                self.notes.columns().collect::<Vec<_>>()[index].get(self.on_screen[index].0);
+            let delta = self.notes.columns().collect::<Vec<_>>()[index]
+                .get(self.column_info[index].on_screen.0);
             if let (Some(time), Some(GameplayInfo(delta, _, note_type))) = (time, delta) {
                 let offset = delta - time;
                 if offset < 180 {
-                    self.on_screen[index].0 += 1;
+                    self.column_info[index].on_screen.0 += 1;
                     if offset < -180 {
                         continue;
                     }
