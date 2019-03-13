@@ -173,7 +173,7 @@ impl<'a> Element for Notefield<'a> {
             _ => return,
         };
         loop {
-            let delta = self.notes.columns().collect::<Vec<_>>()[index]
+            let delta = self.notes.notes[index]
                 .get(self.column_info[index].next_to_hit);
             if let (Some(time), Some(GameplayInfo(delta, _, note_type))) = (time, delta) {
                 let offset = delta - time;

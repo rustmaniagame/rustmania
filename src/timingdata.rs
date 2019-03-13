@@ -12,7 +12,7 @@ pub struct TimingData<T>
 where
     T: TimingInfo,
 {
-    notes: [Vec<T>; 4],
+    pub notes: [Vec<T>; 4],
 }
 
 pub trait TimingInfo {}
