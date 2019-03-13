@@ -1,7 +1,7 @@
 extern crate ggez;
 
 use crate::notedata::NoteType;
-use crate::notedata::NoteType::HoldEnd;
+use crate::notedata::NoteType::Hold;
 use crate::player_config;
 use crate::screen::Element;
 use crate::timingdata::{GameplayInfo, OffsetInfo, TimingData};
@@ -25,6 +25,7 @@ pub struct Notefield<'a> {
 struct ColumnInfo {
     on_screen: (usize, usize),
     next_to_hit: usize,
+    active_hold: Option<i64>,
 }
 
 impl ColumnInfo {
@@ -32,6 +33,7 @@ impl ColumnInfo {
         ColumnInfo {
             on_screen: (0, 0),
             next_to_hit: 0,
+            active_hold: None,
         }
     }
 }
@@ -113,9 +115,8 @@ impl<'a> Element for Notefield<'a> {
         let mut clear_batch = false;
         for (column_index, column_data) in self.notes.columns().enumerate() {
             let (mut draw_start, mut draw_end) = self.column_info[column_index].on_screen;
-            if column_data[draw_start].2 == HoldEnd {
-                self.layout
-                    .add_hold(ctx, column_index, column_data[draw_start].0 - time)?;
+            if let Some(value) = self.column_info[column_index].active_hold {
+                self.layout.add_hold(ctx, column_index, value - time)?;
             }
             while draw_end != column_data.len() - 1
                 && (self
@@ -173,14 +174,21 @@ impl<'a> Element for Notefield<'a> {
             _ => return,
         };
         loop {
-            let delta = self.notes.notes[index]
-                .get(self.column_info[index].next_to_hit);
+            let delta = self.notes.notes[index].get(self.column_info[index].next_to_hit);
             if let (Some(time), Some(GameplayInfo(delta, _, note_type))) = (time, delta) {
                 let offset = delta - time;
                 if offset < 180 {
-                    self.column_info[index].next_to_hit += 1;
                     if self.column_info[index].on_screen.0 < self.column_info[index].on_screen.1 {
-                        self.column_info[index].on_screen.0 += 1;
+                        if *note_type == Hold {
+                            self.column_info[index].active_hold = Some(
+                                self.notes.notes[index][self.column_info[index].next_to_hit + 1].0,
+                            );
+                            self.column_info[index].next_to_hit += 2;
+                            self.column_info[index].on_screen.0 += 2;
+                        } else {
+                            self.column_info[index].next_to_hit += 1;
+                            self.column_info[index].on_screen.0 += 1;
+                        }
                     }
                     if offset < -180 {
                         continue;
