@@ -24,11 +24,15 @@ pub struct Notefield<'a> {
 #[derive(Copy, Clone, PartialEq)]
 struct ColumnInfo {
     on_screen: (usize, usize),
+    next_to_hit: usize,
 }
 
 impl ColumnInfo {
     fn new() -> Self {
-        ColumnInfo { on_screen: (0, 0) }
+        ColumnInfo {
+            on_screen: (0, 0),
+            next_to_hit: 0,
+        }
     }
 }
 
@@ -126,10 +130,15 @@ impl<'a> Element for Notefield<'a> {
                 draw_end += 1;
                 clear_batch = true;
             }
-            while draw_start != column_data.len() - 1 && column_data[draw_start].0 - time < -180 {
-                self.handle_judgement(None, column_index, column_data[draw_start].2);
-                draw_start += 1;
+            let mut next_note = self.column_info[column_index].next_to_hit;
+            while next_note != column_data.len() - 1 && column_data[next_note].0 - time < -180 {
+                self.handle_judgement(None, column_index, column_data[next_note].2);
+                next_note += 1;
                 clear_batch = true;
+            }
+            self.column_info[column_index].next_to_hit = next_note;
+            if next_note < draw_end {
+                draw_start = next_note;
             }
             self.column_info[column_index].on_screen = (draw_start, draw_end);
         }
@@ -153,7 +162,6 @@ impl<'a> Element for Notefield<'a> {
         Ok(())
     }
     fn start(&mut self, _time: Option<Instant>) -> Result<(), ggez::GameError> {
-        //self.layout.add_receptors(&mut self.batch)?;
         Ok(())
     }
     fn handle_event(&mut self, keycode: ggez::event::KeyCode, time: Option<i64>) {
@@ -166,11 +174,14 @@ impl<'a> Element for Notefield<'a> {
         };
         loop {
             let delta = self.notes.columns().collect::<Vec<_>>()[index]
-                .get(self.column_info[index].on_screen.0);
+                .get(self.column_info[index].next_to_hit);
             if let (Some(time), Some(GameplayInfo(delta, _, note_type))) = (time, delta) {
                 let offset = delta - time;
                 if offset < 180 {
-                    self.column_info[index].on_screen.0 += 1;
+                    self.column_info[index].next_to_hit += 1;
+                    if self.column_info[index].on_screen.0 < self.column_info[index].on_screen.1 {
+                        self.column_info[index].on_screen.0 += 1;
+                    }
                     if offset < -180 {
                         continue;
                     }
