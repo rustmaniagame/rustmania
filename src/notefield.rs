@@ -131,7 +131,7 @@ impl<'a> Element for Notefield<'a> {
                 clear_batch = true;
             }
             let mut next_note = self.column_info[column_index].next_to_hit;
-            while next_note != column_data.len() - 1 && column_data[next_note].0 - time < -180 {
+            while next_note != column_data.len() && column_data[next_note].0 - time < -180 {
                 self.handle_judgement(None, column_index, column_data[next_note].2);
                 next_note += 1;
                 clear_batch = true;
