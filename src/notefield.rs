@@ -173,31 +173,38 @@ impl<'a> Element for Notefield<'a> {
             ggez::event::KeyCode::Period => 3,
             _ => return,
         };
-        loop {
-            let delta = self.notes.notes[index].get(self.column_info[index].next_to_hit);
-            if let (Some(time), Some(GameplayInfo(delta, _, note_type))) = (time, delta) {
-                let offset = delta - time;
-                if offset < 180 {
-                    if self.column_info[index].on_screen.0 < self.column_info[index].on_screen.1 {
-                        if *note_type == Hold {
-                            self.column_info[index].active_hold = Some(
-                                self.notes.notes[index][self.column_info[index].next_to_hit + 1].0,
-                            );
-                            self.column_info[index].next_to_hit += 2;
-                            self.column_info[index].on_screen.0 += 2;
-                        } else {
-                            self.column_info[index].next_to_hit += 1;
-                            self.column_info[index].on_screen.0 += 1;
+        if key_down {
+            loop {
+                let delta = self.notes.notes[index].get(self.column_info[index].next_to_hit);
+                if let (Some(time), Some(GameplayInfo(delta, _, note_type))) = (time, delta) {
+                    let offset = delta - time;
+                    if offset < 180 {
+                        if self.column_info[index].on_screen.0 < self.column_info[index].on_screen.1
+                        {
+                            if *note_type == Hold {
+                                self.column_info[index].active_hold = Some(
+                                    self.notes.notes[index]
+                                        [self.column_info[index].next_to_hit + 1]
+                                        .0,
+                                );
+                                self.column_info[index].next_to_hit += 2;
+                                self.column_info[index].on_screen.0 += 2;
+                            } else {
+                                self.column_info[index].next_to_hit += 1;
+                                self.column_info[index].on_screen.0 += 1;
+                            }
                         }
+                        if offset < -180 {
+                            continue;
+                        }
+                        self.handle_judgement(Some(offset), index, *note_type);
+                        self.redraw_batch();
                     }
-                    if offset < -180 {
-                        continue;
-                    }
-                    self.handle_judgement(Some(offset), index, *note_type);
-                    self.redraw_batch();
                 }
+                break;
             }
-            break;
+        } else {
+            self.column_info[index].active_hold = None;
         }
     }
 }

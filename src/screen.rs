@@ -8,7 +8,7 @@ use std::time::{Duration, Instant};
 pub trait Element: Send {
     fn run(&mut self, context: &mut Context, time: Option<i64>) -> Result<(), GameError>;
     fn start(&mut self, time: Option<Instant>) -> Result<(), GameError>;
-    fn handle_event(&mut self, key: KeyCode, time: Option<i64>,key_down: bool);
+    fn handle_event(&mut self, key: KeyCode, time: Option<i64>, key_down: bool);
 }
 
 pub struct Screen<'a> {
@@ -76,6 +76,12 @@ impl<'a> EventHandler for Screen<'a> {
         let time_delta = self.start_time_to_milliseconds();
         for element in &mut self.elements {
             element.handle_event(keycode, time_delta, true);
+        }
+    }
+    fn key_up_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _keymod: KeyMods) {
+        let time_delta = self.start_time_to_milliseconds();
+        for element in &mut self.elements {
+            element.handle_event(keycode, time_delta, false);
         }
     }
 }
