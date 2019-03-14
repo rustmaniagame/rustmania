@@ -48,11 +48,10 @@ impl Judgement {
                 } else {
                     -6.0
                 }
-            }
-            /*NoteType::Mine => match self.0 {
-                Some(_) => -8.0,
-                None => 0.0,
-            },*/
+            } /*NoteType::Mine => match self.0 {
+                  Some(_) => -8.0,
+                  None => 0.0,
+              },*/
         }
     }
     fn max_points(self) -> f64 {

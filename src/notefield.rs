@@ -93,7 +93,10 @@ impl<'a> Element for Notefield<'a> {
         for (column_index, column_data) in self.notes.columns().enumerate() {
             let (mut draw_start, mut draw_end) = self.column_info[column_index].on_screen;
             if let Some(value) = self.column_info[column_index].active_hold {
-                self.layout.add_hold(ctx, column_index, value - time)?;
+                let delta = value - time;
+                if delta > 0 {
+                    self.layout.add_hold(ctx, column_index, value - time)?;
+                }
             }
             while draw_end != column_data.len() - 1
                 && (self
@@ -150,6 +153,14 @@ impl<'a> Element for Notefield<'a> {
             ggez::event::KeyCode::Period => 3,
             _ => return,
         };
+        if let Some(hold_end) = self.column_info[index].active_hold {
+            if let Some(time) = time {
+                if time > hold_end {
+                    self.judgment_list.add(Judgement::Hold(true), index);
+                    self.column_info[index].active_hold = None;
+                }
+            }
+        }
         if key_down {
             loop {
                 let delta = self.notes.notes[index].get(self.column_info[index].next_to_hit);
@@ -181,7 +192,10 @@ impl<'a> Element for Notefield<'a> {
                 break;
             }
         } else {
-            self.column_info[index].active_hold = None;
+            if self.column_info[index].active_hold.is_some() {
+                self.judgment_list.add(Judgement::Hold(false), index);
+                self.column_info[index].active_hold = None;
+            }
         }
     }
 }
