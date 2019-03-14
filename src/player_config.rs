@@ -175,6 +175,12 @@ impl NoteLayout {
         let is_reverse = if self.scroll_speed > 0.0 { 1.0 } else { -1.0 };
         graphics::draw(
             ctx,
+            &self.sprites.hold_end,
+            graphics::DrawParam::new().dest([self.column_positions[column_index] as f32, self.delta_to_position(delta) as f32])
+                .offset([0.5, 0.5]),
+        )?;
+        graphics::draw(
+            ctx,
             &self.sprites.hold_body,
             graphics::DrawParam::new()
                 .src(graphics::Rect::new(0.0, 0.0, 1.0, {
