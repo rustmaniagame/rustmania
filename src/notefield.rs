@@ -41,6 +41,7 @@ impl ColumnInfo {
 pub enum Judgement {
     Hit(usize),
     Miss,
+    Hold(bool), //true for OK, false for NG
 }
 
 impl<'a> Notefield<'a> {
@@ -98,7 +99,6 @@ impl<'a> Notefield<'a> {
             },
             _ => {}
         }
-
         self.judgment_list
             .add(OffsetInfo(offset, note_type), column);
     }
