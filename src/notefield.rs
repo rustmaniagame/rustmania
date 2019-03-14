@@ -1,7 +1,6 @@
 extern crate ggez;
 
 use crate::notedata::NoteType;
-use crate::notedata::NoteType::Hold;
 use crate::player_config;
 use crate::screen::Element;
 use crate::timingdata::{GameplayInfo, OffsetInfo, TimingData};
@@ -12,7 +11,7 @@ use std::time::Instant;
 
 #[derive(PartialEq)]
 pub struct Notefield<'a> {
-    layout: &'a super::player_config::NoteLayout,
+    layout: &'a player_config::NoteLayout,
     notes: &'a TimingData<GameplayInfo>,
     column_info: [ColumnInfo; 4],
     batches: Vec<SpriteBatch>,
@@ -181,7 +180,7 @@ impl<'a> Element for Notefield<'a> {
                     if offset < 180 {
                         if self.column_info[index].on_screen.0 < self.column_info[index].on_screen.1
                         {
-                            if *note_type == Hold {
+                            if *note_type == NoteType::Hold {
                                 self.column_info[index].active_hold = Some(
                                     self.notes.notes[index]
                                         [self.column_info[index].next_to_hit + 1]
