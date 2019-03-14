@@ -3,7 +3,7 @@ extern crate ggez;
 use crate::notedata::NoteType;
 use crate::player_config;
 use crate::screen::Element;
-use crate::timingdata::{GameplayInfo, OffsetInfo, TimingData};
+use crate::timingdata::{GameplayInfo, Judgement, TimingData};
 use ggez::graphics;
 use ggez::graphics::spritebatch::SpriteBatch;
 use rlua::UserData;
@@ -17,7 +17,7 @@ pub struct Notefield<'a> {
     batches: Vec<SpriteBatch>,
     draw_distance: i64,
     last_judgement: Option<Judgement>,
-    judgment_list: TimingData<OffsetInfo>,
+    judgment_list: TimingData<Judgement>,
 }
 
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -35,13 +35,6 @@ impl ColumnInfo {
             active_hold: None,
         }
     }
-}
-
-#[derive(Copy, Clone, PartialEq, Debug)]
-pub enum Judgement {
-    Hit(usize),
-    Miss,
-    Hold(bool), //true for OK, false for NG
 }
 
 impl<'a> Notefield<'a> {
@@ -80,27 +73,12 @@ impl<'a> Notefield<'a> {
             }
         }
     }
-    fn handle_judgement(&mut self, offset: Option<i64>, column: usize, note_type: NoteType) {
+    fn handle_judgement(&mut self, offset: Judgement, column: usize, note_type: NoteType) {
         match note_type {
-            NoteType::Tap | NoteType::Hold => match offset {
-                Some(off) => match off.abs() {
-                    0...22 => self.last_judgement = Some(Judgement::Hit(0)),
-                    23...45 => self.last_judgement = Some(Judgement::Hit(1)),
-                    46...90 => self.last_judgement = Some(Judgement::Hit(2)),
-                    91...135 => self.last_judgement = Some(Judgement::Hit(3)),
-                    136...180 => self.last_judgement = Some(Judgement::Hit(4)),
-                    //Attempting to register a hit outside the acceptable window would mean
-                    // the validity of the score is compromised, therefore it is preferable to panic
-                    // rather than attempt recovery.  Alternatives should be evaluated prior to a
-                    // public release.
-                    _ => panic!("Should not be able to hit note outside registration window"),
-                },
-                None => self.last_judgement = Some(Judgement::Miss),
-            },
+            NoteType::Tap | NoteType::Hold => self.last_judgement = Some(offset),
             _ => {}
         }
-        self.judgment_list
-            .add(OffsetInfo(offset, note_type), column);
+        self.judgment_list.add(offset, column);
     }
 }
 
@@ -132,7 +110,7 @@ impl<'a> Element for Notefield<'a> {
             }
             let mut next_note = self.column_info[column_index].next_to_hit;
             while next_note != column_data.len() && column_data[next_note].0 - time < -180 {
-                self.handle_judgement(None, column_index, column_data[next_note].2);
+                self.handle_judgement(Judgement::Miss, column_index, column_data[next_note].2);
                 next_note += 1;
                 clear_batch = true;
             }
@@ -196,7 +174,7 @@ impl<'a> Element for Notefield<'a> {
                         if offset < -180 {
                             continue;
                         }
-                        self.handle_judgement(Some(offset), index, *note_type);
+                        self.handle_judgement(Judgement::Hit(offset), index, *note_type);
                         self.redraw_batch();
                     }
                 }

@@ -1,7 +1,6 @@
 extern crate ggez;
 use crate::notedata::NoteType;
-use crate::notefield::Judgement;
-use crate::timingdata::GameplayInfo;
+use crate::timingdata::{GameplayInfo, Judgement};
 use gfx_core::texture::WrapMode;
 use ggez::error::GameResult;
 use ggez::graphics::{self, Rect};
@@ -210,11 +209,15 @@ impl NoteLayout {
     }
     fn select_judgment(&self, judge: Judgement) -> Option<graphics::DrawParam> {
         let src = match judge {
-            Judgement::Hit(0) => graphics::Rect::new(0.0, 0.0, 1.0, 0.1666),
-            Judgement::Hit(1) => graphics::Rect::new(0.0, 0.1666, 1.0, 0.1666),
-            Judgement::Hit(2) => graphics::Rect::new(0.0, 0.3333, 1.0, 0.1666),
-            Judgement::Hit(3) => graphics::Rect::new(0.0, 0.5, 1.0, 0.1666),
-            Judgement::Hit(_) => graphics::Rect::new(0.0, 0.6666, 1.0, 0.1666),
+            Judgement::Hit(-23..23) => graphics::Rect::new(0.0, 0.0, 1.0, 0.1666),
+            Judgement::Hit(-45..45) => graphics::Rect::new(0.0, 0.1666, 1.0, 0.1666),
+            Judgement::Hit(-90..90) => graphics::Rect::new(0.0, 0.3333, 1.0, 0.1666),
+            Judgement::Hit(-135..135) => graphics::Rect::new(0.0, 0.5, 1.0, 0.1666),
+            Judgement::Hit(-181..181) => graphics::Rect::new(0.0, 0.6666, 1.0, 0.1666),
+            Judgement::Hit(out_of_range) => {
+                println!();
+                panic!("Hit was registered outside the normal execution window with offset of {} milliseconds: Aborting",out_of_range)
+            }
             Judgement::Miss => graphics::Rect::new(0.0, 0.8333, 1.0, 1.666),
             Judgement::Hold(_) => {
                 return None;

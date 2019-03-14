@@ -22,36 +22,43 @@ pub struct GameplayInfo(pub i64, pub graphics::Rect, pub NoteType);
 
 impl TimingInfo for GameplayInfo {}
 
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub struct OffsetInfo(pub Option<i64>, pub NoteType);
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub enum Judgement {
+    Hit(i64),
+    Miss,
+    Hold(bool), //true for OK, false for NG
+}
 
-impl TimingInfo for OffsetInfo {}
+impl TimingInfo for Judgement {}
 
-impl OffsetInfo {
+impl Judgement {
     fn wife(self, ts: f64) -> f64 {
-        match self.1 {
-            NoteType::Tap | NoteType::Hold | NoteType::Roll | NoteType::Lift => {
-                let maxms = match self.0 {
-                    Some(offset) => offset,
-                    None => return -8.0,
-                } as f64;
+        match self {
+            Judgement::Hit(maxms) => {
                 let avedeviation = 95.0 * ts;
                 let mut y =
-                    1.0 - 2.0_f64.powf(-1.0 * maxms * maxms / (avedeviation * avedeviation));
+                    1.0 - 2.0_f64.powf((-1 * maxms * maxms) as f64 / (avedeviation * avedeviation));
                 y *= y;
                 (10.0) * (1.0 - y) - 8.0
             }
-            NoteType::Fake | NoteType::HoldEnd => 0.0,
-            NoteType::Mine => match self.0 {
+            Judgement::Miss => -8.0,
+            Judgement::Hold(ok) => {
+                if ok {
+                    0.0
+                } else {
+                    -6.0
+                }
+            }
+            /*NoteType::Mine => match self.0 {
                 Some(_) => -8.0,
                 None => 0.0,
-            },
+            },*/
         }
     }
     fn max_points(self) -> f64 {
-        match self.1 {
-            NoteType::Tap | NoteType::Hold | NoteType::Roll | NoteType::Lift => 2.0,
-            NoteType::Fake | NoteType::Mine | NoteType::HoldEnd => 0.0,
+        match self {
+            Judgement::Hit(_) | Judgement::Miss => 2.0,
+            Judgement::Hold(_) => 0.0,
         }
     }
 }
@@ -142,7 +149,7 @@ where
         }
     }
 }
-impl TimingData<OffsetInfo> {
+impl TimingData<Judgement> {
     pub fn calculate_score(&self) -> f64 {
         let max_points = self
             .columns()
@@ -164,31 +171,31 @@ mod tests {
     #[test]
     fn wife_symmetry() {
         for offset in 0..180 {
-            let early = OffsetInfo(Some(-offset), NoteType::Tap);
-            let late = OffsetInfo(Some(offset), NoteType::Tap);
+            let early = Judgement(Some(-offset), NoteType::Tap);
+            let late = Judgement(Some(offset), NoteType::Tap);
             assert_eq!(early.wife(1.0), late.wife(1.0));
         }
     }
     #[test]
     fn wife_peak() {
-        assert_eq!(OffsetInfo(Some(0), NoteType::Tap).wife(1.0), 2.0);
-        assert_eq!(OffsetInfo(Some(0), NoteType::Tap).wife(0.5), 2.0);
-        assert_eq!(OffsetInfo(Some(0), NoteType::Tap).wife(2.0), 2.0);
+        assert_eq!(Judgement(Some(0), NoteType::Tap).wife(1.0), 2.0);
+        assert_eq!(Judgement(Some(0), NoteType::Tap).wife(0.5), 2.0);
+        assert_eq!(Judgement(Some(0), NoteType::Tap).wife(2.0), 2.0);
     }
     #[test]
     fn wife_decreasing() {
         for offset in 0..179 {
             assert!(
-                OffsetInfo(Some(offset), NoteType::Tap).wife(1.0)
-                    > OffsetInfo(Some(offset + 1), NoteType::Tap).wife(1.0)
+                Judgement(Some(offset), NoteType::Tap).wife(1.0)
+                    > Judgement(Some(offset + 1), NoteType::Tap).wife(1.0)
             );
             assert!(
-                OffsetInfo(Some(offset), NoteType::Tap).wife(0.5)
-                    > OffsetInfo(Some(offset + 1), NoteType::Tap).wife(0.5)
+                Judgement(Some(offset), NoteType::Tap).wife(0.5)
+                    > Judgement(Some(offset + 1), NoteType::Tap).wife(0.5)
             );
             assert!(
-                OffsetInfo(Some(offset), NoteType::Tap).wife(2.0)
-                    > OffsetInfo(Some(offset + 1), NoteType::Tap).wife(2.0)
+                Judgement(Some(offset), NoteType::Tap).wife(2.0)
+                    > Judgement(Some(offset + 1), NoteType::Tap).wife(2.0)
             );
         }
     }
