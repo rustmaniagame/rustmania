@@ -9,7 +9,7 @@ use ggez::graphics::spritebatch::SpriteBatch;
 use rlua::UserData;
 use std::time::Instant;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct Notefield<'a> {
     layout: &'a player_config::NoteLayout,
     notes: &'a TimingData<GameplayInfo>,
@@ -20,7 +20,7 @@ pub struct Notefield<'a> {
     judgment_list: TimingData<OffsetInfo>,
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 struct ColumnInfo {
     on_screen: (usize, usize),
     next_to_hit: usize,
@@ -37,7 +37,7 @@ impl ColumnInfo {
     }
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Judgement {
     Hit(usize),
     Miss,

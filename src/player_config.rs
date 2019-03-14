@@ -10,7 +10,7 @@ use std::fs::File;
 use std::io::Read;
 use toml;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct NoteLayout {
     pub sprites: NoteSprites,
     pub column_positions: [i64; 4],
@@ -20,14 +20,14 @@ pub struct NoteLayout {
     pub scroll_speed: f32,
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub struct NoteSkin {
     pub sprites: NoteSprites,
     pub column_positions: [i64; 4],
     pub column_rotations: [f32; 4],
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub struct NoteSprites {
     pub arrows: graphics::Image,
     pub receptor: graphics::Image,
@@ -37,7 +37,7 @@ pub struct NoteSprites {
     pub mine: graphics::Image,
 }
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub struct PlayerOptions {
     notefield_position: i64,
     receptor_height: i64,
