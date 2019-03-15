@@ -73,12 +73,12 @@ impl<'a> Notefield<'a> {
             }
         }
     }
-    fn handle_judgement(&mut self, offset: Judgement, column: usize, note_type: NoteType) {
-        match note_type {
-            NoteType::Tap | NoteType::Hold => self.last_judgement = Some(offset),
+    fn handle_judgement(&mut self, judge: Judgement, column: usize) {
+        match judge {
+            Judgement::Hit(_) | Judgement::Miss => self.last_judgement = Some(judge),
             _ => {}
         }
-        self.judgment_list.add(offset, column);
+        self.judgment_list.add(judge, column);
     }
 }
 
@@ -114,9 +114,9 @@ impl<'a> Element for Notefield<'a> {
             let mut next_note = self.column_info[column_index].next_to_hit;
             while next_note != column_data.len() && column_data[next_note].0 - time < -180 {
                 if column_data[next_note].2 == NoteType::Mine {
-                    self.handle_judgement(Judgement::Mine(false), column_index, column_data[next_note].2);
+                    self.handle_judgement(Judgement::Mine(false), column_index);
                 } else {
-                    self.handle_judgement(Judgement::Miss, column_index, column_data[next_note].2);
+                    self.handle_judgement(Judgement::Miss, column_index);
                 }
                 next_note += 1;
                 clear_batch = true;
@@ -191,11 +191,11 @@ impl<'a> Element for Notefield<'a> {
                         }
                         match *note_type {
                             NoteType::Tap | NoteType::Hold =>
-                                self.handle_judgement(Judgement::Hit(offset), index, *note_type),
-                            NoteType::Mine => self.handle_judgement(Judgement::Mine(true), index, *note_type),
+                                self.handle_judgement(Judgement::Hit(offset), index),
+                            NoteType::Mine => self.handle_judgement(Judgement::Mine(true), index),
                             _ => {},
                         }
-                        self.handle_judgement(Judgement::Hit(offset), index, *note_type);
+                        self.handle_judgement(Judgement::Hit(offset), index);
                         self.redraw_batch();
                     }
                 }
