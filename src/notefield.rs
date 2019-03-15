@@ -91,8 +91,12 @@ impl<'a> Element for Notefield<'a> {
         };
         let mut clear_batch = false;
         for (column_index, column_data) in self.notes.columns().enumerate() {
-            let (mut draw_start, mut draw_end) = self.column_info[column_index].on_screen;
-            if let Some(value) = self.column_info[column_index].active_hold {
+            let ColumnInfo {
+                on_screen: (mut draw_start, mut draw_end),
+                mut next_to_hit,
+                active_hold,
+            } = self.column_info[column_index];
+            if let Some(value) = active_hold {
                 let delta = value - time;
                 if delta > 0 {
                     self.layout.add_hold(ctx, column_index, value - time)?;
@@ -111,19 +115,18 @@ impl<'a> Element for Notefield<'a> {
                 draw_end += 1;
                 clear_batch = true;
             }
-            let mut next_note = self.column_info[column_index].next_to_hit;
-            while next_note != column_data.len() && column_data[next_note].0 - time < -180 {
-                if column_data[next_note].2 == NoteType::Mine {
+            while next_to_hit != column_data.len() && column_data[next_to_hit].0 - time < -180 {
+                if column_data[next_to_hit].2 == NoteType::Mine {
                     self.handle_judgement(Judgement::Mine(false), column_index);
                 } else {
                     self.handle_judgement(Judgement::Miss, column_index);
                 }
-                next_note += 1;
+                next_to_hit += 1;
                 clear_batch = true;
             }
-            self.column_info[column_index].next_to_hit = next_note;
-            if next_note < draw_end {
-                draw_start = next_note;
+            self.column_info[column_index].next_to_hit = next_to_hit;
+            if next_to_hit < draw_end {
+                draw_start = next_to_hit;
             }
             self.column_info[column_index].on_screen = (draw_start, draw_end);
         }
