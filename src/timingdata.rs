@@ -106,7 +106,7 @@ impl TimingData<GameplayInfo> {
         let mut current_bpm = bpms.next().unwrap();
         let mut next_bpm = bpms.next();
         let mut output = [Vec::new(), Vec::new(), Vec::new(), Vec::new()];
-        for (measure_index, measure) in data.columns().enumerate() {
+        for (measure_index, measure) in data.measures().enumerate() {
             for (inner_time, row) in measure.iter() {
                 if let Some(bpm) = next_bpm {
                     if measure_index as i32 > bpm.0

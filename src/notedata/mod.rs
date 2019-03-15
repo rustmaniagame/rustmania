@@ -54,7 +54,7 @@ impl ChartData {
     fn new(notes: Vec<Vec<(Rational32, NoteRow)>>) -> Self {
         ChartData { notes }
     }
-    pub fn columns(&self) -> slice::Iter<Vec<(Rational32, NoteRow)>> {
+    pub fn measures(&self) -> slice::Iter<Vec<(Rational32, NoteRow)>> {
         self.notes.iter()
     }
 }
