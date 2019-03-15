@@ -176,7 +176,11 @@ impl NoteLayout {
         graphics::draw(
             ctx,
             &self.sprites.hold_end,
-            graphics::DrawParam::new().dest([self.column_positions[column_index] as f32, self.delta_to_position(delta) as f32])
+            graphics::DrawParam::new()
+                .dest([
+                    self.column_positions[column_index] as f32,
+                    self.delta_to_position(delta) as f32,
+                ])
                 .offset([0.5, 0.5]),
         )?;
         graphics::draw(
@@ -225,7 +229,7 @@ impl NoteLayout {
                 panic!("Hit was registered outside the normal execution window with offset of {} milliseconds: Aborting",out_of_range)
             }
             Judgement::Miss => graphics::Rect::new(0.0, 0.8333, 1.0, 1.666),
-            Judgement::Hold(_) => {
+            Judgement::Hold(_) | Judgement::Mine(_) => {
                 return None;
             }
         };

@@ -113,7 +113,11 @@ impl<'a> Element for Notefield<'a> {
             }
             let mut next_note = self.column_info[column_index].next_to_hit;
             while next_note != column_data.len() && column_data[next_note].0 - time < -180 {
-                self.handle_judgement(Judgement::Miss, column_index, column_data[next_note].2);
+                if column_data[next_note].2 == NoteType::Mine {
+                    self.handle_judgement(Judgement::Mine(false), column_index, column_data[next_note].2);
+                } else {
+                    self.handle_judgement(Judgement::Miss, column_index, column_data[next_note].2);
+                }
                 next_note += 1;
                 clear_batch = true;
             }
@@ -184,6 +188,12 @@ impl<'a> Element for Notefield<'a> {
                         }
                         if offset < -180 {
                             continue;
+                        }
+                        match *note_type {
+                            NoteType::Tap | NoteType::Hold =>
+                                self.handle_judgement(Judgement::Hit(offset), index, *note_type),
+                            NoteType::Mine => self.handle_judgement(Judgement::Mine(true), index, *note_type),
+                            _ => {},
                         }
                         self.handle_judgement(Judgement::Hit(offset), index, *note_type);
                         self.redraw_batch();

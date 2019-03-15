@@ -27,6 +27,7 @@ pub enum Judgement {
     Hit(i64),
     Miss,
     Hold(bool), //true for OK, false for NG
+    Mine(bool),
 }
 
 impl TimingInfo for Judgement {}
@@ -48,16 +49,20 @@ impl Judgement {
                 } else {
                     -6.0
                 }
-            } /*NoteType::Mine => match self.0 {
-                  Some(_) => -8.0,
-                  None => 0.0,
-              },*/
+            }
+            Judgement::Mine(hit) => {
+                if hit {
+                    -8.0
+                } else {
+                    0.0
+                }
+            }
         }
     }
     fn max_points(self) -> f64 {
         match self {
             Judgement::Hit(_) | Judgement::Miss => 2.0,
-            Judgement::Hold(_) => 0.0,
+            Judgement::Hold(_) | Judgement::Mine(_) => 0.0,
         }
     }
 }
