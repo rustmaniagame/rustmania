@@ -18,7 +18,7 @@ where
 #[derive(Debug, PartialEq)]
 pub struct TimingColumn<T>
 where
-T: TimingInfo,
+    T: TimingInfo,
 {
     pub notes: Vec<T>,
 }
@@ -75,14 +75,15 @@ impl Judgement {
     }
 }
 
-impl<T> TimingColumn<T> where T: TimingInfo {
+impl<T> TimingColumn<T>
+where
+    T: TimingInfo,
+{
     pub fn add(&mut self, offset: T) {
         self.notes.push(offset);
     }
     pub fn new() -> Self {
-        TimingColumn{
-            notes: Vec::new()
-        }
+        TimingColumn { notes: Vec::new() }
     }
 }
 
@@ -124,7 +125,12 @@ impl TimingData<GameplayInfo> {
         let mut bpms = bpms.into_iter();
         let mut current_bpm = bpms.next().unwrap();
         let mut next_bpm = bpms.next();
-        let mut output = [TimingColumn::new(), TimingColumn::new(), TimingColumn::new(), TimingColumn::new()];
+        let mut output = [
+            TimingColumn::new(),
+            TimingColumn::new(),
+            TimingColumn::new(),
+            TimingColumn::new(),
+        ];
         for (measure_index, measure) in data.measures().enumerate() {
             for (inner_time, row) in measure.iter() {
                 if let Some(bpm) = next_bpm {
@@ -168,7 +174,12 @@ where
     }
     pub fn new() -> Self {
         TimingData {
-            notes: [TimingColumn::new(), TimingColumn::new(), TimingColumn::new(), TimingColumn::new()],
+            notes: [
+                TimingColumn::new(),
+                TimingColumn::new(),
+                TimingColumn::new(),
+                TimingColumn::new(),
+            ],
         }
     }
 }

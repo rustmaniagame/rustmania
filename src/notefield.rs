@@ -3,7 +3,7 @@ extern crate ggez;
 use crate::notedata::NoteType;
 use crate::player_config;
 use crate::screen::Element;
-use crate::timingdata::{GameplayInfo, Judgement, TimingData};
+use crate::timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData};
 use ggez::graphics;
 use ggez::graphics::spritebatch::SpriteBatch;
 use rlua::UserData;
@@ -12,8 +12,7 @@ use std::time::Instant;
 #[derive(PartialEq, Debug)]
 pub struct Notefield<'a> {
     layout: &'a player_config::NoteLayout,
-    notes: &'a TimingData<GameplayInfo>,
-    column_info: [ColumnInfo; 4],
+    column_info: [ColumnInfo<'a>; 4],
     batches: Vec<SpriteBatch>,
     draw_distance: i64,
     last_judgement: Option<Judgement>,
@@ -21,18 +20,20 @@ pub struct Notefield<'a> {
 }
 
 #[derive(Copy, Clone, PartialEq, Debug)]
-struct ColumnInfo {
+struct ColumnInfo<'a> {
     on_screen: (usize, usize),
     next_to_hit: usize,
     active_hold: Option<i64>,
+    notes: &'a TimingColumn<GameplayInfo>,
 }
 
-impl ColumnInfo {
-    fn new() -> Self {
+impl<'a> ColumnInfo<'a> {
+    fn from_column(notes: &'a TimingColumn<GameplayInfo>) -> Self {
         ColumnInfo {
             on_screen: (0, 0),
             next_to_hit: 0,
             active_hold: None,
+            notes,
         }
     }
 }
@@ -45,8 +46,12 @@ impl<'a> Notefield<'a> {
     ) -> Self {
         Notefield {
             layout,
-            notes,
-            column_info: [ColumnInfo::new(); 4],
+            column_info: [
+                ColumnInfo::from_column(&notes.notes[0]),
+                ColumnInfo::from_column(&notes.notes[1]),
+                ColumnInfo::from_column(&notes.notes[2]),
+                ColumnInfo::from_column(&notes.notes[3]),
+            ],
             //Using a Vec of SpriteBatch should be temporary, optimally we want to reference these
             // by a NoteType key, but this would require ggez refactoring.
             batches: vec![
@@ -62,11 +67,11 @@ impl<'a> Notefield<'a> {
     }
     fn redraw_batch(&mut self) {
         self.batches.iter_mut().for_each(|x| x.clear());
-        for (column_index, column_data) in self.notes.columns().enumerate() {
+        for column_index in 0..4 {
             let (draw_start, draw_end) = self.column_info[column_index].on_screen;
             if draw_start < draw_end {
                 self.layout.add_column_of_notes(
-                    &column_data.notes[draw_start..],
+                    &self.column_info[column_index].notes.notes[draw_start..],
                     column_index,
                     &mut self.batches,
                 );
@@ -90,11 +95,12 @@ impl<'a> Element for Notefield<'a> {
             None => return Ok(()),
         };
         let mut clear_batch = false;
-        for (column_index, column_data) in self.notes.columns().enumerate() {
+        for column_index in 0..4 {
             let ColumnInfo {
                 on_screen: (mut draw_start, mut draw_end),
                 mut next_to_hit,
                 active_hold,
+                notes,
             } = self.column_info[column_index];
             if let Some(value) = active_hold {
                 let delta = value - time;
@@ -102,21 +108,21 @@ impl<'a> Element for Notefield<'a> {
                     self.layout.add_hold(ctx, column_index, value - time)?;
                 }
             }
-            while draw_end != column_data.notes.len() - 1
+            while draw_end != notes.notes.len() - 1
                 && (self
                     .layout
-                    .delta_to_position(column_data.notes[draw_end].0 - time)
+                    .delta_to_position(notes.notes[draw_end].0 - time)
                     < self.draw_distance
                     || self
                         .layout
-                        .delta_to_position(column_data.notes[draw_end].0 - time)
+                        .delta_to_position(notes.notes[draw_end].0 - time)
                         > 0)
             {
                 draw_end += 1;
                 clear_batch = true;
             }
-            while next_to_hit != column_data.notes.len() && column_data.notes[next_to_hit].0 - time < -180 {
-                if column_data.notes[next_to_hit].2 == NoteType::Mine {
+            while next_to_hit != notes.notes.len() && notes.notes[next_to_hit].0 - time < -180 {
+                if notes.notes[next_to_hit].2 == NoteType::Mine {
                     self.handle_judgement(Judgement::Mine(false), column_index);
                 } else {
                     self.handle_judgement(Judgement::Miss, column_index);
@@ -170,7 +176,10 @@ impl<'a> Element for Notefield<'a> {
         }
         if key_down {
             loop {
-                let delta = self.notes.notes[index].notes.get(self.column_info[index].next_to_hit);
+                let delta = self.column_info[index]
+                    .notes
+                    .notes
+                    .get(self.column_info[index].next_to_hit);
                 if let (Some(time), Some(GameplayInfo(delta, _, note_type))) = (time, delta) {
                     let offset = delta - time;
                     if offset < 180 {
@@ -178,7 +187,7 @@ impl<'a> Element for Notefield<'a> {
                         {
                             if *note_type == NoteType::Hold {
                                 self.column_info[index].active_hold = Some(
-                                    self.notes.notes[index].notes
+                                    self.column_info[index].notes.notes
                                         [self.column_info[index].next_to_hit + 1]
                                         .0,
                                 );
@@ -193,10 +202,11 @@ impl<'a> Element for Notefield<'a> {
                             continue;
                         }
                         match *note_type {
-                            NoteType::Tap | NoteType::Hold =>
-                                self.handle_judgement(Judgement::Hit(offset), index),
+                            NoteType::Tap | NoteType::Hold => {
+                                self.handle_judgement(Judgement::Hit(offset), index)
+                            }
                             NoteType::Mine => self.handle_judgement(Judgement::Mine(true), index),
-                            _ => {},
+                            _ => {}
                         }
                         self.handle_judgement(Judgement::Hit(offset), index);
                         self.redraw_batch();
