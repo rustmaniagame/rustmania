@@ -12,7 +12,15 @@ pub struct TimingData<T>
 where
     T: TimingInfo,
 {
-    pub notes: [Vec<T>; 4],
+    pub notes: [TimingColumn<T>; 4],
+}
+
+#[derive(Debug, PartialEq)]
+pub struct TimingColumn<T>
+where
+T: TimingInfo,
+{
+    pub notes: Vec<T>,
 }
 
 pub trait TimingInfo {}
@@ -67,6 +75,17 @@ impl Judgement {
     }
 }
 
+impl<T> TimingColumn<T> where T: TimingInfo {
+    pub fn add(&mut self, offset: T) {
+        self.notes.push(offset);
+    }
+    pub fn new() -> Self {
+        TimingColumn{
+            notes: Vec::new()
+        }
+    }
+}
+
 impl TimingData<GameplayInfo> {
     pub fn from_notedata<U>(data: &NoteData, sprite_finder: U, rate: f64) -> Vec<Self>
     where
@@ -105,7 +124,7 @@ impl TimingData<GameplayInfo> {
         let mut bpms = bpms.into_iter();
         let mut current_bpm = bpms.next().unwrap();
         let mut next_bpm = bpms.next();
-        let mut output = [Vec::new(), Vec::new(), Vec::new(), Vec::new()];
+        let mut output = [TimingColumn::new(), TimingColumn::new(), TimingColumn::new(), TimingColumn::new()];
         for (measure_index, measure) in data.measures().enumerate() {
             for (inner_time, row) in measure.iter() {
                 if let Some(bpm) = next_bpm {
@@ -128,7 +147,7 @@ impl TimingData<GameplayInfo> {
                     //This if let can hide errors in the parser or .sm file
                     // An else clause should be added where errors are handled
                     if let Some(column) = output.get_mut(*column_index) {
-                        column.push(GameplayInfo(row_time as i64, sprite, *note));
+                        column.add(GameplayInfo(row_time as i64, sprite, *note));
                     }
                 }
             }
@@ -142,14 +161,14 @@ where
     T: TimingInfo,
 {
     pub fn add(&mut self, offset: T, column: usize) {
-        self.notes[column].push(offset);
+        self.notes[column].add(offset);
     }
-    pub fn columns(&self) -> slice::Iter<Vec<T>> {
+    pub fn columns(&self) -> slice::Iter<TimingColumn<T>> {
         self.notes.iter()
     }
     pub fn new() -> Self {
         TimingData {
-            notes: [Vec::new(), Vec::new(), Vec::new(), Vec::new()],
+            notes: [TimingColumn::new(), TimingColumn::new(), TimingColumn::new(), TimingColumn::new()],
         }
     }
 }
@@ -157,12 +176,12 @@ impl TimingData<Judgement> {
     pub fn calculate_score(&self) -> f64 {
         let max_points = self
             .columns()
-            .flat_map(|x| x.iter())
+            .flat_map(|x| x.notes.iter())
             .map(|x| x.max_points())
             .sum::<f64>();
         let current_points = self
             .columns()
-            .flat_map(|x| x.iter())
+            .flat_map(|x| x.notes.iter())
             .map(|x| x.wife(1.0))
             .sum::<f64>();
         current_points / max_points

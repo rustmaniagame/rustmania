@@ -66,7 +66,7 @@ impl<'a> Notefield<'a> {
             let (draw_start, draw_end) = self.column_info[column_index].on_screen;
             if draw_start < draw_end {
                 self.layout.add_column_of_notes(
-                    &column_data[draw_start..],
+                    &column_data.notes[draw_start..],
                     column_index,
                     &mut self.batches,
                 );
@@ -102,21 +102,21 @@ impl<'a> Element for Notefield<'a> {
                     self.layout.add_hold(ctx, column_index, value - time)?;
                 }
             }
-            while draw_end != column_data.len() - 1
+            while draw_end != column_data.notes.len() - 1
                 && (self
                     .layout
-                    .delta_to_position(column_data[draw_end].0 - time)
+                    .delta_to_position(column_data.notes[draw_end].0 - time)
                     < self.draw_distance
                     || self
                         .layout
-                        .delta_to_position(column_data[draw_end].0 - time)
+                        .delta_to_position(column_data.notes[draw_end].0 - time)
                         > 0)
             {
                 draw_end += 1;
                 clear_batch = true;
             }
-            while next_to_hit != column_data.len() && column_data[next_to_hit].0 - time < -180 {
-                if column_data[next_to_hit].2 == NoteType::Mine {
+            while next_to_hit != column_data.notes.len() && column_data.notes[next_to_hit].0 - time < -180 {
+                if column_data.notes[next_to_hit].2 == NoteType::Mine {
                     self.handle_judgement(Judgement::Mine(false), column_index);
                 } else {
                     self.handle_judgement(Judgement::Miss, column_index);
@@ -170,7 +170,7 @@ impl<'a> Element for Notefield<'a> {
         }
         if key_down {
             loop {
-                let delta = self.notes.notes[index].get(self.column_info[index].next_to_hit);
+                let delta = self.notes.notes[index].notes.get(self.column_info[index].next_to_hit);
                 if let (Some(time), Some(GameplayInfo(delta, _, note_type))) = (time, delta) {
                     let offset = delta - time;
                     if offset < 180 {
@@ -178,7 +178,7 @@ impl<'a> Element for Notefield<'a> {
                         {
                             if *note_type == NoteType::Hold {
                                 self.column_info[index].active_hold = Some(
-                                    self.notes.notes[index]
+                                    self.notes.notes[index].notes
                                         [self.column_info[index].next_to_hit + 1]
                                         .0,
                                 );
