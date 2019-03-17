@@ -54,6 +54,46 @@ impl<'a> ColumnInfo<'a> {
         self.on_screen = (draw_start, draw_end);
         updated
     }
+    fn handle_hit(&mut self, time: i64) -> Option<Judgement> {
+        let mut offset = self.notes.notes[self.next_to_hit].0 - time;
+        while offset < -180 {
+            match self.notes.notes[self.next_to_hit].2 {
+                NoteType::Tap => {
+                    self.judgement_list.add(Judgement::Miss);
+                }
+                NoteType::Hold => {
+                    self.judgement_list.add(Judgement::Miss);
+                    self.judgement_list.add(Judgement::Hold(false));
+                }
+                NoteType::Mine => {
+                    self.judgement_list.add(Judgement::Mine(false));
+                }
+                _ => {}
+            };
+            self.next_to_hit += 1;
+            offset = self.notes.notes[self.next_to_hit].0 - time;
+        }
+        while self.notes.notes[self.next_to_hit].2 == NoteType::HoldEnd {
+            self.next_to_hit += 1;
+        }
+        offset = self.notes.notes[self.next_to_hit].0 - time;
+        if offset < 180 {
+            match self.notes.notes[self.next_to_hit].2 {
+                NoteType::Tap => self.judgement_list.add(Judgement::Hit(offset)),
+                NoteType::Hold => {
+                    self.judgement_list.add(Judgement::Hit(offset));
+                    self.active_hold = Some(self.notes.notes[self.next_to_hit + 1].0);
+                }
+                NoteType::Mine => self.judgement_list.add(Judgement::Mine(true)),
+                _ => {}
+            }
+            self.next_to_hit += 1;
+            while self.notes.notes[self.next_to_hit].2 == NoteType::HoldEnd {
+                self.next_to_hit += 1;
+            }
+        };
+        self.judgement_list.notes.last().map(|x| *x)
+    }
 }
 
 impl<'a> Notefield<'a> {
@@ -95,12 +135,18 @@ impl<'a> Notefield<'a> {
             }
         }
     }
-    fn handle_judgement(&mut self, judge: Judgement, column: usize) {
+    fn old_handle(&mut self, judge: Judgement, column: usize) {
         match judge {
             Judgement::Hit(_) | Judgement::Miss => self.last_judgement = Some(judge),
             _ => {}
         }
         self.column_info[column].judgement_list.add(judge);
+    }
+    fn handle_judgement_(&mut self, judge: Judgement) {
+        match judge {
+            Judgement::Hit(_) | Judgement::Miss => self.last_judgement = Some(judge),
+            _ => {}
+        }
     }
 }
 
@@ -123,9 +169,9 @@ impl<'a> Element for Notefield<'a> {
             }
             while next_to_hit != notes.notes.len() && notes.notes[next_to_hit].0 - time < -180 {
                 if notes.notes[next_to_hit].2 == NoteType::Mine {
-                    self.handle_judgement(Judgement::Mine(false), column_index);
+                    self.old_handle(Judgement::Mine(false), column_index);
                 } else {
-                    self.handle_judgement(Judgement::Miss, column_index);
+                    self.old_handle(Judgement::Miss, column_index);
                 }
                 next_to_hit += 1;
                 clear_batch = true;
@@ -179,56 +225,25 @@ impl<'a> Element for Notefield<'a> {
             ggez::event::KeyCode::Period => 3,
             _ => return,
         };
+        let time = match time {
+            Some(time) => time,
+            None => return,
+        };
         if let Some(hold_end) = self.column_info[index].active_hold {
-            if let Some(time) = time {
-                if time > hold_end {
-                    self.column_info[index]
-                        .judgement_list
-                        .add(Judgement::Hold(true));
-                    self.column_info[index].active_hold = None;
-                }
+            if time > hold_end {
+                self.column_info[index]
+                    .judgement_list
+                    .add(Judgement::Hold(true));
+                self.column_info[index].active_hold = None;
             }
         }
         if key_down {
-            loop {
-                let delta = self.column_info[index]
-                    .notes
-                    .notes
-                    .get(self.column_info[index].next_to_hit);
-                if let (Some(time), Some(GameplayInfo(delta, _, note_type))) = (time, delta) {
-                    let offset = delta - time;
-                    if offset < 180 {
-                        if self.column_info[index].on_screen.0 < self.column_info[index].on_screen.1
-                        {
-                            if *note_type == NoteType::Hold {
-                                self.column_info[index].active_hold = Some(
-                                    self.column_info[index].notes.notes
-                                        [self.column_info[index].next_to_hit + 1]
-                                        .0,
-                                );
-                                self.column_info[index].next_to_hit += 2;
-                                self.column_info[index].on_screen.0 += 2;
-                            } else {
-                                self.column_info[index].next_to_hit += 1;
-                                self.column_info[index].on_screen.0 += 1;
-                            }
-                        }
-                        if offset < -180 {
-                            continue;
-                        }
-                        match *note_type {
-                            NoteType::Tap | NoteType::Hold => {
-                                self.handle_judgement(Judgement::Hit(offset), index)
-                            }
-                            NoteType::Mine => self.handle_judgement(Judgement::Mine(true), index),
-                            _ => {}
-                        }
-                        self.handle_judgement(Judgement::Hit(offset), index);
-                        self.redraw_batch();
-                    }
-                }
-                break;
-            }
+            match self.column_info[index].handle_hit(time) {
+                Some(value) => self.handle_judgement_(value),
+                None => {}
+            };
+            self.column_info[index].update_on_screen(self.layout, time, self.draw_distance);
+            self.redraw_batch();
         } else {
             if self.column_info[index].active_hold.is_some() {
                 self.column_info[index]
