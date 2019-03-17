@@ -140,7 +140,7 @@ impl<'a> Notefield<'a> {
             }
         }
     }
-    fn handle_judgement_(&mut self, judge: Judgement) {
+    fn handle_judgement(&mut self, judge: Judgement) {
         match judge {
             Judgement::Hit(_) | Judgement::Miss => self.last_judgement = Some(judge),
             _ => {}
@@ -164,7 +164,7 @@ impl<'a> Element for Notefield<'a> {
                 }
             }
             if self.column_info[column_index].update_for_misses(time) {
-                self.handle_judgement_(Judgement::Miss);
+                self.handle_judgement(Judgement::Miss);
                 clear_batch = true;
             };
             if self.column_info[column_index].update_on_screen(
@@ -229,7 +229,7 @@ impl<'a> Element for Notefield<'a> {
         }
         if key_down {
             match self.column_info[index].handle_hit(time) {
-                Some(value) => self.handle_judgement_(value),
+                Some(value) => self.handle_judgement(value),
                 None => {}
             };
             self.column_info[index].update_on_screen(self.layout, time, self.draw_distance);
