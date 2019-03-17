@@ -1,7 +1,6 @@
 use crate::notedata::{ChartData, ChartMetadata, NoteData, NoteType};
 use ggez::graphics;
 use num_rational::Rational32;
-use std::slice;
 
 fn value(fraction: Rational32) -> f64 {
     *fraction.numer() as f64 / *fraction.denom() as f64
@@ -166,12 +165,6 @@ impl<T> TimingData<T>
 where
     T: TimingInfo,
 {
-    pub fn add(&mut self, offset: T, column: usize) {
-        self.notes[column].add(offset);
-    }
-    pub fn columns(&self) -> slice::Iter<TimingColumn<T>> {
-        self.notes.iter()
-    }
     pub fn new() -> Self {
         TimingData {
             notes: [
@@ -187,10 +180,10 @@ where
 //Unused functions here will be utilized when a results screen is added
 impl TimingData<Judgement> {
     pub fn _max_points(&self) -> f64 {
-        self.columns().map(|x| x.max_points()).sum()
+        self.notes.iter().map(|x| x.max_points()).sum()
     }
     pub fn _current_points(&self, ts: f64) -> f64 {
-        self.columns().map(|x| x.current_points(ts)).sum()
+        self.notes.iter().map(|x| x.current_points(ts)).sum()
     }
     pub fn _calculate_score(&self, ts: f64) -> f64 {
         self._current_points(ts) / self._max_points()
