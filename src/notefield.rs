@@ -8,6 +8,7 @@ use ggez::graphics;
 use ggez::graphics::spritebatch::SpriteBatch;
 use rlua::UserData;
 use std::time::Instant;
+use crate::player_config::NoteLayout;
 
 #[derive(PartialEq, Debug)]
 pub struct Notefield<'a> {
@@ -35,6 +36,26 @@ impl<'a> ColumnInfo<'a> {
             active_hold: None,
             notes,
         }
+    }
+    fn update_on_screen(&mut self, layout: &NoteLayout, time: i64, draw_distance: i64) -> bool {
+        let mut updated = false;
+        let (mut draw_start, mut draw_end) = self.on_screen;
+        while draw_end != self.notes.notes.len() - 1
+            && (layout
+            .delta_to_position(self.notes.notes[draw_end].0 - time)
+            < draw_distance
+            || layout
+            .delta_to_position(self.notes.notes[draw_end].0 - time)
+            > 0)
+            {
+                draw_end += 1;
+                updated = true;
+            }
+        if self.next_to_hit < draw_end {
+            draw_start = self.next_to_hit;
+        }
+        self.on_screen = (draw_start, draw_end);
+        updated
     }
 }
 
@@ -96,30 +117,13 @@ impl<'a> Element for Notefield<'a> {
         };
         let mut clear_batch = false;
         for column_index in 0..4 {
-            let ColumnInfo {
-                on_screen: (mut draw_start, mut draw_end),
-                mut next_to_hit,
-                active_hold,
-                notes,
-            } = self.column_info[column_index];
-            if let Some(value) = active_hold {
+            let notes = self.column_info[column_index].notes;
+            let mut next_to_hit = self.column_info[column_index].next_to_hit;
+            if let Some(value) = self.column_info[column_index].active_hold {
                 let delta = value - time;
                 if delta > 0 {
                     self.layout.add_hold(ctx, column_index, value - time)?;
                 }
-            }
-            while draw_end != notes.notes.len() - 1
-                && (self
-                    .layout
-                    .delta_to_position(notes.notes[draw_end].0 - time)
-                    < self.draw_distance
-                    || self
-                        .layout
-                        .delta_to_position(notes.notes[draw_end].0 - time)
-                        > 0)
-            {
-                draw_end += 1;
-                clear_batch = true;
             }
             while next_to_hit != notes.notes.len() && notes.notes[next_to_hit].0 - time < -180 {
                 if notes.notes[next_to_hit].2 == NoteType::Mine {
@@ -131,10 +135,7 @@ impl<'a> Element for Notefield<'a> {
                 clear_batch = true;
             }
             self.column_info[column_index].next_to_hit = next_to_hit;
-            if next_to_hit < draw_end {
-                draw_start = next_to_hit;
-            }
-            self.column_info[column_index].on_screen = (draw_start, draw_end);
+            if self.column_info[column_index].update_on_screen(self.layout,time,self.draw_distance){clear_batch = true};
         }
         if clear_batch {
             self.redraw_batch();

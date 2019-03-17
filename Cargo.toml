@@ -6,7 +6,7 @@ build = "build.rs"
 edition = "2018"
 
 [dependencies]
-ggez = "0.5.0-rc.0"
+ggez = { git = "https://github.com/ggez/ggez.git"}
 sdl2 = "0.31.0"
 chrono = "0.4.6"
 nom = "4.1.0"
