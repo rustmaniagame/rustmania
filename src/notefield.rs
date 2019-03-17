@@ -54,7 +54,8 @@ impl<'a> ColumnInfo<'a> {
         self.on_screen = (draw_start, draw_end);
         updated
     }
-    fn handle_hit(&mut self, time: i64) -> Option<Judgement> {
+    fn update_for_misses(&mut self, time: i64) -> bool {
+        let before = self.next_to_hit;
         let mut offset = self.notes.notes[self.next_to_hit].0 - time;
         while offset < -180 {
             match self.notes.notes[self.next_to_hit].2 {
@@ -75,8 +76,12 @@ impl<'a> ColumnInfo<'a> {
         }
         while self.notes.notes[self.next_to_hit].2 == NoteType::HoldEnd {
             self.next_to_hit += 1;
-        }
-        offset = self.notes.notes[self.next_to_hit].0 - time;
+        };
+        before != self.next_to_hit
+    }
+    fn handle_hit(&mut self, time: i64) -> Option<Judgement> {
+        self.update_for_misses(time);
+        let mut offset = self.notes.notes[self.next_to_hit].0 - time;
         if offset < 180 {
             match self.notes.notes[self.next_to_hit].2 {
                 NoteType::Tap => self.judgement_list.add(Judgement::Hit(offset)),
@@ -135,13 +140,6 @@ impl<'a> Notefield<'a> {
             }
         }
     }
-    fn old_handle(&mut self, judge: Judgement, column: usize) {
-        match judge {
-            Judgement::Hit(_) | Judgement::Miss => self.last_judgement = Some(judge),
-            _ => {}
-        }
-        self.column_info[column].judgement_list.add(judge);
-    }
     fn handle_judgement_(&mut self, judge: Judgement) {
         match judge {
             Judgement::Hit(_) | Judgement::Miss => self.last_judgement = Some(judge),
@@ -159,24 +157,16 @@ impl<'a> Element for Notefield<'a> {
         };
         let mut clear_batch = false;
         for column_index in 0..4 {
-            let notes = self.column_info[column_index].notes;
-            let mut next_to_hit = self.column_info[column_index].next_to_hit;
             if let Some(value) = self.column_info[column_index].active_hold {
                 let delta = value - time;
                 if delta > 0 {
                     self.layout.add_hold(ctx, column_index, value - time)?;
                 }
             }
-            while next_to_hit != notes.notes.len() && notes.notes[next_to_hit].0 - time < -180 {
-                if notes.notes[next_to_hit].2 == NoteType::Mine {
-                    self.old_handle(Judgement::Mine(false), column_index);
-                } else {
-                    self.old_handle(Judgement::Miss, column_index);
-                }
-                next_to_hit += 1;
+            if self.column_info[column_index].update_for_misses(time) {
+                self.handle_judgement_(Judgement::Miss);
                 clear_batch = true;
-            }
-            self.column_info[column_index].next_to_hit = next_to_hit;
+            };
             if self.column_info[column_index].update_on_screen(
                 self.layout,
                 time,
