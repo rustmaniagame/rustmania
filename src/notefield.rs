@@ -2,13 +2,13 @@ extern crate ggez;
 
 use crate::notedata::NoteType;
 use crate::player_config;
+use crate::player_config::NoteLayout;
 use crate::screen::Element;
 use crate::timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData};
 use ggez::graphics;
 use ggez::graphics::spritebatch::SpriteBatch;
 use rlua::UserData;
 use std::time::Instant;
-use crate::player_config::NoteLayout;
 
 #[derive(PartialEq, Debug)]
 pub struct Notefield<'a> {
@@ -17,15 +17,15 @@ pub struct Notefield<'a> {
     batches: Vec<SpriteBatch>,
     draw_distance: i64,
     last_judgement: Option<Judgement>,
-    judgment_list: TimingData<Judgement>,
 }
 
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(PartialEq, Debug)]
 struct ColumnInfo<'a> {
     on_screen: (usize, usize),
     next_to_hit: usize,
     active_hold: Option<i64>,
     notes: &'a TimingColumn<GameplayInfo>,
+    judgement_list: TimingColumn<Judgement>,
 }
 
 impl<'a> ColumnInfo<'a> {
@@ -35,22 +35,19 @@ impl<'a> ColumnInfo<'a> {
             next_to_hit: 0,
             active_hold: None,
             notes,
+            judgement_list: TimingColumn::new(),
         }
     }
     fn update_on_screen(&mut self, layout: &NoteLayout, time: i64, draw_distance: i64) -> bool {
         let mut updated = false;
         let (mut draw_start, mut draw_end) = self.on_screen;
         while draw_end != self.notes.notes.len() - 1
-            && (layout
-            .delta_to_position(self.notes.notes[draw_end].0 - time)
-            < draw_distance
-            || layout
-            .delta_to_position(self.notes.notes[draw_end].0 - time)
-            > 0)
-            {
-                draw_end += 1;
-                updated = true;
-            }
+            && (layout.delta_to_position(self.notes.notes[draw_end].0 - time) < draw_distance
+                || layout.delta_to_position(self.notes.notes[draw_end].0 - time) > 0)
+        {
+            draw_end += 1;
+            updated = true;
+        }
         if self.next_to_hit < draw_end {
             draw_start = self.next_to_hit;
         }
@@ -83,7 +80,6 @@ impl<'a> Notefield<'a> {
             ],
             draw_distance,
             last_judgement: None,
-            judgment_list: TimingData::<_>::new(),
         }
     }
     fn redraw_batch(&mut self) {
@@ -104,7 +100,7 @@ impl<'a> Notefield<'a> {
             Judgement::Hit(_) | Judgement::Miss => self.last_judgement = Some(judge),
             _ => {}
         }
-        self.judgment_list.add(judge, column);
+        self.column_info[column].judgement_list.add(judge);
     }
 }
 
@@ -135,7 +131,13 @@ impl<'a> Element for Notefield<'a> {
                 clear_batch = true;
             }
             self.column_info[column_index].next_to_hit = next_to_hit;
-            if self.column_info[column_index].update_on_screen(self.layout,time,self.draw_distance){clear_batch = true};
+            if self.column_info[column_index].update_on_screen(
+                self.layout,
+                time,
+                self.draw_distance,
+            ) {
+                clear_batch = true
+            };
         }
         if clear_batch {
             self.redraw_batch();
@@ -152,7 +154,17 @@ impl<'a> Element for Notefield<'a> {
         println!("FPS: {:.2}", ggez::timer::fps(ctx));
         println!(
             "Score: {:.2}%",
-            self.judgment_list.calculate_score() * 100.0
+            (self
+                .column_info
+                .iter()
+                .map(|x| x.judgement_list.current_points(1.0))
+                .sum::<f64>())
+                / (self
+                    .column_info
+                    .iter()
+                    .map(|x| x.judgement_list.max_points())
+                    .sum::<f64>())
+                * 100.0
         );
         Ok(())
     }
@@ -170,7 +182,9 @@ impl<'a> Element for Notefield<'a> {
         if let Some(hold_end) = self.column_info[index].active_hold {
             if let Some(time) = time {
                 if time > hold_end {
-                    self.judgment_list.add(Judgement::Hold(true), index);
+                    self.column_info[index]
+                        .judgement_list
+                        .add(Judgement::Hold(true));
                     self.column_info[index].active_hold = None;
                 }
             }
@@ -217,7 +231,9 @@ impl<'a> Element for Notefield<'a> {
             }
         } else {
             if self.column_info[index].active_hold.is_some() {
-                self.judgment_list.add(Judgement::Hold(false), index);
+                self.column_info[index]
+                    .judgement_list
+                    .add(Judgement::Hold(false));
                 self.column_info[index].active_hold = None;
             }
         }

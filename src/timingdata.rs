@@ -183,19 +183,29 @@ where
         }
     }
 }
+
+//Unused functions here will be utilized when a results screen is added
 impl TimingData<Judgement> {
-    pub fn calculate_score(&self) -> f64 {
-        let max_points = self
-            .columns()
-            .flat_map(|x| x.notes.iter())
-            .map(|x| x.max_points())
-            .sum::<f64>();
-        let current_points = self
-            .columns()
-            .flat_map(|x| x.notes.iter())
-            .map(|x| x.wife(1.0))
-            .sum::<f64>();
-        current_points / max_points
+    pub fn _max_points(&self) -> f64 {
+        self.columns().map(|x| x.max_points()).sum()
+    }
+    pub fn _current_points(&self, ts: f64) -> f64 {
+        self.columns().map(|x| x.current_points(ts)).sum()
+    }
+    pub fn _calculate_score(&self, ts: f64) -> f64 {
+        self._current_points(ts) / self._max_points()
+    }
+}
+
+impl TimingColumn<Judgement> {
+    pub fn max_points(&self) -> f64 {
+        self.notes.iter().map(|x| x.max_points()).sum()
+    }
+    pub fn current_points(&self, ts: f64) -> f64 {
+        self.notes.iter().map(|x| x.wife(ts)).sum()
+    }
+    pub fn _calculate_score(&self, ts: f64) -> f64 {
+        self.current_points(ts) / self.max_points()
     }
 }
 
