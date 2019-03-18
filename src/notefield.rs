@@ -76,7 +76,7 @@ impl<'a> ColumnInfo<'a> {
         }
         while self.notes.notes[self.next_to_hit].2 == NoteType::HoldEnd {
             self.next_to_hit += 1;
-        };
+        }
         before != self.next_to_hit
     }
     fn handle_hit(&mut self, time: i64) -> Option<Judgement> {
@@ -163,13 +163,9 @@ impl<'a> Element for Notefield<'a> {
             if self.column_info[column_index].update_for_misses(time) {
                 self.handle_judgement(Judgement::Miss);
             };
-            self.column_info[column_index].update_on_screen(
-                self.layout,
-                time,
-                self.draw_distance,
-            );
+            self.column_info[column_index].update_on_screen(self.layout, time, self.draw_distance);
         }
-            self.redraw_batch();
+        self.redraw_batch();
         let target_parameter =
             graphics::DrawParam::new().dest([0.0, -1.0 * (self.layout.delta_to_offset(time))]);
 
