@@ -130,14 +130,12 @@ impl<'a> Notefield<'a> {
     fn redraw_batch(&mut self) {
         self.batches.iter_mut().for_each(|x| x.clear());
         for column_index in 0..4 {
-            let (draw_start, draw_end) = self.column_info[column_index].on_screen;
-            if draw_start < draw_end {
-                self.layout.add_column_of_notes(
-                    &self.column_info[column_index].notes.notes[draw_start..],
-                    column_index,
-                    &mut self.batches,
-                );
-            }
+            let draw_start = self.column_info[column_index].on_screen.0;
+            self.layout.add_column_of_notes(
+                &self.column_info[column_index].notes.notes[draw_start..],
+                column_index,
+                &mut self.batches,
+            );
         }
     }
     fn handle_judgement(&mut self, judge: Judgement) {
