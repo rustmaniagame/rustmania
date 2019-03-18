@@ -81,7 +81,7 @@ impl<'a> ColumnInfo<'a> {
     }
     fn handle_hit(&mut self, time: i64) -> Option<Judgement> {
         self.update_for_misses(time);
-        let mut offset = self.notes.notes[self.next_to_hit].0 - time;
+        let offset = self.notes.notes[self.next_to_hit].0 - time;
         if offset < 180 {
             match self.notes.notes[self.next_to_hit].2 {
                 NoteType::Tap => self.judgement_list.add(Judgement::Hit(offset)),
@@ -130,9 +130,9 @@ impl<'a> Notefield<'a> {
     fn redraw_batch(&mut self) {
         self.batches.iter_mut().for_each(|x| x.clear());
         for column_index in 0..4 {
-            let draw_start = self.column_info[column_index].on_screen.0;
+            let (draw_start, draw_end) = self.column_info[column_index].on_screen;
             self.layout.add_column_of_notes(
-                &self.column_info[column_index].notes.notes[draw_start..],
+                &self.column_info[column_index].notes.notes[draw_start..draw_end],
                 column_index,
                 &mut self.batches,
             );
@@ -153,7 +153,6 @@ impl<'a> Element for Notefield<'a> {
             Some(time) => time,
             None => return Ok(()),
         };
-        let mut clear_batch = false;
         for column_index in 0..4 {
             if let Some(value) = self.column_info[column_index].active_hold {
                 let delta = value - time;
@@ -163,19 +162,14 @@ impl<'a> Element for Notefield<'a> {
             }
             if self.column_info[column_index].update_for_misses(time) {
                 self.handle_judgement(Judgement::Miss);
-                clear_batch = true;
             };
-            if self.column_info[column_index].update_on_screen(
+            self.column_info[column_index].update_on_screen(
                 self.layout,
                 time,
                 self.draw_distance,
-            ) {
-                clear_batch = true
-            };
+            );
         }
-        if clear_batch {
             self.redraw_batch();
-        }
         let target_parameter =
             graphics::DrawParam::new().dest([0.0, -1.0 * (self.layout.delta_to_offset(time))]);
 
@@ -230,8 +224,6 @@ impl<'a> Element for Notefield<'a> {
                 Some(value) => self.handle_judgement(value),
                 None => {}
             };
-            self.column_info[index].update_on_screen(self.layout, time, self.draw_distance);
-            self.redraw_batch();
         } else {
             if self.column_info[index].active_hold.is_some() {
                 self.column_info[index]
