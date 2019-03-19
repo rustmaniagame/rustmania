@@ -1,7 +1,6 @@
 extern crate ggez;
 
 use crate::notedata::NoteType;
-use crate::player_config;
 use crate::player_config::NoteLayout;
 use crate::screen::Element;
 use crate::timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData};
@@ -12,7 +11,7 @@ use std::time::Instant;
 
 #[derive(PartialEq, Debug)]
 pub struct Notefield<'a> {
-    layout: &'a player_config::NoteLayout,
+    layout: &'a NoteLayout,
     column_info: [ColumnInfo<'a>; 4],
     batches: Vec<SpriteBatch>,
     draw_distance: i64,
@@ -40,18 +39,17 @@ impl<'a> ColumnInfo<'a> {
     }
     fn update_on_screen(&mut self, layout: &NoteLayout, time: i64, draw_distance: i64) -> bool {
         let mut updated = false;
-        let (mut draw_start, mut draw_end) = self.on_screen;
-        while draw_end != self.notes.notes.len() - 1
-            && (layout.delta_to_position(self.notes.notes[draw_end].0 - time) < draw_distance
-                || layout.delta_to_position(self.notes.notes[draw_end].0 - time) > 0)
+        let (draw_start, draw_end) = &mut self.on_screen;
+        while *draw_end != self.notes.notes.len() - 1
+            && (layout.delta_to_position(self.notes.notes[*draw_end].0 - time) < draw_distance
+                || layout.delta_to_position(self.notes.notes[*draw_end].0 - time) > 0)
         {
-            draw_end += 1;
+            *draw_end += 1;
             updated = true;
         }
-        if self.next_to_hit < draw_end {
-            draw_start = self.next_to_hit;
+        if self.next_to_hit < *draw_end {
+            *draw_start = self.next_to_hit;
         }
-        self.on_screen = (draw_start, draw_end);
         updated
     }
     fn update_for_misses(&mut self, time: i64) -> bool {
@@ -103,7 +101,7 @@ impl<'a> ColumnInfo<'a> {
 
 impl<'a> Notefield<'a> {
     pub fn new(
-        layout: &'a player_config::NoteLayout,
+        layout: &'a NoteLayout,
         notes: &'a TimingData<GameplayInfo>,
         draw_distance: i64,
     ) -> Self {
@@ -139,9 +137,8 @@ impl<'a> Notefield<'a> {
         }
     }
     fn handle_judgement(&mut self, judge: Judgement) {
-        match judge {
-            Judgement::Hit(_) | Judgement::Miss => self.last_judgement = Some(judge),
-            _ => {}
+        if let Judgement::Hit(_) | Judgement::Miss = judge {
+            self.last_judgement = Some(judge);
         }
     }
 }
