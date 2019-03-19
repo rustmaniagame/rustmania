@@ -54,9 +54,17 @@ impl<'a> ColumnInfo<'a> {
     }
     fn update_for_misses(&mut self, time: i64) -> bool {
         let before = self.next_to_hit;
-        let mut offset = self.notes.notes[self.next_to_hit].0 - time;
+        let mut offset = match self.notes.notes.get(self.next_to_hit) {
+            Some(x) => x.0 - time,
+            None => return false,
+        };;
         while offset < -180 {
-            match self.notes.notes[self.next_to_hit].2 {
+            let n = self.notes.notes.get(self.next_to_hit);
+            let n = match n {
+                Some(n) => n.2,
+                None => break,
+            };
+            match n {
                 NoteType::Tap => {
                     self.judgement_list.add(Judgement::Miss);
                 }
@@ -70,28 +78,31 @@ impl<'a> ColumnInfo<'a> {
                 _ => {}
             };
             self.next_to_hit += 1;
-            offset = self.notes.notes[self.next_to_hit].0 - time;
+            offset = match self.notes.notes.get(self.next_to_hit) {
+                Some(x) => x.0 - time,
+                None => break,
+            };
         }
-        while self.notes.notes[self.next_to_hit].2 == NoteType::HoldEnd {
+        while self.notes.notes.get(self.next_to_hit).map(|x| x.2) == Some(NoteType::HoldEnd) {
             self.next_to_hit += 1;
         }
         before != self.next_to_hit
     }
     fn handle_hit(&mut self, time: i64) -> Option<Judgement> {
         self.update_for_misses(time);
-        let offset = self.notes.notes[self.next_to_hit].0 - time;
+        let offset = self.notes.notes.get(self.next_to_hit).map(|x| x.0 - time)?;
         if offset < 180 {
             match self.notes.notes[self.next_to_hit].2 {
                 NoteType::Tap => self.judgement_list.add(Judgement::Hit(offset)),
                 NoteType::Hold => {
                     self.judgement_list.add(Judgement::Hit(offset));
-                    self.active_hold = Some(self.notes.notes[self.next_to_hit + 1].0);
+                    self.active_hold = self.notes.notes.get(self.next_to_hit + 1).map(|x| x.0);
                 }
                 NoteType::Mine => self.judgement_list.add(Judgement::Mine(true)),
                 _ => {}
             }
             self.next_to_hit += 1;
-            while self.notes.notes[self.next_to_hit].2 == NoteType::HoldEnd {
+            while self.notes.notes.get(self.next_to_hit).map(|x| x.2) == Some(NoteType::HoldEnd) {
                 self.next_to_hit += 1;
             }
         };
