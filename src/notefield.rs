@@ -40,14 +40,14 @@ impl<'a> ColumnInfo<'a> {
     fn update_on_screen(&mut self, layout: &NoteLayout, time: i64, draw_distance: i64) -> bool {
         let mut updated = false;
         let (draw_start, draw_end) = &mut self.on_screen;
-        while *draw_end != self.notes.notes.len() - 1
+        while *draw_end != self.notes.notes.len()
             && (layout.delta_to_position(self.notes.notes[*draw_end].0 - time) < draw_distance
                 || layout.delta_to_position(self.notes.notes[*draw_end].0 - time) > 0)
         {
             *draw_end += 1;
             updated = true;
         }
-        if self.next_to_hit < *draw_end {
+        if self.next_to_hit <= *draw_end {
             *draw_start = self.next_to_hit;
         }
         updated
