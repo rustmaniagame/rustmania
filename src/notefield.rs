@@ -53,7 +53,7 @@ impl<'a> ColumnInfo<'a> {
         updated
     }
     fn update_for_misses(&mut self, time: i64) -> bool {
-        let before = self.next_to_hit;
+        let mut missed_judge = false;
         let mut offset = match self.notes.notes.get(self.next_to_hit) {
             Some(x) => x.0 - time,
             None => return false,
@@ -66,9 +66,11 @@ impl<'a> ColumnInfo<'a> {
             };
             match n {
                 NoteType::Tap => {
+                    missed_judge = true;
                     self.judgement_list.add(Judgement::Miss);
                 }
                 NoteType::Hold => {
+                    missed_judge = true;
                     self.judgement_list.add(Judgement::Miss);
                     self.judgement_list.add(Judgement::Hold(false));
                 }
@@ -86,7 +88,7 @@ impl<'a> ColumnInfo<'a> {
         while self.notes.notes.get(self.next_to_hit).map(|x| x.2) == Some(NoteType::HoldEnd) {
             self.next_to_hit += 1;
         }
-        before != self.next_to_hit
+        missed_judge
     }
     fn handle_hit(&mut self, time: i64) -> Option<Judgement> {
         self.update_for_misses(time);
