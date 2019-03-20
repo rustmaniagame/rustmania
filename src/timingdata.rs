@@ -222,18 +222,9 @@ mod tests {
     #[test]
     fn wife_decreasing() {
         for offset in 0..179 {
-            assert!(
-                Judgement::Hit(offset).wife(1.0)
-                    > Judgement::Hit(offset + 1).wife(1.0)
-            );
-            assert!(
-                Judgement::Hit(offset).wife(0.5)
-                    > Judgement::Hit(offset + 1).wife(0.5)
-            );
-            assert!(
-                Judgement::Hit(offset).wife(2.0)
-                    > Judgement::Hit(offset + 1).wife(2.0)
-            );
+            assert!(Judgement::Hit(offset).wife(1.0) > Judgement::Hit(offset + 1).wife(1.0));
+            assert!(Judgement::Hit(offset).wife(0.5) > Judgement::Hit(offset + 1).wife(0.5));
+            assert!(Judgement::Hit(offset).wife(2.0) > Judgement::Hit(offset + 1).wife(2.0));
         }
     }
 }

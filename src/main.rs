@@ -80,7 +80,7 @@ fn main() {
             .expect("No path for simfile received.")
     );
 
-    let mut simfile = walkdir::WalkDir::new(simfile_folder.clone())
+    let simfile_list = walkdir::WalkDir::new(simfile_folder.clone())
         .into_iter()
         .filter_map(|entry| entry.ok())
         .filter(|entry| entry.path().extension() == Some(OsStr::new("sm")));
@@ -111,7 +111,7 @@ fn main() {
 
     let current_theme = Lua::new();
 
-    let mut theme_file = File::open(theme_address).unwrap();
+    let mut theme_file = File::open(theme_address).expect("Couldn't open theme file");
     let mut theme_lines = String::new();
     theme_file
         .read_to_string(&mut theme_lines)
@@ -119,7 +119,7 @@ fn main() {
     let theme_lines = theme_lines.lines();
     let mut current_chunk = String::new();
 
-    lua::create_lua_functions(&current_theme).unwrap();
+    lua::create_lua_functions(&current_theme).expect("Couldn't create lua functions");
 
     for theme_line in theme_lines {
         current_chunk += "\n";
@@ -155,9 +155,10 @@ fn main() {
 
     let p2_layout = player_config::NoteLayout::new(&default_note_skin, 600, p2_options);
 
-    let notedata = simfile
-        .find_map(|sim| notedata::NoteData::from_sm(File::open(sim.path()).unwrap()).ok())
-        .unwrap();
+    let notedata = simfile_list
+        .filter_map(|sim| File::open(sim.path()).ok())
+        .find_map(|sim| notedata::NoteData::from_sm(sim).ok())
+        .expect("Could not find simfile or simfile failed to open");
     let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, music_rate);
     let notefield_p1 = notefield::Notefield::new(&p1_layout, &notes[0], 600);
     let notefield_p2 = notefield::Notefield::new(&p2_layout, &notes[0], 600);
