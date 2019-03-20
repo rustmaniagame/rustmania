@@ -208,31 +208,31 @@ mod tests {
     #[test]
     fn wife_symmetry() {
         for offset in 0..180 {
-            let early = Judgement(Some(-offset), NoteType::Tap);
-            let late = Judgement(Some(offset), NoteType::Tap);
+            let early = Judgement::Hit(-offset);
+            let late = Judgement::Hit(offset);
             assert_eq!(early.wife(1.0), late.wife(1.0));
         }
     }
     #[test]
     fn wife_peak() {
-        assert_eq!(Judgement(Some(0), NoteType::Tap).wife(1.0), 2.0);
-        assert_eq!(Judgement(Some(0), NoteType::Tap).wife(0.5), 2.0);
-        assert_eq!(Judgement(Some(0), NoteType::Tap).wife(2.0), 2.0);
+        assert_eq!(Judgement::Hit(0).wife(1.0), 2.0);
+        assert_eq!(Judgement::Hit(0).wife(0.5), 2.0);
+        assert_eq!(Judgement::Hit(0).wife(2.0), 2.0);
     }
     #[test]
     fn wife_decreasing() {
         for offset in 0..179 {
             assert!(
-                Judgement(Some(offset), NoteType::Tap).wife(1.0)
-                    > Judgement(Some(offset + 1), NoteType::Tap).wife(1.0)
+                Judgement::Hit(offset).wife(1.0)
+                    > Judgement::Hit(offset + 1).wife(1.0)
             );
             assert!(
-                Judgement(Some(offset), NoteType::Tap).wife(0.5)
-                    > Judgement(Some(offset + 1), NoteType::Tap).wife(0.5)
+                Judgement::Hit(offset).wife(0.5)
+                    > Judgement::Hit(offset + 1).wife(0.5)
             );
             assert!(
-                Judgement(Some(offset), NoteType::Tap).wife(2.0)
-                    > Judgement(Some(offset + 1), NoteType::Tap).wife(2.0)
+                Judgement::Hit(offset).wife(2.0)
+                    > Judgement::Hit(offset + 1).wife(2.0)
             );
         }
     }
