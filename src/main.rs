@@ -1,4 +1,3 @@
-#![feature(exclusive_range_pattern)]
 mod gamestate;
 mod lua;
 mod music;
