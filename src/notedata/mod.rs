@@ -12,9 +12,27 @@ pub struct ChartData {
 #[derive(Debug, PartialEq)]
 pub struct ChartMetadata {
     pub title: Option<String>,
+    pub subtitle: Option<String>,
+    pub artist: Option<String>,
+    pub title_translit: Option<String>,
+    pub subtitle_translit: Option<String>,
+    pub artist_translit: Option<String>,
+    pub genre: Option<String>,
+    pub credit: Option<String>,
+    pub banner_path: Option<String>,
+    pub background_path: Option<String>,
+    pub lyrics_path: Option<String>,
+    pub cd_title: Option<String>,
     pub music_path: Option<String>,
     pub offset: Option<f64>,
     pub bpms: Vec<(i32, Rational32, f64)>,
+    pub stops: Option<Vec<(i32, Rational32, f64)>>,
+    pub sample_start: Option<f64>,
+    pub sample_length: Option<f64>,
+    pub display_bpm: Option<f64>,
+    pub selectable: Option<String>, //it is unclear how this is used in practice, may be better as Option<bool>
+    pub background_changes: Option<Vec<(i32, Rational32, String)>>,
+    pub foreground_changes: Option<Vec<(i32, Rational32, String)>>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -43,9 +61,27 @@ impl ChartMetadata {
     pub fn new() -> Self {
         ChartMetadata {
             title: None,
+            subtitle: None,
+            artist: None,
+            title_translit: None,
+            subtitle_translit: None,
+            artist_translit: None,
+            genre: None,
+            credit: None,
+            banner_path: None,
+            background_path: None,
+            lyrics_path: None,
+            cd_title: None,
             music_path: None,
             offset: None,
             bpms: Vec::new(),
+            stops: None,
+            sample_start: None,
+            sample_length: None,
+            display_bpm: None,
+            selectable: None,
+            background_changes: None,
+            foreground_changes: None,
         }
     }
 }

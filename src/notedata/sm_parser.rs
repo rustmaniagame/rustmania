@@ -7,9 +7,21 @@ use nom::{
 //This parser should be rewritten, as the current solution is inelegant and likely incurs a
 //performance cost as a result.
 
+//Needs: STOPS, SAMPLESTART, SAMPLELENGTH, DISPLAYBPM, SELECTABLE, BGCHANGES, FGCHANGES
 pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
     match tag {
         "TITLE" => data.data.title = Some(contents.to_string()),
+        "SUBTITLE" => data.data.subtitle = Some(contents.to_string()),
+        "ARTIST" => data.data.artist = Some(contents.to_string()),
+        "TITLETRANSLIT" => data.data.title_translit = Some(contents.to_string()),
+        "SUBTITLETRANSLIT" => data.data.subtitle_translit = Some(contents.to_string()),
+        "ARTISTTRANSLIT" => data.data.artist_translit = Some(contents.to_string()),
+        "GENRE" => data.data.genre = Some(contents.to_string()),
+        "CREDIT" => data.data.credit = Some(contents.to_string()),
+        "BANNER" => data.data.banner_path = Some(contents.to_string()),
+        "BACKGROUND" => data.data.background_path = Some(contents.to_string()),
+        "LYRICSPATH" => data.data.lyrics_path = Some(contents.to_string()),
+        "CDTITLE" => data.data.cd_title = Some(contents.to_string()),
         "MUSIC" => data.data.music_path = Some(contents.to_string()),
         "OFFSET" => {
             data.data.offset = match contents.parse::<f64>() {
