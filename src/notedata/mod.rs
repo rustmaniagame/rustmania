@@ -10,7 +10,7 @@ use std::slice;
 
 #[derive(Debug, PartialEq)]
 pub struct ChartData {
-    notes: Vec<Vec<(Rational32, NoteRow)>>,
+    notes: Vec<Vec<(Rational32, NoteRow)>>, // Measures<Submeasures<Submeasure beat, Noterows>>
 }
 
 #[derive(Debug, PartialEq)]
