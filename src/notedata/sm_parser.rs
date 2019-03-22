@@ -1,3 +1,4 @@
+
 use super::*;
 use nom::{
     call, complete, do_parse, do_parse_sep, double, error_position, many0, named, sep,
@@ -50,6 +51,7 @@ pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
 }
 
 fn parse_main_block(contents: &str) -> ChartData {
+
     let forbidden: &[_] = &[';', '\n', '\r'];
     ChartData::new(
         contents
@@ -107,22 +109,22 @@ fn parse_line(contents: &str) -> NoteRow {
 named!(pub break_to_tags<&str, Vec<(&str,&str)>>,many0!(complete!(read_sm_tag)));
 
 named!(read_sm_tag<&str,(&str,&str)>,
-    do_parse!(
-        take_until_and_consume!("#") >>
-        name: take_until_and_consume!(":") >>
-        contents: take_until!(";") >>
-        (name, contents)
-    ));
+       do_parse!(
+           take_until_and_consume!("#") >>
+               name: take_until_and_consume!(":") >>
+               contents: take_until!(";") >>
+               (name, contents)
+       ));
 
 named!( bpm_parse<&str,Vec<(f64,f64)>>, separated_list!(tag!(","), bpm_line));
 
 named!(bpm_line<&str, (f64,f64)>,
-  ws!(do_parse!(
-        time: double >>
-           tag!("=")   >>
-           bpm: double >>
-    ( time / 4.0, bpm ) )
-  )
+       ws!(do_parse!(
+           time: double >>
+               tag!("=")   >>
+               bpm: double >>
+               ( time / 4.0, bpm ) )
+       )
 );
 
 #[cfg(test)]

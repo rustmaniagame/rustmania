@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 mod gamestate;
 mod lua;
 mod music;
