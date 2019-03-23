@@ -1,3 +1,7 @@
+extern crate regex;
+
+use regex::Regex;
+
 mod sm_parser;
 
 use num_rational::Rational32;
@@ -6,7 +10,7 @@ use std::slice;
 
 #[derive(Debug, PartialEq)]
 pub struct ChartData {
-    notes: Vec<Vec<(Rational32, NoteRow)>>,
+    notes: Vec<Vec<(Rational32, NoteRow)>>, // Measures<Submeasures<Submeasure beat, Noterows>>
 }
 
 #[derive(Debug, PartialEq)]
@@ -100,13 +104,20 @@ impl NoteData {
     where
         T: io::Read,
     {
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"(?m)(//.*$)").unwrap();
+        }
+
         let mut chart = NoteData {
             notes: Vec::new(),
             data: ChartMetadata::new(),
         };
         let mut chart_string = String::new();
         simfile.read_to_string(&mut chart_string)?;
-        let (_, tags) = sm_parser::break_to_tags(&chart_string).unwrap();
+
+        let string_trimmed = RE.replace_all(&chart_string, "");
+
+        let (_, tags) = sm_parser::break_to_tags(&string_trimmed).unwrap();
         for (tag, contents) in tags.iter() {
             sm_parser::parse_tag(tag, contents, &mut chart);
         }
