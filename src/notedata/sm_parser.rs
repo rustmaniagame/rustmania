@@ -1,4 +1,3 @@
-
 use super::*;
 use nom::{
     call, complete, do_parse, do_parse_sep, double, error_position, many0, named, sep,
@@ -8,7 +7,7 @@ use nom::{
 //This parser should be rewritten, as the current solution is inelegant and likely incurs a
 //performance cost as a result.
 
-//Needs: STOPS, SAMPLESTART, SAMPLELENGTH, DISPLAYBPM, SELECTABLE, BGCHANGES, FGCHANGES
+//Needs: DISPLAYBPM, SELECTABLE, BGCHANGES, FGCHANGES
 pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
     match tag {
         "TITLE" => data.data.title = Some(contents.to_string()),
@@ -37,7 +36,7 @@ pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
                     .into_iter()
                     .map(|(x, y)| {
                         let time_beater = Rational32::approximate_float(x as f64).expect(
-                            "Failed to parse bpm time, write real error handling for this later.",
+                            "Failed to parse bpm time.",
                         );
                         (time_beater.floor().to_integer(), time_beater.fract(), y)
                     })
@@ -45,13 +44,27 @@ pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
                 Err(_) => Vec::new(),
             }
         }
+        "STOPS" => data.data.stops = match bpm_parse(&format!("{};", contents)) {
+            Ok(thing) => Some(thing
+                .1
+                .into_iter()
+                .map(|(x, y)| {
+                    let time_beater = Rational32::approximate_float(x as f64).expect(
+                        "Failed to parse stop time.",
+                    );
+                    (time_beater.floor().to_integer(), time_beater.fract(), y)
+                })
+                .collect()),
+            Err(_) => None,
+        },
+        "SAMPLESTART" => data.data.sample_start = contents.parse().ok(),
+        "SAMPLELENGTH" => data.data.sample_length = contents.parse().ok(),
         "NOTES" => data.notes.push(parse_main_block(contents)),
         _ => {}
     }
 }
 
 fn parse_main_block(contents: &str) -> ChartData {
-
     let forbidden: &[_] = &[';', '\n', '\r'];
     ChartData::new(
         contents
