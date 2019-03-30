@@ -59,18 +59,18 @@ fn main() {
                 .help("The path to your .sm file.")
                 .index(1)
                 .required(false),
+            Arg::with_name("Rate")
+                .help("The rate of the music.")
+                .index(2)
+                .required(false),
             Arg::with_name("NoteSkin")
                 .help("The name of your NoteSkin folder.")
-                .index(2)
+                .index(3)
                 .required(false),
             Arg::with_name("Theme")
                 .help("The path to your lua theme file.")
-                .index(3)
-                .required(false),
-            Arg::with_name("Rate")
-                .help("The rate of the music.")
                 .index(4)
-                .required(false)
+                .required(false),
         ])
         .after_help("Licenced under MIT.")
         .get_matches();
