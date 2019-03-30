@@ -4,6 +4,7 @@ build = "build.rs"
 edition = "2018"
 name = "rustmania"
 version = "0.1.0"
+
 [dependencies]
 chrono = "0.4.6"
 clap = "2.32.0"
@@ -22,7 +23,6 @@ sdl2 = "0.31.0"
 serde = "1.0.79"
 serde_derive = "1.0.79"
 toml = "0.4.8"
-walkdir = "2.2.7"
 
 [dependencies.ggez]
 git = "https://github.com/ggez/ggez.git"
