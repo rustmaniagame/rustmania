@@ -33,7 +33,7 @@ pub struct ChartMetadata {
     pub stops: Option<Vec<(i32, Rational32, f64)>>,
     pub sample_start: Option<f64>,
     pub sample_length: Option<f64>,
-    pub display_bpm: Option<(f64,Option<f64>)>,
+    pub display_bpm: Option<(f64, Option<f64>)>,
     pub selectable: Option<String>, //it is unclear how this is used in practice, may be better as Option<bool>
     pub background_changes: Option<Vec<(i32, Rational32, String)>>,
     pub foreground_changes: Option<Vec<(i32, Rational32, String)>>,

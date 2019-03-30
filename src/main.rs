@@ -8,6 +8,7 @@ mod notedata;
 mod notefield;
 mod player_config;
 mod screen;
+mod song_loader;
 mod timingdata;
 
 use crate::notedata::NoteType;
@@ -18,7 +19,6 @@ use ggez::graphics::Rect;
 use ggez::ContextBuilder;
 use num_rational::Rational32;
 use rlua::{Error, Lua, MultiValue};
-use std::ffi::OsStr;
 use std::fs::File;
 use std::io::Read;
 
@@ -75,25 +75,11 @@ fn main() {
         .after_help("Licenced under MIT.")
         .get_matches();
 
-    let simfile_folder = format!(
-        "Songs/{}",
-        matches
-            .value_of("SimFile")
-            .unwrap_or("Mu")
-    );
+    let simfile_folder = format!("Songs/{}", matches.value_of("SimFile").unwrap_or("Mu"));
 
-    let simfile_list = walkdir::WalkDir::new(simfile_folder.clone())
-        .into_iter()
-        .filter_map(|entry| entry.ok())
-        .filter(|entry| entry.path().extension() == Some(OsStr::new("sm")));
+    let noteskin = matches.value_of("NoteSkin").unwrap_or("Default");
 
-    let noteskin = matches
-        .value_of("NoteSkin")
-        .unwrap_or("Default");
-
-    let theme_address = matches
-        .value_of("Theme")
-        .unwrap_or("resources/script.lua");
+    let theme_address = matches.value_of("Theme").unwrap_or("resources/script.lua");
 
     let music_rate = matches
         .value_of("Rate")
@@ -109,7 +95,6 @@ fn main() {
         })
         .build()
         .expect("Failed to build context");
-    //set_background_color(context, Color::new(0.0, 0.0, 0.0, 1.0));
 
     let current_theme = Lua::new();
 
@@ -157,9 +142,7 @@ fn main() {
 
     let p2_layout = player_config::NoteLayout::new(&default_note_skin, 600, p2_options);
 
-    let notedata = simfile_list
-        .filter_map(|sim| File::open(sim.path()).ok())
-        .find_map(|sim| notedata::NoteData::from_sm(sim).ok())
+    let notedata = song_loader::load_song(&simfile_folder)
         .expect("Could not find simfile or simfile failed to open");
     let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, music_rate);
     let notefield_p1 = notefield::Notefield::new(&p1_layout, &notes[0], 600);

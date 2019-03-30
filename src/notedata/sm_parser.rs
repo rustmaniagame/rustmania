@@ -35,28 +35,30 @@ pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
                     .1
                     .into_iter()
                     .map(|(x, y)| {
-                        let time_beater = Rational32::approximate_float(x as f64).expect(
-                            "Failed to parse bpm time.",
-                        );
+                        let time_beater = Rational32::approximate_float(x as f64)
+                            .expect("Failed to parse bpm time.");
                         (time_beater.floor().to_integer(), time_beater.fract(), y)
                     })
                     .collect(),
                 Err(_) => Vec::new(),
             }
         }
-        "STOPS" => data.data.stops = match bpm_parse(&format!("{};", contents)) {
-            Ok(thing) => Some(thing
-                .1
-                .into_iter()
-                .map(|(x, y)| {
-                    let time_beater = Rational32::approximate_float(x as f64).expect(
-                        "Failed to parse stop time.",
-                    );
-                    (time_beater.floor().to_integer(), time_beater.fract(), y)
-                })
-                .collect()),
-            Err(_) => None,
-        },
+        "STOPS" => {
+            data.data.stops = match bpm_parse(&format!("{};", contents)) {
+                Ok(thing) => Some(
+                    thing
+                        .1
+                        .into_iter()
+                        .map(|(x, y)| {
+                            let time_beater = Rational32::approximate_float(x as f64)
+                                .expect("Failed to parse stop time.");
+                            (time_beater.floor().to_integer(), time_beater.fract(), y)
+                        })
+                        .collect(),
+                ),
+                Err(_) => None,
+            }
+        }
         "SAMPLESTART" => data.data.sample_start = contents.parse().ok(),
         "SAMPLELENGTH" => data.data.sample_length = contents.parse().ok(),
         "NOTES" => data.notes.push(parse_main_block(contents)),
