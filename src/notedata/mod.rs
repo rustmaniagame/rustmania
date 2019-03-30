@@ -1,10 +1,8 @@
-extern crate regex;
-
-use regex::Regex;
-
 mod sm_parser;
 
+use lazy_static::lazy_static;
 use num_rational::Rational32;
+use regex::Regex;
 use std::io;
 use std::slice;
 

@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-
 mod gamestate;
 mod lua;
 mod music;
@@ -21,6 +18,7 @@ use num_rational::Rational32;
 use rlua::{Error, Lua, MultiValue};
 use std::fs::File;
 use std::io::Read;
+use std::time::{Duration, Instant};
 
 fn sprite_finder(
     _measure: usize,
@@ -95,6 +93,25 @@ fn main() {
         })
         .build()
         .expect("Failed to build context");
+
+    let start_time = Instant::now();
+    let notedata_list = song_loader::load_songs_directory("Songs");
+    let duration = Instant::now() - start_time;
+    println!("Found {} total songs", notedata_list.len());
+    println!(
+        "Of which, {} loaded",
+        notedata_list
+            .into_iter()
+            .filter(|x| x.is_some())
+            .map(|x| x.unwrap())
+            .collect::<Vec<_>>()
+            .len()
+    );
+    println!(
+        "This took {}.{} seconds",
+        duration.as_secs(),
+        duration.subsec_millis()
+    );
 
     let current_theme = Lua::new();
 
