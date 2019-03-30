@@ -12,7 +12,7 @@ mod timingdata;
 
 use crate::notedata::NoteType;
 use crate::player_config::NoteSkin;
-use clap::{crate_authors, App, Arg};
+use clap::{crate_authors, crate_version, App, Arg};
 use ggez::filesystem::mount;
 use ggez::graphics::Rect;
 use ggez::ContextBuilder;
@@ -52,21 +52,21 @@ fn sprite_finder(
 fn main() {
     let matches = App::new("Rustmania")
         .author(crate_authors!())
-        .version("0.1.0")
+        .version(crate_version!())
         .about("A rhythm game in the vein of Stepmania and Etterna, currently in very early stages of development.")
         .args(&[
             Arg::with_name("SimFile")
                 .help("The path to your .sm file.")
                 .index(1)
-                .required(true),
+                .required(false),
             Arg::with_name("NoteSkin")
                 .help("The name of your NoteSkin folder.")
                 .index(2)
-                .required(true),
+                .required(false),
             Arg::with_name("Theme")
                 .help("The path to your lua theme file.")
                 .index(3)
-                .required(true),
+                .required(false),
             Arg::with_name("Rate")
                 .help("The rate of the music.")
                 .index(4)
@@ -79,7 +79,7 @@ fn main() {
         "Songs/{}",
         matches
             .value_of("SimFile")
-            .expect("No path for simfile received.")
+            .unwrap_or("Mu")
     );
 
     let simfile_list = walkdir::WalkDir::new(simfile_folder.clone())
@@ -89,11 +89,11 @@ fn main() {
 
     let noteskin = matches
         .value_of("NoteSkin")
-        .expect("No path for NoteSkin specified");
+        .unwrap_or("Default");
 
     let theme_address = matches
         .value_of("Theme")
-        .expect("No path for theme received.");
+        .unwrap_or("resources/script.lua");
 
     let music_rate = matches
         .value_of("Rate")
