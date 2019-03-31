@@ -14,6 +14,7 @@ use ggez::filesystem::mount;
 use ggez::graphics::Rect;
 use ggez::ContextBuilder;
 use num_rational::Rational32;
+use rand::seq::SliceRandom;
 use std::time::Instant;
 
 fn sprite_finder(
@@ -44,6 +45,7 @@ fn sprite_finder(
 }
 
 fn main() {
+    let mut rng = rand::thread_rng();
     let matches = App::new("Rustmania")
         .author(crate_authors!())
         .version(crate_version!())
@@ -91,7 +93,7 @@ fn main() {
                 duration.as_secs(),
                 duration.subsec_millis()
             );
-            let (simfile_folder, notedata) = notedata_list[0].clone();
+            let (simfile_folder, notedata) = notedata_list.choose(&mut rng).unwrap().clone();
             let simfile_folder = simfile_folder
                 .into_os_string()
                 .into_string()

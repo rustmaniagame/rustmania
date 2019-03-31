@@ -1,7 +1,7 @@
 use super::*;
 use nom::{
-    complete, do_parse, double, many0, named,
-    separated_list, tag, take_until, take_until_and_consume, ws,
+    complete, do_parse, double, many0, named, separated_list, tag, take_until,
+    take_until_and_consume, ws,
 };
 
 //This parser should be rewritten, as the current solution is inelegant and likely incurs a
