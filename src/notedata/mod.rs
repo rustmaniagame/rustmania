@@ -6,12 +6,12 @@ use regex::Regex;
 use std::io;
 use std::slice;
 
-#[derive(Debug, PartialEq,Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ChartData {
     notes: Vec<Vec<(Rational32, NoteRow)>>, // Measures<Submeasures<Submeasure beat, Noterows>>
 }
 
-#[derive(Debug, PartialEq,Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ChartMetadata {
     pub title: Option<String>,
     pub subtitle: Option<String>,
@@ -37,13 +37,13 @@ pub struct ChartMetadata {
     pub foreground_changes: Option<Vec<(i32, Rational32, String)>>,
 }
 
-#[derive(Debug, PartialEq,Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct NoteData {
     notes: Vec<ChartData>,
     pub data: ChartMetadata,
 }
 
-#[derive(Debug, PartialEq,Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct NoteRow {
     row: Vec<(NoteType, usize)>,
 }

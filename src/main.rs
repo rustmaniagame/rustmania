@@ -73,7 +73,36 @@ fn main() {
         .after_help("Licenced under MIT.")
         .get_matches();
 
-    let simfile_folder = format!("Songs/{}", matches.value_of("SimFile").unwrap_or("Mu"));
+    let (simfile_folder, notedata) = match matches.value_of("SimFile") {
+        Some(value) => (
+            format!("Songs/{}", value),
+            song_loader::load_song(format!("Songs/{}", value))
+                .expect("Failed to load song from path specified"),
+        ),
+        None => {
+            let start_time = Instant::now();
+            let notedata_list = song_loader::load_songs_directory("Songs");
+            let duration = Instant::now() - start_time;
+            println!("Found {} total songs", notedata_list.len());
+            let notedata_list = notedata_list
+                .into_iter()
+                .filter(|x| x.1.is_some())
+                .map(|(p, x)| (p, x.unwrap()))
+                .collect::<Vec<_>>();
+            println!("Of which, {} loaded", notedata_list.len());
+            println!(
+                "This took {}.{} seconds",
+                duration.as_secs(),
+                duration.subsec_millis()
+            );
+            let (simfile_folder, notedata) = notedata_list[0].clone();
+            let simfile_folder = simfile_folder
+                .into_os_string()
+                .into_string()
+                .expect("failed to parse path");
+            (simfile_folder, notedata)
+        }
+    };
 
     let noteskin = matches.value_of("NoteSkin").unwrap_or("Default");
 
@@ -93,24 +122,6 @@ fn main() {
         })
         .build()
         .expect("Failed to build context");
-
-    let start_time = Instant::now();
-    let notedata_list = song_loader::load_songs_directory("Songs");
-    let duration = Instant::now() - start_time;
-    println!("Found {} total songs", notedata_list.len());
-    println!(
-        "Of which, {} loaded",
-        notedata_list
-            .into_iter()
-            .filter(|x| x.1.is_some())
-            .collect::<Vec<_>>()
-            .len()
-    );
-    println!(
-        "This took {}.{} seconds",
-        duration.as_secs(),
-        duration.subsec_millis()
-    );
 
     let current_theme = Lua::new();
 
@@ -158,8 +169,6 @@ fn main() {
 
     let p2_layout = player_config::NoteLayout::new(&default_note_skin, 600, p2_options);
 
-    let notedata = song_loader::load_song(&simfile_folder)
-        .expect("Could not find simfile or simfile failed to open");
     let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, music_rate);
     let notefield_p1 = notefield::Notefield::new(&p1_layout, &notes[0], 600);
     let notefield_p2 = notefield::Notefield::new(&p2_layout, &notes[0], 600);
