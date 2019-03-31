@@ -18,7 +18,7 @@ use num_rational::Rational32;
 use rlua::{Error, Lua, MultiValue};
 use std::fs::File;
 use std::io::Read;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 fn sprite_finder(
     _measure: usize,
