@@ -1,11 +1,12 @@
 extern crate ggez;
 
-use crate::notedata::NoteType;
-use crate::player_config::NoteLayout;
-use crate::screen::Element;
-use crate::timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData};
-use ggez::graphics;
-use ggez::graphics::spritebatch::SpriteBatch;
+use crate::{
+    notedata::NoteType,
+    player_config::NoteLayout,
+    screen::Element,
+    timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData},
+};
+use ggez::graphics::{self, spritebatch::SpriteBatch};
 use std::time::Instant;
 
 #[derive(PartialEq, Debug)]
@@ -51,7 +52,7 @@ impl<'a> ColumnInfo<'a> {
         }
         updated
     }
-    fn update_for_misses(&mut self, time: i64) -> bool {
+    fn update_misses(&mut self, time: i64) -> bool {
         let mut missed_judge = false;
         let mut offset = match self.notes.notes.get(self.next_to_hit) {
             Some(x) => x.0 - time,
@@ -90,7 +91,7 @@ impl<'a> ColumnInfo<'a> {
         missed_judge
     }
     fn handle_hit(&mut self, time: i64) -> Option<Judgement> {
-        self.update_for_misses(time);
+        self.update_misses(time);
         let offset = self.notes.notes.get(self.next_to_hit).map(|x| x.0 - time)?;
         if offset < 180 {
             match self.notes.notes[self.next_to_hit].2 {
@@ -169,7 +170,7 @@ impl<'a> Element for Notefield<'a> {
                     self.layout.add_hold(ctx, column_index, value - time)?;
                 }
             }
-            if self.column_info[column_index].update_for_misses(time) {
+            if self.column_info[column_index].update_misses(time) {
                 self.handle_judgement(Judgement::Miss);
             };
             self.column_info[column_index].update_on_screen(self.layout, time, self.draw_distance);

@@ -4,9 +4,6 @@ use nom::{
     take_until_and_consume, ws,
 };
 
-//This parser should be rewritten, as the current solution is inelegant and likely incurs a
-//performance cost as a result.
-
 //Needs: DISPLAYBPM, SELECTABLE, BGCHANGES, FGCHANGES
 pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
     match tag {

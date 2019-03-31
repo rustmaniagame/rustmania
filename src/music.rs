@@ -3,11 +3,13 @@ use cpal;
 use ggez::{event::KeyCode, Context, GameError};
 use lewton::inside_ogg::OggStreamReader;
 use minimp3::Decoder;
-use std;
-use std::fs::File;
-use std::path::PathBuf;
-use std::thread;
-use std::time::{Duration, Instant};
+use std::{
+    self,
+    fs::File,
+    path::PathBuf,
+    thread,
+    time::{Duration, Instant},
+};
 
 const CORRECTION_DEGREE: f64 = 0.00002;
 

@@ -7,12 +7,9 @@ mod screen;
 mod song_loader;
 mod timingdata;
 
-use crate::notedata::NoteType;
-use crate::player_config::NoteSkin;
+use crate::{notedata::NoteType, player_config::NoteSkin};
 use clap::{crate_authors, crate_version, App, Arg};
-use ggez::filesystem::mount;
-use ggez::graphics::Rect;
-use ggez::ContextBuilder;
+use ggez::{filesystem::mount, graphics::Rect, ContextBuilder};
 use num_rational::Rational32;
 use rand::seq::SliceRandom;
 use std::time::Instant;
@@ -79,7 +76,7 @@ fn main() {
         ),
         None => {
             let start_time = Instant::now();
-            let notedata_list = song_loader::load_songs_directory("Songs");
+            let notedata_list = song_loader::load_songs_folder("Songs");
             let duration = Instant::now() - start_time;
             println!("Found {} total songs", notedata_list.len());
             let notedata_list = notedata_list

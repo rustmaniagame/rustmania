@@ -1,12 +1,13 @@
-extern crate ggez;
-use crate::notedata::NoteType;
-use crate::timingdata::{GameplayInfo, Judgement};
-use ggez::error::GameResult;
-use ggez::graphics::WrapMode;
-use ggez::graphics::{self, Rect};
+use crate::{
+    notedata::NoteType,
+    timingdata::{GameplayInfo, Judgement},
+};
+use ggez::{
+    error::GameResult,
+    graphics::{self, Rect, WrapMode},
+};
 use serde_derive::Deserialize;
-use std::fs::File;
-use std::io::Read;
+use std::{fs::File, io::Read};
 use toml;
 
 #[derive(PartialEq, Debug)]
