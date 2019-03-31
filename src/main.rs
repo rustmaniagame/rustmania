@@ -1,5 +1,4 @@
 mod gamestate;
-mod lua;
 mod music;
 mod notedata;
 mod notefield;
@@ -15,9 +14,6 @@ use ggez::filesystem::mount;
 use ggez::graphics::Rect;
 use ggez::ContextBuilder;
 use num_rational::Rational32;
-use rlua::{Error, Lua, MultiValue};
-use std::fs::File;
-use std::io::Read;
 use std::time::Instant;
 
 fn sprite_finder(
@@ -106,8 +102,6 @@ fn main() {
 
     let noteskin = matches.value_of("NoteSkin").unwrap_or("Default");
 
-    let theme_address = matches.value_of("Theme").unwrap_or("resources/script.lua");
-
     let music_rate = matches
         .value_of("Rate")
         .unwrap_or("1.0")
@@ -122,42 +116,6 @@ fn main() {
         })
         .build()
         .expect("Failed to build context");
-
-    let current_theme = Lua::new();
-
-    let mut theme_file = File::open(theme_address).expect("Couldn't open theme file");
-    let mut theme_lines = String::new();
-    theme_file
-        .read_to_string(&mut theme_lines)
-        .expect(&format!("Error Reading: {}", theme_address));
-    let theme_lines = theme_lines.lines();
-    let mut current_chunk = String::new();
-
-    lua::create_lua_functions(&current_theme).expect("Couldn't create lua functions");
-
-    for theme_line in theme_lines {
-        current_chunk += "\n";
-        current_chunk += theme_line;
-        match current_theme.eval::<_, MultiValue>(&current_chunk, None) {
-            Ok(output) => {
-                println!("{}", current_chunk);
-                println!(
-                    "{}",
-                    output
-                        .iter()
-                        .map(|value| format!("{:?}", value))
-                        .collect::<Vec<_>>()
-                        .join("\t")
-                );
-                current_chunk.clear();
-            }
-            Err(Error::SyntaxError {
-                incomplete_input: true,
-                ..
-            }) => {}
-            _ => break,
-        }
-    }
 
     let default_note_skin = NoteSkin::from_path(&format!("Noteskins\\{}", noteskin), context)
         .expect("Could not open default noteskin");

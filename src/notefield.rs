@@ -6,7 +6,6 @@ use crate::screen::Element;
 use crate::timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData};
 use ggez::graphics;
 use ggez::graphics::spritebatch::SpriteBatch;
-use rlua::UserData;
 use std::time::Instant;
 
 #[derive(PartialEq, Debug)]
@@ -240,5 +239,3 @@ impl<'a> Element for Notefield<'a> {
         }
     }
 }
-
-impl UserData for Notefield<'static> {}
