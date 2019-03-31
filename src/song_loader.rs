@@ -18,13 +18,13 @@ where
         .find_map(|sim| notedata::NoteData::from_sm(sim).ok())
 }
 
-pub fn load_songs_directory<T>(songs_directory: T) -> Vec<Option<NoteData>>
+pub fn load_songs_directory<T>(songs_directory: T) -> Vec<(PathBuf, Option<NoteData>)>
 where
     T: AsRef<Path>,
 {
     get_subdirectory_list(songs_directory.as_ref())
         .par_iter()
-        .map(|x| load_song(x))
+        .map(|x| (x.clone(), load_song(x)))
         .collect()
 }
 

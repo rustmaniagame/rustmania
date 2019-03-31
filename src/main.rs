@@ -102,8 +102,7 @@ fn main() {
         "Of which, {} loaded",
         notedata_list
             .into_iter()
-            .filter(|x| x.is_some())
-            .map(|x| x.unwrap())
+            .filter(|x| x.1.is_some())
             .collect::<Vec<_>>()
             .len()
     );
