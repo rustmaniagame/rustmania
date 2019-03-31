@@ -1,7 +1,7 @@
 extern crate ggez;
 use crate::notedata::NoteType;
 use crate::timingdata::{GameplayInfo, Judgement};
-use gfx_core::texture::WrapMode;
+use ggez::graphics::WrapMode;
 use ggez::error::GameResult;
 use ggez::graphics::{self, Rect};
 use serde_derive::Deserialize;
