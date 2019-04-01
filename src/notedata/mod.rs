@@ -3,12 +3,12 @@ mod sm_parser;
 use lazy_static::lazy_static;
 use num_rational::Rational32;
 use regex::Regex;
+use serde_derive::{Deserialize, Serialize};
 use std::{io, slice};
-use serde_derive::{Deserialize,Serialize};
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ChartData {
-    notes: Vec<Vec<(Rational32, NoteRow)>>, // Measures<Submeasures<Submeasure beat, Noterows>>
+    pub notes: Vec<Vec<(Rational32, NoteRow)>>, // Measures<Submeasures<Submeasure beat, Noterows>>
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -39,7 +39,7 @@ pub struct ChartMetadata {
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct NoteData {
-    notes: Vec<ChartData>,
+    pub notes: Vec<ChartData>,
     pub data: ChartMetadata,
 }
 
