@@ -23,6 +23,7 @@ serde_derive = "1.0.79"
 toml = "0.4.8"
 rayon = "1.0.3"
 rand = "0.6.5"
+bincode = "1.1.2"
 
 [dependencies.ggez]
 git = "https://github.com/ggez/ggez.git"
