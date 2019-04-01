@@ -4,13 +4,14 @@ use lazy_static::lazy_static;
 use num_rational::Rational32;
 use regex::Regex;
 use std::{io, slice};
+use serde_derive::{Deserialize,Serialize};
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ChartData {
     notes: Vec<Vec<(Rational32, NoteRow)>>, // Measures<Submeasures<Submeasure beat, Noterows>>
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ChartMetadata {
     pub title: Option<String>,
     pub subtitle: Option<String>,
@@ -36,18 +37,18 @@ pub struct ChartMetadata {
     pub foreground_changes: Option<Vec<(i32, Rational32, String)>>,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct NoteData {
     notes: Vec<ChartData>,
     pub data: ChartMetadata,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct NoteRow {
     row: Vec<(NoteType, usize)>,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
 pub enum NoteType {
     Tap,
     Hold,
