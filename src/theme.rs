@@ -6,6 +6,7 @@ use crate::{
     timingdata::{GameplayInfo, TimingData},
 };
 use serde_derive::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 #[derive(Deserialize, Serialize)]
 pub struct ScreenBuilder {
@@ -25,14 +26,21 @@ impl ScreenBuilder {
 
 #[derive(Deserialize, Serialize)]
 pub enum ElementType {
-    MUSIC(f64, String),
+    MUSIC(f64, usize),
     NOTEFIELD(usize, usize),
 }
 
 impl ElementType {
     pub fn build<'a>(&self, resources: &'a Resources) -> Box<dyn Element + 'a> {
         match self {
-            ElementType::MUSIC(rate, name) => Box::new(Music::new(*rate, name.clone())),
+            ElementType::MUSIC(rate, name) => Box::new(Music::new(
+                *rate,
+                resources.paths[*name]
+                    .as_os_str()
+                    .to_string_lossy()
+                    .to_string()
+                    .clone(),
+            )),
             ElementType::NOTEFIELD(layout, timing_data) => Box::new(Notefield::new(
                 &resources.layouts[*layout],
                 &resources.notes[*timing_data],
@@ -44,11 +52,20 @@ impl ElementType {
 
 pub struct Resources {
     notes: Vec<TimingData<GameplayInfo>>,
+    paths: Vec<PathBuf>,
     layouts: Vec<NoteLayout>,
 }
 
 impl Resources {
-    pub fn from(notes: Vec<TimingData<GameplayInfo>>, layouts: Vec<NoteLayout>) -> Self {
-        Resources { notes, layouts }
+    pub fn from(
+        notes: Vec<TimingData<GameplayInfo>>,
+        paths: Vec<PathBuf>,
+        layouts: Vec<NoteLayout>,
+    ) -> Self {
+        Resources {
+            notes,
+            paths,
+            layouts,
+        }
     }
 }

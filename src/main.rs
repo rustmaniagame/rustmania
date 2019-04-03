@@ -17,7 +17,7 @@ use clap::{crate_authors, crate_version, App, Arg};
 use ggez::{filesystem::mount, graphics::Rect, ContextBuilder};
 use num_rational::Rational32;
 use rand::seq::SliceRandom;
-use std::time::Instant;
+use std::{path::PathBuf, time::Instant};
 
 fn sprite_finder(
     _measure: usize,
@@ -139,27 +139,28 @@ fn main() {
 
     let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, music_rate);
 
-    let resources = Resources::from(notes, vec![p1_layout, p2_layout]);
+    let resources = Resources::from(
+        notes,
+        vec![PathBuf::from(format!(
+            "{}/{}",
+            simfile_folder,
+            notedata.data.music_path.expect("No music path specified")
+        ))],
+        vec![p1_layout, p2_layout],
+    );
 
     let screen_to_build = ScreenBuilder {
         elements: vec![
             ElementType::NOTEFIELD(0, 0),
             ElementType::NOTEFIELD(1, 0),
-            ElementType::MUSIC(
-                music_rate,
-                format!(
-                    "{}/{}",
-                    simfile_folder,
-                    notedata.data.music_path.expect("No music path specified")
-                ),
-            ),
+            ElementType::MUSIC(music_rate, 0),
         ],
     };
 
     let mut gameplay_screen = screen_to_build.build(&resources);
 
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
-        let mut path = std::path::PathBuf::from(manifest_dir);
+        let mut path = PathBuf::from(manifest_dir);
         path.push("resources");
         mount(context, &path, true);
     }
