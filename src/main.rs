@@ -5,9 +5,14 @@ mod notefield;
 mod player_config;
 mod screen;
 mod song_loader;
+mod theme;
 mod timingdata;
 
-use crate::{notedata::NoteType, player_config::NoteSkin};
+use crate::{
+    notedata::NoteType,
+    player_config::NoteSkin,
+    theme::{ElementType, Resources, ScreenBuilder},
+};
 use clap::{crate_authors, crate_version, App, Arg};
 use ggez::{filesystem::mount, graphics::Rect, ContextBuilder};
 use num_rational::Rational32;
@@ -130,26 +135,28 @@ fn main() {
     let p2_options = player_config::PlayerOptions::new(600, 125, 1.1, false, (-128.0, 383.0));
 
     let p1_layout = player_config::NoteLayout::new(&default_note_skin, 600, p1_options);
-
     let p2_layout = player_config::NoteLayout::new(&default_note_skin, 600, p2_options);
 
     let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, music_rate);
-    let notefield_p1 = notefield::Notefield::new(&p1_layout, &notes[0], 600);
-    let notefield_p2 = notefield::Notefield::new(&p2_layout, &notes[0], 600);
-    let music = music::Music::new(
-        music_rate,
-        format!(
-            "{}/{}",
-            simfile_folder,
-            notedata.data.music_path.expect("No music path specified")
-        ),
-    );
 
-    let mut gameplay_screen = screen::Screen::new(vec![
-        Box::new(notefield_p1),
-        Box::new(notefield_p2),
-        Box::new(music),
-    ]);
+    let resources = Resources::from(notes, vec![p1_layout, p2_layout]);
+
+    let screen_to_build = ScreenBuilder {
+        elements: vec![
+            ElementType::NOTEFIELD(0, 0),
+            ElementType::NOTEFIELD(1, 0),
+            ElementType::MUSIC(
+                music_rate,
+                format!(
+                    "{}/{}",
+                    simfile_folder,
+                    notedata.data.music_path.expect("No music path specified")
+                ),
+            ),
+        ],
+    };
+
+    let mut gameplay_screen = screen_to_build.build(&resources);
 
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
         let mut path = std::path::PathBuf::from(manifest_dir);
