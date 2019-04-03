@@ -8,13 +8,10 @@ mod song_loader;
 mod timingdata;
 
 use crate::{notedata::NoteType, player_config::NoteSkin};
-use bincode::{deserialize, serialize};
 use clap::{crate_authors, crate_version, App, Arg};
 use ggez::{filesystem::mount, graphics::Rect, ContextBuilder};
 use num_rational::Rational32;
 use rand::seq::SliceRandom;
-use std::fs::File;
-use std::io::{Read, Write};
 use std::time::Instant;
 
 fn sprite_finder(
@@ -79,21 +76,7 @@ fn main() {
         ),
         None => {
             let start_time = Instant::now();
-            let notedata_list = match File::open("Songs/cache.rm") {
-                Ok(mut cache) => {
-                    let mut buf = Vec::new();
-                    cache.read_to_end(&mut buf).expect("Failed to read cache");
-                    deserialize(&buf).expect("Failed to parse cache")
-                }
-                Err(_) => {
-                    let list = song_loader::load_songs_folder("Songs");
-                    let mut cache = File::create("Songs/cache.rm").expect("Failed to open cache");
-                    cache
-                        .write(&serialize(&list).expect("Failed to serialize cache"))
-                        .expect("Failed to write to cache");
-                    list
-                }
-            };
+            let notedata_list = song_loader::load_songs_folder("Songs");
             let duration = Instant::now() - start_time;
             println!("Found {} total songs", notedata_list.len());
             let notedata_list = notedata_list

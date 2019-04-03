@@ -1,5 +1,7 @@
 use crate::notedata::{self, NoteData};
+use bincode::deserialize;
 use rayon::{iter::ParallelIterator, prelude::*};
+use std::io::Read;
 use std::{
     ffi::OsStr,
     fs::{read_dir, File},
@@ -7,6 +9,18 @@ use std::{
 };
 
 pub fn load_song<T>(simfile_folder: T) -> Option<NoteData>
+where
+    T: AsRef<Path> + Clone,
+{
+    let n = load_song_rm(simfile_folder.clone());
+    if n.is_some() {
+        n
+    } else {
+        load_song_sm(simfile_folder.clone())
+    }
+}
+
+pub fn load_song_sm<T>(simfile_folder: T) -> Option<NoteData>
 where
     T: AsRef<Path>,
 {
@@ -16,6 +30,22 @@ where
         .filter(|entry| entry.path().extension() == Some(OsStr::new("sm")))
         .filter_map(|sim| File::open(sim.path()).ok())
         .find_map(|sim| notedata::NoteData::from_sm(sim).ok())
+}
+
+pub fn load_song_rm<T>(simfile_folder: T) -> Option<NoteData>
+where
+    T: AsRef<Path>,
+{
+    read_dir(simfile_folder)
+        .expect("Couldn't open folder")
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.path().extension() == Some(OsStr::new("rm")))
+        .filter_map(|sim| File::open(sim.path()).ok())
+        .find_map(|mut sim| {
+            let mut n = vec![];
+            sim.read_to_end(&mut n).unwrap();
+            deserialize(&n).ok()
+        })
 }
 
 pub fn load_songs_folder<T>(songs_directory: T) -> Vec<(PathBuf, Option<NoteData>)>
