@@ -17,6 +17,9 @@ use clap::{crate_authors, crate_version, App, Arg};
 use ggez::{filesystem::mount, graphics::Rect, ContextBuilder};
 use num_rational::Rational32;
 use rand::seq::SliceRandom;
+use std::fs::File;
+use std::io::Read;
+use std::str::from_utf8;
 use std::{path::PathBuf, time::Instant};
 
 fn sprite_finder(
@@ -149,12 +152,26 @@ fn main() {
         vec![p1_layout, p2_layout],
     );
 
-    let screen_to_build = ScreenBuilder {
-        elements: vec![
-            ElementType::NOTEFIELD(0, 0),
-            ElementType::NOTEFIELD(1, 0),
-            ElementType::MUSIC(music_rate, 0),
-        ],
+    let screen_to_build = match matches.value_of("Theme") {
+        Some(value) => {
+            // This currently is not getting the music rate so the theme will have incorrect behavior
+            // if the rate specified in the theme is different than the rate passed in through the CLI
+            let mut theme =
+                File::open(format!("Themes/Default/{}", value)).expect("Can not find theme file");
+            let mut theme_string = vec![];
+            &theme.read_to_end(&mut theme_string);
+            serde_yaml::from_str(
+                from_utf8(&theme_string).expect("Can not parse theme file as string"),
+            )
+            .expect("Can not parse theme file as YAML")
+        }
+        None => ScreenBuilder {
+            elements: vec![
+                ElementType::NOTEFIELD(0, 0),
+                ElementType::NOTEFIELD(1, 0),
+                ElementType::MUSIC(music_rate, 0),
+            ],
+        },
     };
 
     let mut gameplay_screen = screen_to_build.build(&resources);

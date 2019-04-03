@@ -24,6 +24,7 @@ toml = "0.4.8"
 rayon = "1.0.3"
 rand = "0.6.5"
 bincode = "1.1.2"
+serde_yaml = "0.8.8"
 
 [dependencies.ggez]
 git = "https://github.com/ggez/ggez.git"

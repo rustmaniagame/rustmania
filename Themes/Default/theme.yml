@@ -1,0 +1,11 @@
+---
+elements:
+  - NOTEFIELD:
+      - 0
+      - 0
+  - NOTEFIELD:
+      - 1
+      - 0
+  - MUSIC:
+      - 1.0
+      - 0
