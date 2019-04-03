@@ -6,7 +6,7 @@ use minimp3::Decoder;
 use std::{
     self,
     fs::File,
-    path::PathBuf,
+    path::{Path, PathBuf},
     thread,
     time::{Duration, Instant},
 };
@@ -15,18 +15,21 @@ const CORRECTION_DEGREE: f64 = 0.00002;
 
 pub struct Music {
     rate: f64,
-    path: String,
+    path: PathBuf,
 }
 
 impl Music {
-    pub fn new(rate: f64, path: String) -> Self {
+    pub fn new(rate: f64, path: PathBuf) -> Self {
         Music { rate, path }
     }
 }
 
 //Known issue: playback only operates correctly on two channel audio
 //single channel audio needs to be accounted for
-fn play_file(start_time: Instant, rate: f64, path: String) {
+fn play_file<T>(start_time: Instant, rate: f64, path: T)
+where
+    T: AsRef<Path>,
+{
     let device = cpal::default_output_device().expect("Failed to get default output device");
     let format = device
         .default_output_format()
@@ -85,7 +88,10 @@ fn play_file(start_time: Instant, rate: f64, path: String) {
     });
 }
 
-fn decode_ogg(path: String) -> (i32, Vec<i16>) {
+fn decode_ogg<T>(path: T) -> (i32, Vec<i16>)
+where
+    T: AsRef<Path>,
+{
     let mut srr = OggStreamReader::new(File::open(path).unwrap()).unwrap();
     let stream_sample_rate = srr.ident_hdr.audio_sample_rate as i32;
 
@@ -100,7 +106,10 @@ fn decode_ogg(path: String) -> (i32, Vec<i16>) {
 }
 
 //Known issue: the last frame seems to be dropped from the end of the file
-fn decode_mp3(path: String) -> (i32, Vec<i16>) {
+fn decode_mp3<T>(path: T) -> (i32, Vec<i16>)
+where
+    T: AsRef<Path>,
+{
     let mut decoder = Decoder::new(File::open(path).unwrap());
 
     let mut frames = Vec::new();
@@ -118,7 +127,10 @@ fn decode_mp3(path: String) -> (i32, Vec<i16>) {
     (stream_sample_rate, frames)
 }
 
-fn decode_wav(path: String) -> (i32, Vec<i16>) {
+fn decode_wav<T>(path: T) -> (i32, Vec<i16>)
+where
+    T: AsRef<Path>,
+{
     let mut reader = hound::WavReader::open(path).unwrap();
     (
         reader.spec().sample_rate as i32,

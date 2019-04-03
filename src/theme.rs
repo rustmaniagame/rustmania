@@ -33,14 +33,9 @@ pub enum ElementType {
 impl ElementType {
     pub fn build<'a>(&self, resources: &'a Resources) -> Box<dyn Element + 'a> {
         match self {
-            ElementType::MUSIC(rate, name) => Box::new(Music::new(
-                *rate,
-                resources.paths[*name]
-                    .as_os_str()
-                    .to_string_lossy()
-                    .to_string()
-                    .clone(),
-            )),
+            ElementType::MUSIC(rate, name) => {
+                Box::new(Music::new(*rate, resources.paths[*name].clone()))
+            }
             ElementType::NOTEFIELD(layout, timing_data) => Box::new(Notefield::new(
                 &resources.layouts[*layout],
                 &resources.notes[*timing_data],
