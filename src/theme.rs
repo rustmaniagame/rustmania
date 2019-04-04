@@ -26,16 +26,17 @@ impl ScreenBuilder {
 
 #[derive(Deserialize, Serialize)]
 pub enum ElementType {
-    MUSIC(f64, usize),
+    MUSIC(usize, usize),
     NOTEFIELD(usize, usize),
 }
 
 impl ElementType {
     pub fn build<'a>(&self, resources: &'a Resources) -> Box<dyn Element + 'a> {
         match self {
-            ElementType::MUSIC(rate, name) => {
-                Box::new(Music::new(*rate, resources.paths[*name].clone()))
-            }
+            ElementType::MUSIC(rate, name) => Box::new(Music::new(
+                resources.floats[*rate],
+                resources.paths[*name].clone(),
+            )),
             ElementType::NOTEFIELD(layout, timing_data) => Box::new(Notefield::new(
                 &resources.layouts[*layout],
                 &resources.notes[*timing_data],
@@ -49,6 +50,8 @@ pub struct Resources {
     notes: Vec<TimingData<GameplayInfo>>,
     paths: Vec<PathBuf>,
     layouts: Vec<NoteLayout>,
+    floats: Vec<f64>,
+    _integers: Vec<i64>,
 }
 
 impl Resources {
@@ -56,11 +59,15 @@ impl Resources {
         notes: Vec<TimingData<GameplayInfo>>,
         paths: Vec<PathBuf>,
         layouts: Vec<NoteLayout>,
+        floats: Vec<f64>,
+        _integers: Vec<i64>,
     ) -> Self {
         Resources {
             notes,
             paths,
             layouts,
+            floats,
+            _integers,
         }
     }
 }

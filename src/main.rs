@@ -166,6 +166,8 @@ fn main() {
             notedata.data.music_path.expect("No music path specified")
         ))],
         vec![p1_layout, p2_layout],
+        vec![music_rate],
+        vec![],
     );
 
     let screen_to_build = match matches.value_of("Theme") {
@@ -185,7 +187,7 @@ fn main() {
             elements: vec![
                 ElementType::NOTEFIELD(0, 0),
                 ElementType::NOTEFIELD(1, 0),
-                ElementType::MUSIC(music_rate, 0),
+                ElementType::MUSIC(0, 0),
             ],
         },
     };
