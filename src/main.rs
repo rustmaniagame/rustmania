@@ -15,12 +15,24 @@ use crate::{
 };
 use clap::{crate_authors, crate_version, App, Arg};
 use ggez::{filesystem::mount, graphics::Rect, ContextBuilder};
+use log::{debug, info};
 use num_rational::Rational32;
 use rand::seq::SliceRandom;
-use std::fs::File;
-use std::io::Read;
-use std::str::from_utf8;
-use std::{path::PathBuf, time::Instant};
+use std::{
+    fs::{remove_file, File},
+    io::Read,
+    path::PathBuf,
+    str::from_utf8,
+    time::Instant,
+};
+
+fn set_up_logging() -> Result<(), fern::InitError> {
+    fern::Dispatch::new()
+        .format(|out, message, _record| out.finish(format_args!("{}", message)))
+        .chain(fern::log_file("log.txt")?)
+        .apply()?;
+    Ok(())
+}
 
 fn sprite_finder(
     _measure: usize,
@@ -76,6 +88,10 @@ fn main() {
         .after_help("Licenced under MIT.")
         .get_matches();
 
+    // We delete log.txt because fern appends the logs to the end of the file
+    remove_file("log.txt").expect("couldnt remove log");
+    set_up_logging().expect("Failed to set up logging");
+
     let (simfile_folder, notedata) = match matches.value_of("SimFile") {
         Some(value) => (
             format!("Songs/{}", value),
@@ -86,14 +102,14 @@ fn main() {
             let start_time = Instant::now();
             let notedata_list = song_loader::load_songs_folder("Songs");
             let duration = Instant::now() - start_time;
-            println!("Found {} total songs", notedata_list.len());
+            info!("Found {} total songs", notedata_list.len());
             let notedata_list = notedata_list
                 .into_iter()
                 .filter(|x| x.1.is_some())
                 .map(|(p, x)| (p, x.unwrap()))
                 .collect::<Vec<_>>();
-            println!("Of which, {} loaded", notedata_list.len());
-            println!(
+            info!("Of which, {} loaded", notedata_list.len());
+            info!(
                 "This took {}.{} seconds",
                 duration.as_secs(),
                 duration.subsec_millis()
@@ -183,11 +199,11 @@ fn main() {
     }
 
     if let Err(e) = gameplay_screen.start() {
-        println!("Error starting screen: {}", e)
+        debug!("Error starting screen: {}", e)
     }
     if let Err(e) = ggez::event::run(context, events_loop, &mut gameplay_screen) {
-        println!("Error: {}", e);
+        debug!("Error: {}", e);
     } else {
-        println!("Exit successful.");
+        debug!("Exit successful.");
     }
 }
