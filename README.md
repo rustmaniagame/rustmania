@@ -6,6 +6,7 @@ Why you should by excited about RustMania:
 
 * Rust is fast and safe
 * New engine free from legacy code
+* Support for a variety of audio formats
 * Completely open source
 * Compatible with .sm files
 * Simple system for creating Noteskins
@@ -13,10 +14,9 @@ Why you should by excited about RustMania:
 
 Cool things that are planned:
 * Support for reading from and writing to all common simfile formats, including a custom format for Rustmania.
-* Support for a variety of audio formats
 * Lua scripting
-* Editor
-* Difficulty calc
+* Simfile editor
+* Automatic difficulty calculator
 * Potential to play in browser
 * ...and more!
 
@@ -34,7 +34,7 @@ Once Rust is installed, you can compile and run the game using `Cargo`, Rust's b
 To compile and open the resulting binary with the default resources, you can simply input the following command:
 
 ```
-cargo +nightly run --release Songs/Mu/mu.sm Default resources/script.lua
+cargo +nightly run --release
 ```
 
 ## Release History
@@ -42,10 +42,6 @@ cargo +nightly run --release Songs/Mu/mu.sm Default resources/script.lua
 Next Release
 * 0.1.0
     * Work in progress
-
-## Meta
-
-ixsetf :)
 
 ## Licence
 
