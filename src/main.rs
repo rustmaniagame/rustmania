@@ -26,6 +26,8 @@ use std::{
     time::Instant,
 };
 
+const NOTEFIELD_SIZE: usize = 4;
+
 fn set_up_logging() -> Result<(), fern::InitError> {
     fern::Dispatch::new()
         .format(|out, message, _record| out.finish(format_args!("{}", message)))

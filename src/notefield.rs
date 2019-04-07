@@ -5,6 +5,7 @@ use crate::{
     player_config::NoteLayout,
     screen::Element,
     timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData},
+    NOTEFIELD_SIZE,
 };
 use ggez::graphics::{self, spritebatch::SpriteBatch};
 use std::time::Instant;
@@ -12,7 +13,7 @@ use std::time::Instant;
 #[derive(PartialEq, Debug)]
 pub struct Notefield<'a> {
     layout: &'a NoteLayout,
-    column_info: [ColumnInfo<'a>; 4],
+    column_info: [ColumnInfo<'a>; NOTEFIELD_SIZE],
     batches: Vec<SpriteBatch>,
     draw_distance: i64,
     last_judgement: Option<Judgement>,
@@ -120,12 +121,7 @@ impl<'a> Notefield<'a> {
     ) -> Self {
         Notefield {
             layout,
-            column_info: [
-                ColumnInfo::from_column(&notes.notes[0]),
-                ColumnInfo::from_column(&notes.notes[1]),
-                ColumnInfo::from_column(&notes.notes[2]),
-                ColumnInfo::from_column(&notes.notes[3]),
-            ],
+            column_info: array_init::array_init(|i| ColumnInfo::from_column(&notes.notes[i])),
             //Using a Vec of SpriteBatch should be temporary, optimally we want to reference these
             // by a NoteType key, but this would require ggez refactoring.
             batches: vec![

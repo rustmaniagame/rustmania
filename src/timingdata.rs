@@ -1,4 +1,7 @@
-use crate::notedata::{ChartData, ChartMetadata, NoteData, NoteType};
+use crate::{
+    notedata::{ChartData, ChartMetadata, NoteData, NoteType},
+    NOTEFIELD_SIZE,
+};
 use ggez::graphics;
 use num_rational::Rational32;
 
@@ -11,7 +14,7 @@ pub struct TimingData<T>
 where
     T: TimingInfo,
 {
-    pub notes: [TimingColumn<T>; 4],
+    pub notes: [TimingColumn<T>; NOTEFIELD_SIZE],
 }
 
 #[derive(Debug, PartialEq)]
@@ -124,12 +127,8 @@ impl TimingData<GameplayInfo> {
         let mut bpms = bpms.into_iter();
         let mut current_bpm = bpms.next().unwrap();
         let mut next_bpm = bpms.next();
-        let mut output = [
-            TimingColumn::new(),
-            TimingColumn::new(),
-            TimingColumn::new(),
-            TimingColumn::new(),
-        ];
+        let mut output: [TimingColumn<GameplayInfo>; NOTEFIELD_SIZE] =
+            array_init::array_init(|_| TimingColumn::new());
         for (measure_index, measure) in data.measures().enumerate() {
             for (inner_time, row) in measure.iter() {
                 if let Some(bpm) = next_bpm {
@@ -167,12 +166,7 @@ where
 {
     pub fn new() -> Self {
         TimingData {
-            notes: [
-                TimingColumn::new(),
-                TimingColumn::new(),
-                TimingColumn::new(),
-                TimingColumn::new(),
-            ],
+            notes: array_init::array_init(|_| TimingColumn::new()),
         }
     }
 }

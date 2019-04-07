@@ -1,6 +1,7 @@
 use crate::{
     notedata::NoteType,
     timingdata::{GameplayInfo, Judgement},
+    NOTEFIELD_SIZE,
 };
 use ggez::{
     error::GameResult,
@@ -13,8 +14,8 @@ use toml;
 #[derive(PartialEq, Debug)]
 pub struct NoteLayout {
     pub sprites: NoteSprites,
-    pub column_positions: [i64; 4],
-    pub column_rotations: [f32; 4],
+    pub column_positions: [i64; NOTEFIELD_SIZE],
+    pub column_rotations: [f32; NOTEFIELD_SIZE],
     pub receptor_height: i64,
     pub judgment_position: [f32; 2],
     pub scroll_speed: f32,
@@ -23,8 +24,8 @@ pub struct NoteLayout {
 #[derive(PartialEq, Clone, Debug)]
 pub struct NoteSkin {
     pub sprites: NoteSprites,
-    pub column_positions: [i64; 4],
-    pub column_rotations: [f32; 4],
+    pub column_positions: [i64; NOTEFIELD_SIZE],
+    pub column_rotations: [f32; NOTEFIELD_SIZE],
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -260,8 +261,8 @@ struct NoteSkinInfo {
     hold_body: String,
     hold_head: String,
     mine: String,
-    column_positions: [i64; 4],
-    column_rotations: [f32; 4],
+    column_positions: [i64; NOTEFIELD_SIZE],
+    column_rotations: [f32; NOTEFIELD_SIZE],
 }
 
 impl NoteSkin {
