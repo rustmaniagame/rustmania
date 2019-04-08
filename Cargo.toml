@@ -1,6 +1,5 @@
 [package]
 authors = ["ixsetf"]
-build = "build.rs"
 edition = "2018"
 name = "rustmania"
 version = "0.1.0"
