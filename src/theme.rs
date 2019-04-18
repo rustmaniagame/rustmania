@@ -28,6 +28,7 @@ impl ScreenBuilder {
 pub enum ElementType {
     MUSIC(usize, usize),
     NOTEFIELD(usize, usize),
+    TEXT(usize),
 }
 
 impl ElementType {
@@ -42,6 +43,7 @@ impl ElementType {
                 &resources.notes[*timing_data],
                 600,
             )),
+            ElementType::TEXT(contents) => Box::new(crate::text::TextBox::new(resources.strings[*contents].clone(), (0,0), 0))
         }
     }
 }
@@ -52,6 +54,7 @@ pub struct Resources {
     layouts: Vec<NoteLayout>,
     floats: Vec<f64>,
     _integers: Vec<i64>,
+    strings: Vec<String>,
 }
 
 impl Resources {
@@ -61,6 +64,7 @@ impl Resources {
         layouts: Vec<NoteLayout>,
         floats: Vec<f64>,
         _integers: Vec<i64>,
+        strings: Vec<String>,
     ) -> Self {
         Resources {
             notes,
@@ -68,6 +72,7 @@ impl Resources {
             layouts,
             floats,
             _integers,
+            strings,
         }
     }
 }
