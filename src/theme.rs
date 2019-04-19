@@ -28,7 +28,7 @@ impl ScreenBuilder {
 pub enum ElementType {
     MUSIC(usize, usize),
     NOTEFIELD(usize, usize),
-    TEXT(usize),
+    TEXT(usize, usize, usize),
 }
 
 impl ElementType {
@@ -43,7 +43,11 @@ impl ElementType {
                 &resources.notes[*timing_data],
                 600,
             )),
-            ElementType::TEXT(contents) => Box::new(crate::text::TextBox::new(resources.strings[*contents].clone(), (0,0), 0))
+            ElementType::TEXT(contents, x_pos, y_pos) => Box::new(crate::text::TextBox::new(
+                resources.strings[*contents].clone(),
+                [resources.floats[*x_pos] as f32, resources.floats[*y_pos] as f32],
+                0,
+            )),
         }
     }
 }

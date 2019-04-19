@@ -9,4 +9,7 @@ elements:
   - MUSIC:
       - 0
       - 0
-  - TEXT: 0
+  - TEXT:
+      - 0
+      - 1
+      - 2
