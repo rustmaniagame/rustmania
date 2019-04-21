@@ -96,36 +96,35 @@ fn main() {
     set_up_logging().expect("Failed to set up logging");
 
     let songs_folder = match matches.value_of("SimFile") {
-        Some(value) =>
-            format!("Songs/{}", value),
+        Some(value) => format!("Songs/{}", value),
         None => String::from("Songs"),
     };
 
     let (simfile_folder, notedata) = {
-            let start_time = Instant::now();
-            let notedata_list = song_loader::load_songs_folder(songs_folder);
-            let duration = Instant::now() - start_time;
-            info!("Found {} total songs", notedata_list.len());
-            let notedata_list = notedata_list
-                .into_iter()
-                .filter(|x| x.1.is_some())
-                .map(|(p, x)| (p, x.unwrap()))
-                .collect::<Vec<_>>();
-            info!("Of which, {} loaded", notedata_list.len());
-            info!(
-                "This took {}.{} seconds",
-                duration.as_secs(),
-                duration.subsec_millis()
-            );
-            let (simfile_folder, notedata) = notedata_list
-                .choose(&mut rng)
-                .expect("Failed to select chart from cache")
-                .clone();
-            let simfile_folder = simfile_folder
-                .into_os_string()
-                .into_string()
-                .expect("failed to parse path");
-            (simfile_folder, notedata)
+        let start_time = Instant::now();
+        let notedata_list = song_loader::load_songs_folder(songs_folder);
+        let duration = Instant::now() - start_time;
+        info!("Found {} total songs", notedata_list.len());
+        let notedata_list = notedata_list
+            .into_iter()
+            .filter(|x| x.1.is_some())
+            .map(|(p, x)| (p, x.unwrap()))
+            .collect::<Vec<_>>();
+        info!("Of which, {} loaded", notedata_list.len());
+        info!(
+            "This took {}.{} seconds",
+            duration.as_secs(),
+            duration.subsec_millis()
+        );
+        let (simfile_folder, notedata) = notedata_list
+            .choose(&mut rng)
+            .expect("Failed to select chart from cache")
+            .clone();
+        let simfile_folder = simfile_folder
+            .into_os_string()
+            .into_string()
+            .expect("failed to parse path");
+        (simfile_folder, notedata)
     };
     println!(
         "Selected Song is: {}",
@@ -168,7 +167,7 @@ fn main() {
             notedata.data.music_path.expect("No music path specified")
         ))],
         vec![p1_layout, p2_layout],
-        vec![music_rate, 0.0,12.0],
+        vec![music_rate, 0.0, 12.0],
         vec![],
         vec![notedata.data.title.expect("Needs a title").clone()],
     );
@@ -191,7 +190,7 @@ fn main() {
                 ElementType::NOTEFIELD(0, 0),
                 ElementType::NOTEFIELD(1, 0),
                 ElementType::MUSIC(0, 0),
-                ElementType::TEXT(0, 1,2),
+                ElementType::TEXT(0, 1, 2),
             ],
         },
     };

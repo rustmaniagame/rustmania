@@ -45,7 +45,10 @@ impl ElementType {
             )),
             ElementType::TEXT(contents, x_pos, y_pos) => Box::new(crate::text::TextBox::new(
                 resources.strings[*contents].clone(),
-                [resources.floats[*x_pos] as f32, resources.floats[*y_pos] as f32],
+                [
+                    resources.floats[*x_pos] as f32,
+                    resources.floats[*y_pos] as f32,
+                ],
                 0,
             )),
         }
