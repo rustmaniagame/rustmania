@@ -95,15 +95,15 @@ fn main() {
     remove_file("log.txt").expect("couldnt remove log");
     set_up_logging().expect("Failed to set up logging");
 
-    let (simfile_folder, notedata) = match matches.value_of("SimFile") {
-        Some(value) => (
+    let songs_folder = match matches.value_of("SimFile") {
+        Some(value) =>
             format!("Songs/{}", value),
-            song_loader::load_song(format!("Songs/{}", value))
-                .expect("Failed to load song from path specified"),
-        ),
-        None => {
+        None => String::from("Songs"),
+    };
+
+    let (simfile_folder, notedata) = {
             let start_time = Instant::now();
-            let notedata_list = song_loader::load_songs_folder("Songs");
+            let notedata_list = song_loader::load_songs_folder(songs_folder);
             let duration = Instant::now() - start_time;
             info!("Found {} total songs", notedata_list.len());
             let notedata_list = notedata_list
@@ -126,7 +126,6 @@ fn main() {
                 .into_string()
                 .expect("failed to parse path");
             (simfile_folder, notedata)
-        }
     };
     println!(
         "Selected Song is: {}",
