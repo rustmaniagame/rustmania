@@ -92,7 +92,7 @@ fn main() {
         .get_matches();
 
     // We delete log.txt because fern appends the logs to the end of the file
-    remove_file("log.txt").expect("couldnt remove log");
+    let _ = remove_file("log.txt");
     set_up_logging().expect("Failed to set up logging");
 
     let songs_folder = match matches.value_of("SimFile") {
