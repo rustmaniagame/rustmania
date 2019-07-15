@@ -1,10 +1,15 @@
-use crate::notedata::{self, NoteData};
+use crate::{
+    difficulty_calc,
+    notedata::{self, NoteData},
+    sprite_finder,
+    timingdata::{CalcInfo, TimingData},
+};
 use bincode::deserialize;
 use rayon::{iter::ParallelIterator, prelude::*};
-use std::io::Read;
 use std::{
     ffi::OsStr,
     fs::{read_dir, File},
+    io::Read,
     path::{Path, PathBuf},
 };
 
@@ -13,8 +18,12 @@ where
     T: AsRef<Path> + Clone,
 {
     let n = load_song_rm(simfile_folder.clone());
-    if n.is_some() {
-        n
+    if let Some(data) = n {
+        let w = difficulty_calc::rate_chart(
+            &TimingData::<CalcInfo>::from_notedata(&data, sprite_finder, 1.0)[0],
+        );
+        println!("{:?} {}", data.data.title, w);
+        Some(data)
     } else {
         load_song_sm(simfile_folder.clone())
     }

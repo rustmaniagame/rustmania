@@ -1,3 +1,4 @@
+mod difficulty_calc;
 mod gamestate;
 mod music;
 mod notedata;

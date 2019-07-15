@@ -110,7 +110,10 @@ where
     }
 }
 
-impl<T> TimingData<T> where T: TimingInfo + LayoutInfo {
+impl<T> TimingData<T>
+where
+    T: TimingInfo + LayoutInfo,
+{
     pub fn from_notedata<U>(data: &NoteData, sprite_finder: U, rate: f64) -> Vec<Self>
     where
         U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
