@@ -27,10 +27,31 @@ where
 
 pub trait TimingInfo {}
 
+pub trait LayoutInfo {
+    fn from_layout(time: i64, sprite: graphics::Rect, note: NoteType) -> Self;
+}
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct GameplayInfo(pub i64, pub graphics::Rect, pub NoteType);
 
 impl TimingInfo for GameplayInfo {}
+
+impl LayoutInfo for GameplayInfo {
+    fn from_layout(time: i64, sprite: graphics::Rect, note: NoteType) -> Self {
+        GameplayInfo(time, sprite, note)
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct CalcInfo(pub i64, pub NoteType);
+
+impl TimingInfo for CalcInfo {}
+
+impl LayoutInfo for CalcInfo {
+    fn from_layout(time: i64, _sprite: graphics::Rect, note: NoteType) -> Self {
+        CalcInfo(time, note)
+    }
+}
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Judgement {
@@ -89,7 +110,7 @@ where
     }
 }
 
-impl TimingData<GameplayInfo> {
+impl<T> TimingData<T> where T: TimingInfo + LayoutInfo {
     pub fn from_notedata<U>(data: &NoteData, sprite_finder: U, rate: f64) -> Vec<Self>
     where
         U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
@@ -127,7 +148,7 @@ impl TimingData<GameplayInfo> {
         let mut bpms = bpms.into_iter();
         let mut current_bpm = bpms.next().unwrap();
         let mut next_bpm = bpms.next();
-        let mut output: [TimingColumn<GameplayInfo>; NOTEFIELD_SIZE] =
+        let mut output: [TimingColumn<T>; NOTEFIELD_SIZE] =
             array_init::array_init(|_| TimingColumn::new());
         for (measure_index, measure) in data.measures().enumerate() {
             for (inner_time, row) in measure.iter() {
@@ -151,7 +172,7 @@ impl TimingData<GameplayInfo> {
                     //This if let can hide errors in the parser or .sm file
                     // An else clause should be added where errors are handled
                     if let Some(column) = output.get_mut(*column_index) {
-                        column.add(GameplayInfo(row_time as i64, sprite, *note));
+                        column.add(T::from_layout(row_time as i64, sprite, *note));
                     }
                 }
             }
