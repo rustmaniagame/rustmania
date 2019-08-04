@@ -64,7 +64,7 @@ pub enum Judgement {
 impl TimingInfo for Judgement {}
 
 impl Judgement {
-    fn wife(self, ts: f64) -> f64 {
+    pub fn wife(self, ts: f64) -> f64 {
         match self {
             Judgement::Hit(maxms) => {
                 let avedeviation = 95.0 * ts;

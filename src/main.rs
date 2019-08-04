@@ -21,6 +21,7 @@ use log::{debug, info};
 use num_rational::Rational32;
 use rand::seq::SliceRandom;
 use std::{
+    cmp::Ordering,
     fs::{remove_file, File},
     io::Read,
     path::PathBuf,
@@ -101,12 +102,12 @@ fn main() {
         None => String::from("Songs"),
     };
 
-    let (simfile_folder, notedata) = {
+    let (simfile_folder, difficulty, notedata) = {
         let start_time = Instant::now();
         let notedata_list = song_loader::load_songs_folder(songs_folder);
         let duration = Instant::now() - start_time;
         info!("Found {} total songs", notedata_list.len());
-        let notedata_list = notedata_list
+        let mut notedata_list = notedata_list
             .into_iter()
             .filter(|x| x.1.is_some())
             .map(|(p, x)| (p, x.unwrap()))
@@ -117,7 +118,11 @@ fn main() {
             duration.as_secs(),
             duration.subsec_millis()
         );
-        let (simfile_folder, notedata) = notedata_list
+        &notedata_list.sort_by(|a, b| (a.1).0.partial_cmp(&(b.1).0).unwrap_or(Ordering::Less));
+        notedata_list
+            .iter()
+            .for_each(|x| info!("{:?}, {}", (x.1).1.data.title, (x.1).0));
+        let (simfile_folder, (difficulty, notedata)) = notedata_list
             .choose(&mut rng)
             .expect("Failed to select chart from cache")
             .clone();
@@ -125,12 +130,13 @@ fn main() {
             .into_os_string()
             .into_string()
             .expect("failed to parse path");
-        (simfile_folder, notedata)
+        (simfile_folder, difficulty, notedata)
     };
     println!(
         "Selected Song is: {}",
         notedata.data.title.clone().unwrap_or(String::new())
     );
+    println!("With difficulty: {}", difficulty);
 
     let noteskin = matches.value_of("NoteSkin").unwrap_or("Default");
 

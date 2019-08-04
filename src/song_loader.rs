@@ -13,23 +13,14 @@ use std::{
     path::{Path, PathBuf},
 };
 
-pub fn load_song<T>(simfile_folder: T) -> Option<NoteData>
+pub fn load_song<T>(simfile_folder: T) -> Option<(f64, NoteData)>
 where
     T: AsRef<Path> + Clone,
 {
-    let n = load_song_rm(simfile_folder.clone());
-    if let Some(data) = n {
-        let w = difficulty_calc::rate_chart(
-            &TimingData::<CalcInfo>::from_notedata(&data, sprite_finder, 1.0)[0],
-        );
-        println!("{:?} {}", data.data.title, w);
-        Some(data)
-    } else {
-        load_song_sm(simfile_folder.clone())
-    }
+    load_song_rm(simfile_folder.clone()).or(load_song_sm(simfile_folder.clone()))
 }
 
-pub fn load_song_sm<T>(simfile_folder: T) -> Option<NoteData>
+pub fn load_song_sm<T>(simfile_folder: T) -> Option<(f64, NoteData)>
 where
     T: AsRef<Path>,
 {
@@ -39,9 +30,18 @@ where
         .filter(|entry| entry.path().extension() == Some(OsStr::new("sm")))
         .filter_map(|sim| File::open(sim.path()).ok())
         .find_map(|sim| notedata::NoteData::from_sm(sim).ok())
+        .map(|x| {
+            (
+                difficulty_calc::rate_chart(
+                    &TimingData::<CalcInfo>::from_notedata(&x, sprite_finder, 1.0)[0],
+                    1.86,
+                ),
+                x,
+            )
+        })
 }
 
-pub fn load_song_rm<T>(simfile_folder: T) -> Option<NoteData>
+pub fn load_song_rm<T>(simfile_folder: T) -> Option<(f64, NoteData)>
 where
     T: AsRef<Path>,
 {
@@ -55,9 +55,18 @@ where
             sim.read_to_end(&mut n).unwrap();
             deserialize(&n).ok()
         })
+        .map(|x| {
+            (
+                difficulty_calc::rate_chart(
+                    &TimingData::<CalcInfo>::from_notedata(&x, sprite_finder, 1.0)[0],
+                    1.86,
+                ),
+                x,
+            )
+        })
 }
 
-pub fn load_songs_folder<T>(songs_directory: T) -> Vec<(PathBuf, Option<NoteData>)>
+pub fn load_songs_folder<T>(songs_directory: T) -> Vec<(PathBuf, Option<(f64, NoteData)>)>
 where
     T: AsRef<Path>,
 {
