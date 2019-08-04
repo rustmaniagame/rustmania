@@ -95,7 +95,7 @@ fn main() {
 
     // We delete log.txt because fern appends the logs to the end of the file
     let _ = remove_file("log.txt");
-    set_up_logging().expect("Failed to set up logging");
+    set_up_logging().unwrap_or(());
 
     let songs_folder = match matches.value_of("SimFile") {
         Some(value) => format!("Songs/{}", value),
