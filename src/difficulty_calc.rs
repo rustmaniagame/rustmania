@@ -5,23 +5,32 @@ use crate::{
 use std::cmp::Ordering;
 
 pub fn rate_chart(notes: &TimingData<CalcInfo>, target: f64) -> f64 {
-    let mut difficulty = vec![];
-    for column in notes.notes.iter() {
-        for (index, CalcInfo(base_time, base_type)) in column.notes.iter().enumerate() {
-            if *base_type == NoteType::Tap || *base_type == NoteType::Hold {
-                let mut note_difficulty = 0.0;
-                for CalcInfo(other_time, other_type) in column.notes.iter().take(index) {
-                    if *other_type == NoteType::Tap || *other_type == NoteType::Hold {
-                        note_difficulty += 1_000_000.0
-                            / ((base_time - other_time) * (base_time - other_time)) as f64;
-                    }
-                }
-                difficulty.push(note_difficulty);
-            }
-        }
-    }
+    let mut difficulty = notes
+        .notes
+        .iter()
+        .map(|column| {
+            column
+                .notes
+                .iter()
+                .enumerate()
+                .filter(|(_, CalcInfo(_, x))| *x == NoteType::Tap || *x == NoteType::Hold)
+                .map(|(index, CalcInfo(base_time, _))| {
+                    column
+                        .notes
+                        .iter()
+                        .take(index)
+                        .filter(|x| x.1 == NoteType::Tap || x.1 == NoteType::Hold)
+                        .map(|CalcInfo(other_time, _)| {
+                            1_000_000.0 / (base_time - other_time).pow(2) as f64
+                        })
+                        .sum::<f64>()
+                })
+                .collect::<Vec<_>>()
+        })
+        .flatten()
+        .collect::<Vec<_>>();
 
-    difficulty[..].sort_by(|a, b| b.partial_cmp(a).unwrap_or(Ordering::Less));
+    &difficulty.sort_by(|a, b| b.partial_cmp(a).unwrap_or(Ordering::Less));
 
     let mut lower = 0.0;
     let mut upper = 100.0;
