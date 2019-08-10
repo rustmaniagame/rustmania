@@ -18,7 +18,7 @@ pub struct Screen<'a> {
 }
 
 fn to_milliseconds(dur: Duration) -> i64 {
-    dur.as_secs() as i64 * 1000 + dur.subsec_millis() as i64
+    dur.as_secs() as i64 * 1000 + i64::from(dur.subsec_millis())
 }
 
 impl<'a> Screen<'a> {

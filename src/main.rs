@@ -118,7 +118,7 @@ fn main() {
             duration.as_secs(),
             duration.subsec_millis()
         );
-        &notedata_list.sort_by(|a, b| (a.1).0.partial_cmp(&(b.1).0).unwrap_or(Ordering::Less));
+        notedata_list.sort_by(|a, b| (a.1).0.partial_cmp(&(b.1).0).unwrap_or(Ordering::Less));
         notedata_list
             .iter()
             .for_each(|x| info!("{:?}, {}", (x.1).1.data.title, (x.1).0));
@@ -134,7 +134,7 @@ fn main() {
     };
     println!(
         "Selected Song is: {}",
-        notedata.data.title.clone().unwrap_or(String::new())
+        notedata.data.title.clone().unwrap_or_default()
     );
     println!("With difficulty: {}", difficulty);
 
@@ -186,7 +186,7 @@ fn main() {
             let mut theme =
                 File::open(format!("Themes/Default/{}", value)).expect("Can not find theme file");
             let mut theme_string = vec![];
-            &theme.read_to_end(&mut theme_string);
+            theme.read_to_end(&mut theme_string).expect("Could not read theme file completely");
             serde_yaml::from_str(
                 from_utf8(&theme_string).expect("Can not parse theme file as string"),
             )

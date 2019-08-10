@@ -30,7 +30,7 @@ pub fn rate_chart(notes: &TimingData<CalcInfo>, target: f64) -> f64 {
         .flatten()
         .collect::<Vec<_>>();
 
-    &difficulty.sort_by(|a, b| b.partial_cmp(a).unwrap_or(Ordering::Less));
+    difficulty.sort_by(|a, b| b.partial_cmp(a).unwrap_or(Ordering::Less));
 
     let mut lower = 0.0;
     let mut upper = 100.0;

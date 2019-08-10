@@ -17,7 +17,7 @@ pub fn load_song<T>(simfile_folder: T) -> Option<(f64, NoteData)>
 where
     T: AsRef<Path> + Clone,
 {
-    load_song_rm(simfile_folder.clone()).or(load_song_sm(simfile_folder.clone()))
+    load_song_rm(simfile_folder.clone()).or_else(|| load_song_sm(simfile_folder.clone()))
 }
 
 pub fn load_song_sm<T>(simfile_folder: T) -> Option<(f64, NoteData)>

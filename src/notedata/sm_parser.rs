@@ -103,7 +103,7 @@ fn parse_measure(measure: &[&str]) -> Vec<(Rational32, NoteRow)> {
                 parse_line(*beat),
             )
         })
-        .filter(|(_, x)| x.row.len() > 0)
+        .filter(|(_, x)| !x.row.is_empty())
         .collect()
 }
 

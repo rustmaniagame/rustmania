@@ -109,7 +109,7 @@ impl<'a> ColumnInfo<'a> {
                 self.next_to_hit += 1;
             }
         };
-        self.judgement_list.notes.last().map(|x| *x)
+        self.judgement_list.notes.last().copied()
     }
 }
 
@@ -222,17 +222,14 @@ impl<'a> Element for Notefield<'a> {
             }
         }
         if key_down {
-            match self.column_info[index].handle_hit(time) {
-                Some(value) => self.handle_judgement(value),
-                None => {}
+            if let Some(value) = self.column_info[index].handle_hit(time) {
+                self.handle_judgement(value)
             };
-        } else {
-            if self.column_info[index].active_hold.is_some() {
-                self.column_info[index]
-                    .judgement_list
-                    .add(Judgement::Hold(false));
-                self.column_info[index].active_hold = None;
-            }
+        } else if self.column_info[index].active_hold.is_some() {
+            self.column_info[index]
+                .judgement_list
+                .add(Judgement::Hold(false));
+            self.column_info[index].active_hold = None;
         }
     }
 }

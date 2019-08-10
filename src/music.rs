@@ -37,7 +37,7 @@ where
     let event_loop = cpal::EventLoop::new();
     let stream_id = event_loop.build_output_stream(&device, &format).unwrap();
 
-    let sample_rate = format.sample_rate.0 as f64;
+    let sample_rate = f64::from(format.sample_rate.0);
 
     let mut ext = PathBuf::new();
     ext.push(&path);
@@ -55,10 +55,10 @@ where
 
     let to_sample_number = |dur: Duration| {
         dur.as_secs() as f64 * sample_rate
-            + dur.subsec_nanos() as f64 * (sample_rate / 1000_000_000.0)
+            + f64::from(dur.subsec_nanos()) * (sample_rate / 1_000_000_000.0)
     };
 
-    let sample_factor = stream_sample_rate as f64 / sample_rate;
+    let sample_factor = f64::from(stream_sample_rate) / sample_rate;
 
     let mut next_value = |time: Instant| {
         let now = Instant::now();
@@ -81,7 +81,8 @@ where
             for sample in buffer.chunks_mut(format.channels as usize) {
                 let value = next_value(start_time);
                 for (i, out) in sample.iter_mut().enumerate() {
-                    *out = *samples.get(value + i).unwrap_or(&0) as f32 / std::i16::MAX as f32;
+                    *out =
+                        f32::from(*samples.get(value + i).unwrap_or(&0)) / f32::from(std::i16::MAX);
                 }
             }
         }

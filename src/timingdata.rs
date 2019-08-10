@@ -6,7 +6,7 @@ use ggez::graphics;
 use num_rational::Rational32;
 
 fn value(fraction: Rational32) -> f64 {
-    *fraction.numer() as f64 / *fraction.denom() as f64
+    f64::from(*fraction.numer()) / f64::from(*fraction.denom())
 }
 
 #[derive(Debug, PartialEq)]
@@ -69,7 +69,7 @@ impl Judgement {
             Judgement::Hit(maxms) => {
                 let avedeviation = 95.0 * ts;
                 let mut y =
-                    1.0 - 2.0_f64.powf((-1 * maxms * maxms) as f64 / (avedeviation * avedeviation));
+                    1.0 - 2.0_f64.powf(-(maxms * maxms) as f64 / (avedeviation * avedeviation));
                 y *= y;
                 (10.0) * (1.0 - y) - 8.0
             }
@@ -144,7 +144,7 @@ where
         };
         for i in 1..bpms.len() {
             bpms[i].3 = bpms[i - 1].3
-                + (((bpms[i].0 - bpms[i - 1].0) as f64 + value(bpms[i].1 - bpms[i - 1].1))
+                + ((f64::from(bpms[i].0 - bpms[i - 1].0) + value(bpms[i].1 - bpms[i - 1].1))
                     * 240_000.0
                     / bpms[i - 1].2);
         }
