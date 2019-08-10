@@ -221,11 +221,11 @@ impl NoteLayout {
     }
     fn select_judgment(&self, judge: Judgement) -> Option<graphics::DrawParam> {
         let src = match judge {
-            Judgement::Hit(-22...22) => graphics::Rect::new(0.0, 0.0, 1.0, 0.1666),
-            Judgement::Hit(-45...45) => graphics::Rect::new(0.0, 0.1666, 1.0, 0.1666),
-            Judgement::Hit(-90...90) => graphics::Rect::new(0.0, 0.3333, 1.0, 0.1666),
-            Judgement::Hit(-135...135) => graphics::Rect::new(0.0, 0.5, 1.0, 0.1666),
-            Judgement::Hit(-180...180) => graphics::Rect::new(0.0, 0.6666, 1.0, 0.1666),
+            Judgement::Hit(-22..=22) => graphics::Rect::new(0.0, 0.0, 1.0, 0.1666),
+            Judgement::Hit(-45..=45) => graphics::Rect::new(0.0, 0.1666, 1.0, 0.1666),
+            Judgement::Hit(-90..=90) => graphics::Rect::new(0.0, 0.3333, 1.0, 0.1666),
+            Judgement::Hit(-135..=135) => graphics::Rect::new(0.0, 0.5, 1.0, 0.1666),
+            Judgement::Hit(-180..=180) => graphics::Rect::new(0.0, 0.6666, 1.0, 0.1666),
             Judgement::Hit(out_of_range) => {
                 println!();
                 panic!("Hit was registered outside the normal execution window with offset of {} milliseconds: Aborting",out_of_range)
