@@ -186,7 +186,9 @@ fn main() {
             let mut theme =
                 File::open(format!("Themes/Default/{}", value)).expect("Can not find theme file");
             let mut theme_string = vec![];
-            theme.read_to_end(&mut theme_string).expect("Could not read theme file completely");
+            theme
+                .read_to_end(&mut theme_string)
+                .expect("Could not read theme file completely");
             serde_yaml::from_str(
                 from_utf8(&theme_string).expect("Can not parse theme file as string"),
             )
