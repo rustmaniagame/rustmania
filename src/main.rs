@@ -150,7 +150,7 @@ fn main() {
         .add_resource_path("")
         .window_setup(ggez::conf::WindowSetup {
             title: "Rustmania".to_string(),
-            ..Default::default()
+            ..ggez::conf::WindowSetup::default()
         })
         .build()
         .expect("Failed to build context");
