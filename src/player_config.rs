@@ -294,12 +294,12 @@ impl NoteSkin {
             Ok(hold_head),
             Ok(mine),
         ) = (
-            image_from_subdirectory(context, path, arrows),
-            image_from_subdirectory(context, path, receptor),
-            image_from_subdirectory(context, path, judgment),
-            image_from_subdirectory(context, path, hold_body),
-            image_from_subdirectory(context, path, hold_head),
-            image_from_subdirectory(context, path, mine),
+            image_from_subdirectory(context, path, &arrows),
+            image_from_subdirectory(context, path, &receptor),
+            image_from_subdirectory(context, path, &judgment),
+            image_from_subdirectory(context, path, &hold_body),
+            image_from_subdirectory(context, path, &hold_head),
+            image_from_subdirectory(context, path, &mine),
         ) {
             hold_body.set_wrap(WrapMode::Tile, WrapMode::Tile);
             let sprites = NoteSprites {
@@ -324,7 +324,7 @@ impl NoteSkin {
 fn image_from_subdirectory(
     context: &mut ggez::Context,
     path: &str,
-    extension: String,
+    extension: &str,
 ) -> GameResult<graphics::Image> {
     graphics::Image::new(context, format!("/{}/{}", path, extension))
 }
