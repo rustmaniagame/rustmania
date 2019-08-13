@@ -81,8 +81,8 @@ where
             for sample in buffer.chunks_mut(format.channels as usize) {
                 let value = next_value(start_time);
                 for (i, out) in sample.iter_mut().enumerate() {
-                    *out =
-                        f32::from(*samples.get(value + i).unwrap_or(&0)) / f32::from(std::i16::MAX);
+                    *out = f32::from(*samples.get(value + i).unwrap_or(&0))
+                        / f32::from(i16::max_value());
                 }
             }
         }
