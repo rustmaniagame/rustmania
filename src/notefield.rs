@@ -177,7 +177,7 @@ impl<'a> Element for Notefield<'a> {
         let target_parameter =
             graphics::DrawParam::new().dest([0.0, -1.0 * (self.layout.delta_to_offset(time))]);
 
-        for batch in self.batches.iter() {
+        for batch in &self.batches {
             graphics::draw(ctx, batch, target_parameter)?;
         }
         if let Some(judgment) = self.last_judgement {

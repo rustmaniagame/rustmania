@@ -116,7 +116,7 @@ impl NoteData {
         let string_trimmed = RE.replace_all(&chart_string, "");
 
         let (_, tags) = sm_parser::break_to_tags(&string_trimmed).unwrap();
-        for (tag, contents) in tags.iter() {
+        for (tag, contents) in &tags {
             sm_parser::parse_tag(tag, contents, &mut chart);
         }
         Ok(chart)
