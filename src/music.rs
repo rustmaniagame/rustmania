@@ -137,7 +137,7 @@ where
         reader.spec().sample_rate as i32,
         reader
             .samples::<i16>()
-            .filter_map(|x| x.ok())
+            .filter_map(Result::ok)
             .collect::<Vec<_>>(),
     )
 }

@@ -198,7 +198,7 @@ where
 //Unused functions here will be utilized when a results screen is added
 impl TimingData<Judgement> {
     pub fn _max_points(&self) -> f64 {
-        self.notes.iter().map(|x| x.max_points()).sum()
+        self.notes.iter().map(TimingColumn::max_points).sum()
     }
     pub fn _current_points(&self, ts: f64) -> f64 {
         self.notes.iter().map(|x| x.current_points(ts)).sum()

@@ -140,7 +140,7 @@ fn main() {
 
     let noteskin = matches.value_of("NoteSkin").unwrap_or("Default");
 
-    let music_rate = if let Some(Ok(rate)) = matches.value_of("Rate").map(|x| x.parse()) {
+    let music_rate = if let Some(Ok(rate)) = matches.value_of("Rate").map(str::parse) {
         rate
     } else {
         1.0

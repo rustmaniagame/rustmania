@@ -135,7 +135,9 @@ impl<'a> Notefield<'a> {
         }
     }
     fn redraw_batch(&mut self) {
-        self.batches.iter_mut().for_each(|x| x.clear());
+        self.batches
+            .iter_mut()
+            .for_each(ggez::graphics::spritebatch::SpriteBatch::clear);
         for column_index in 0..4 {
             let (draw_start, draw_end) = self.column_info[column_index].on_screen;
             self.layout.add_column_of_notes(
