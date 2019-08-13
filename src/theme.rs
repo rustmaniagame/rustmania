@@ -73,7 +73,7 @@ impl Resources {
         _integers: Vec<i64>,
         strings: Vec<String>,
     ) -> Self {
-        Resources {
+        Self {
             notes,
             paths,
             layouts,

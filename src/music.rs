@@ -20,7 +20,7 @@ pub struct Music {
 
 impl Music {
     pub fn new(rate: f64, path: PathBuf) -> Self {
-        Music { rate, path }
+        Self { rate, path }
     }
 }
 

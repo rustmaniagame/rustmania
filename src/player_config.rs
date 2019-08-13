@@ -48,7 +48,7 @@ pub struct PlayerOptions {
 }
 
 impl NoteLayout {
-    pub fn new(skin: &NoteSkin, screen_height: i64, player_options: PlayerOptions) -> NoteLayout {
+    pub fn new(skin: &NoteSkin, screen_height: i64, player_options: PlayerOptions) -> Self {
         let NoteSkin {
             sprites,
             mut column_positions,
@@ -72,7 +72,7 @@ impl NoteLayout {
             scroll_speed *= -1.0;
         }
         let judgment_position = [judgment_position.0, judgment_position.1];
-        NoteLayout {
+        Self {
             sprites,
             column_positions,
             column_rotations,
@@ -310,7 +310,7 @@ impl NoteSkin {
                 hold_end: hold_head,
                 mine,
             };
-            Some(NoteSkin {
+            Some(Self {
                 sprites,
                 column_positions,
                 column_rotations,
@@ -337,7 +337,7 @@ impl PlayerOptions {
         is_reverse: bool,
         judgment_position: (f32, f32),
     ) -> Self {
-        PlayerOptions {
+        Self {
             notefield_position,
             receptor_height,
             scroll_speed,

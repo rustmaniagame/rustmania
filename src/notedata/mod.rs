@@ -61,7 +61,7 @@ pub enum NoteType {
 
 impl ChartMetadata {
     pub fn new() -> Self {
-        ChartMetadata {
+        Self {
             title: None,
             subtitle: None,
             artist: None,
@@ -90,7 +90,7 @@ impl ChartMetadata {
 
 impl ChartData {
     fn new(notes: Vec<Vec<(Rational32, NoteRow)>>) -> Self {
-        ChartData { notes }
+        Self { notes }
     }
     pub fn measures(&self) -> slice::Iter<Vec<(Rational32, NoteRow)>> {
         self.notes.iter()
@@ -106,7 +106,7 @@ impl NoteData {
             static ref RE: Regex = Regex::new(r"(?m)(//.*$)").unwrap();
         }
 
-        let mut chart = NoteData {
+        let mut chart = Self {
             notes: Vec::new(),
             data: ChartMetadata::new(),
         };

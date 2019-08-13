@@ -13,7 +13,7 @@ pub struct TextBox {
 
 impl TextBox {
     pub fn new(contents: String, position: [f32; 2], size: u32) -> Self {
-        TextBox {
+        Self {
             image: graphics::Text::new(contents.clone()),
             _contents: contents,
             _position: position,
