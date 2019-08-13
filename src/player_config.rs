@@ -99,7 +99,7 @@ impl NoteLayout {
         };
         let position = self.delta_to_position(position);
         let batch_index = match note_type {
-            NoteType::Tap => 2,
+            NoteType::Tap | NoteType::Roll | NoteType::Lift | NoteType::Fake => 2,
             NoteType::Hold => {
                 if let Some(GameplayInfo(end, _, _)) = column_data.get(1) {
                     batches[1].add(
@@ -122,10 +122,7 @@ impl NoteLayout {
                 };
                 2
             }
-            NoteType::Roll => 2,
             NoteType::Mine => 3,
-            NoteType::Lift => 2,
-            NoteType::Fake => 2,
             NoteType::HoldEnd => 0,
         };
         batches[batch_index].add(

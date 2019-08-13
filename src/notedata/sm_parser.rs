@@ -80,7 +80,6 @@ fn parse_main_block(contents: &str) -> ChartData {
 
 fn char_to_notetype(character: char) -> Option<NoteType> {
     match character {
-        '0' => None,
         '1' => Some(NoteType::Tap),
         '2' => Some(NoteType::Hold),
         '3' => Some(NoteType::HoldEnd),
