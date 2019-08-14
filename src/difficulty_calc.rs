@@ -8,7 +8,7 @@ pub fn rate_chart(notes: &TimingData<CalcInfo>, target: f64) -> f64 {
     let mut difficulty = notes
         .notes
         .iter()
-        .map(|column| {
+        .flat_map(|column| {
             column
                 .notes
                 .iter()
@@ -27,7 +27,6 @@ pub fn rate_chart(notes: &TimingData<CalcInfo>, target: f64) -> f64 {
                 })
                 .collect::<Vec<_>>()
         })
-        .flatten()
         .collect::<Vec<_>>();
 
     difficulty.sort_by(|a, b| b.partial_cmp(a).unwrap_or(Ordering::Less));
