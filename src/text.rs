@@ -7,16 +7,16 @@ use std::time::Instant;
 pub struct TextBox {
     image: graphics::Text,
     _contents: String,
-    _position: [f32; 2],
+    position: [f32; 2],
     _size: u32,
 }
 
 impl TextBox {
     pub fn new(contents: String, position: [f32; 2], size: u32) -> Self {
-        TextBox {
+        Self {
             image: graphics::Text::new(contents.clone()),
             _contents: contents,
-            _position: position,
+            position,
             _size: size,
         }
     }
@@ -24,7 +24,7 @@ impl TextBox {
 
 impl Element for TextBox {
     fn run(&mut self, context: &mut Context, _time: Option<i64>) -> Result<(), GameError> {
-        graphics::draw(context, &self.image, DrawParam::new().dest(self._position))?;
+        graphics::draw(context, &self.image, DrawParam::new().dest(self.position))?;
         Ok(())
     }
     fn start(&mut self, _time: Option<Instant>) -> Result<(), GameError> {

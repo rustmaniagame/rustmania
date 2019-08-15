@@ -26,7 +26,7 @@ where
 {
     read_dir(simfile_folder)
         .expect("Couldn't open folder")
-        .filter_map(|entry| entry.ok())
+        .filter_map(Result::ok)
         .filter(|entry| entry.path().extension() == Some(OsStr::new("sm")))
         .filter_map(|sim| File::open(sim.path()).ok())
         .find_map(|sim| notedata::NoteData::from_sm(sim).ok())
@@ -47,7 +47,7 @@ where
 {
     read_dir(simfile_folder)
         .expect("Couldn't open folder")
-        .filter_map(|entry| entry.ok())
+        .filter_map(Result::ok)
         .filter(|entry| entry.path().extension() == Some(OsStr::new("rm")))
         .filter_map(|sim| File::open(sim.path()).ok())
         .find_map(|mut sim| {
@@ -81,7 +81,7 @@ pub fn get_subfolder_list(songs_folder: &Path) -> Vec<PathBuf> {
     output.push(songs_folder.to_path_buf());
     read_dir(songs_folder)
         .expect("Couldn't open folder")
-        .filter_map(|entry| entry.ok())
+        .filter_map(Result::ok)
         .filter(|dir_path| dir_path.path().is_dir())
         .for_each(|dir_entry| output.append(&mut get_subfolder_list(&dir_entry.path())));
     output

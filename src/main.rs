@@ -1,3 +1,12 @@
+#![warn(clippy::pedantic)]
+#![allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_precision_loss,
+    clippy::cast_sign_loss,
+    clippy::module_name_repetitions
+)]
+
 mod difficulty_calc;
 mod gamestate;
 mod music;
@@ -57,8 +66,6 @@ fn sprite_finder(
                 6 => Rect::new(0.0, 0.5, 1.0, 0.125),
                 8 => Rect::new(0.0, 0.625, 1.0, 0.125),
                 12 => Rect::new(0.0, 0.75, 1.0, 0.125),
-                16 => Rect::new(0.0, 0.875, 1.0, 0.125),
-                24 => Rect::new(0.0, 0.875, 1.0, 0.125),
                 _ => Rect::new(0.0, 0.875, 1.0, 0.125),
             }
         }
@@ -109,8 +116,7 @@ fn main() {
         info!("Found {} total songs", notedata_list.len());
         let mut notedata_list = notedata_list
             .into_iter()
-            .filter(|x| x.1.is_some())
-            .map(|(p, x)| (p, x.unwrap()))
+            .filter_map(|(p, x)| x.map(|x| (p, x)))
             .collect::<Vec<_>>();
         info!("Of which, {} loaded", notedata_list.len());
         info!(
@@ -140,7 +146,7 @@ fn main() {
 
     let noteskin = matches.value_of("NoteSkin").unwrap_or("Default");
 
-    let music_rate = if let Some(Ok(rate)) = matches.value_of("Rate").map(|x| x.parse()) {
+    let music_rate = if let Some(Ok(rate)) = matches.value_of("Rate").map(str::parse) {
         rate
     } else {
         1.0
@@ -150,7 +156,7 @@ fn main() {
         .add_resource_path("")
         .window_setup(ggez::conf::WindowSetup {
             title: "Rustmania".to_string(),
-            ..Default::default()
+            ..ggez::conf::WindowSetup::default()
         })
         .build()
         .expect("Failed to build context");

@@ -38,7 +38,7 @@ impl TimingInfo for GameplayInfo {}
 
 impl LayoutInfo for GameplayInfo {
     fn from_layout(time: i64, sprite: graphics::Rect, note: NoteType) -> Self {
-        GameplayInfo(time, sprite, note)
+        Self(time, sprite, note)
     }
 }
 
@@ -49,7 +49,7 @@ impl TimingInfo for CalcInfo {}
 
 impl LayoutInfo for CalcInfo {
     fn from_layout(time: i64, _sprite: graphics::Rect, note: NoteType) -> Self {
-        CalcInfo(time, note)
+        Self(time, note)
     }
 }
 
@@ -106,7 +106,7 @@ where
         self.notes.push(offset);
     }
     pub fn new() -> Self {
-        TimingColumn { notes: Vec::new() }
+        Self { notes: Vec::new() }
     }
 }
 
@@ -120,7 +120,7 @@ where
     {
         let metadata = &data.data;
         data.charts()
-            .map(|chart| TimingData::from_chartdata::<U>(chart, metadata, &sprite_finder, rate))
+            .map(|chart| Self::from_chartdata::<U>(chart, metadata, &sprite_finder, rate))
             .collect()
     }
     pub fn from_chartdata<U>(
@@ -140,7 +140,7 @@ where
             .collect();
         match bpms.get_mut(0) {
             Some(bpm) => bpm.3 = offset,
-            None => return TimingData::new(),
+            None => return Self::new(),
         };
         for i in 1..bpms.len() {
             bpms[i].3 = bpms[i - 1].3
@@ -180,7 +180,7 @@ where
                 }
             }
         }
-        TimingData { notes: output }
+        Self { notes: output }
     }
 }
 
@@ -189,7 +189,7 @@ where
     T: TimingInfo,
 {
     pub fn new() -> Self {
-        TimingData {
+        Self {
             notes: array_init::array_init(|_| TimingColumn::new()),
         }
     }
@@ -198,7 +198,7 @@ where
 //Unused functions here will be utilized when a results screen is added
 impl TimingData<Judgement> {
     pub fn _max_points(&self) -> f64 {
-        self.notes.iter().map(|x| x.max_points()).sum()
+        self.notes.iter().map(TimingColumn::max_points).sum()
     }
     pub fn _current_points(&self, ts: f64) -> f64 {
         self.notes.iter().map(|x| x.current_points(ts)).sum()

@@ -80,7 +80,6 @@ fn parse_main_block(contents: &str) -> ChartData {
 
 fn char_to_notetype(character: char) -> Option<NoteType> {
     match character {
-        '0' => None,
         '1' => Some(NoteType::Tap),
         '2' => Some(NoteType::Hold),
         '3' => Some(NoteType::HoldEnd),
@@ -113,8 +112,7 @@ fn parse_line(contents: &str) -> NoteRow {
             .chars()
             .enumerate()
             .map(|(index, character)| (char_to_notetype(character), index))
-            .filter(|(index, _)| index.is_some())
-            .map(|(index, character)| (index.unwrap(), character))
+            .filter_map(|(index, character)| index.map(|index| (index, character)))
             .collect(),
     }
 }

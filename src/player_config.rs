@@ -48,7 +48,7 @@ pub struct PlayerOptions {
 }
 
 impl NoteLayout {
-    pub fn new(skin: &NoteSkin, screen_height: i64, player_options: PlayerOptions) -> NoteLayout {
+    pub fn new(skin: &NoteSkin, screen_height: i64, player_options: PlayerOptions) -> Self {
         let NoteSkin {
             sprites,
             mut column_positions,
@@ -72,7 +72,7 @@ impl NoteLayout {
             scroll_speed *= -1.0;
         }
         let judgment_position = [judgment_position.0, judgment_position.1];
-        NoteLayout {
+        Self {
             sprites,
             column_positions,
             column_rotations,
@@ -99,7 +99,7 @@ impl NoteLayout {
         };
         let position = self.delta_to_position(position);
         let batch_index = match note_type {
-            NoteType::Tap => 2,
+            NoteType::Tap | NoteType::Roll | NoteType::Lift | NoteType::Fake => 2,
             NoteType::Hold => {
                 if let Some(GameplayInfo(end, _, _)) = column_data.get(1) {
                     batches[1].add(
@@ -122,10 +122,7 @@ impl NoteLayout {
                 };
                 2
             }
-            NoteType::Roll => 2,
             NoteType::Mine => 3,
-            NoteType::Lift => 2,
-            NoteType::Fake => 2,
             NoteType::HoldEnd => 0,
         };
         batches[batch_index].add(
@@ -297,12 +294,12 @@ impl NoteSkin {
             Ok(hold_head),
             Ok(mine),
         ) = (
-            image_from_subdirectory(context, path, arrows),
-            image_from_subdirectory(context, path, receptor),
-            image_from_subdirectory(context, path, judgment),
-            image_from_subdirectory(context, path, hold_body),
-            image_from_subdirectory(context, path, hold_head),
-            image_from_subdirectory(context, path, mine),
+            image_from_subdirectory(context, path, &arrows),
+            image_from_subdirectory(context, path, &receptor),
+            image_from_subdirectory(context, path, &judgment),
+            image_from_subdirectory(context, path, &hold_body),
+            image_from_subdirectory(context, path, &hold_head),
+            image_from_subdirectory(context, path, &mine),
         ) {
             hold_body.set_wrap(WrapMode::Tile, WrapMode::Tile);
             let sprites = NoteSprites {
@@ -313,7 +310,7 @@ impl NoteSkin {
                 hold_end: hold_head,
                 mine,
             };
-            Some(NoteSkin {
+            Some(Self {
                 sprites,
                 column_positions,
                 column_rotations,
@@ -327,7 +324,7 @@ impl NoteSkin {
 fn image_from_subdirectory(
     context: &mut ggez::Context,
     path: &str,
-    extension: String,
+    extension: &str,
 ) -> GameResult<graphics::Image> {
     graphics::Image::new(context, format!("/{}/{}", path, extension))
 }
@@ -340,7 +337,7 @@ impl PlayerOptions {
         is_reverse: bool,
         judgment_position: (f32, f32),
     ) -> Self {
-        PlayerOptions {
+        Self {
             notefield_position,
             receptor_height,
             scroll_speed,
