@@ -112,8 +112,7 @@ fn parse_line(contents: &str) -> NoteRow {
             .chars()
             .enumerate()
             .map(|(index, character)| (char_to_notetype(character), index))
-            .filter(|(index, _)| index.is_some())
-            .map(|(index, character)| (index.unwrap(), character))
+            .filter_map(|(index, character)| index.map(|index| (index, character)))
             .collect(),
     }
 }

@@ -107,8 +107,7 @@ fn main() {
         info!("Found {} total songs", notedata_list.len());
         let mut notedata_list = notedata_list
             .into_iter()
-            .filter(|x| x.1.is_some())
-            .map(|(p, x)| (p, x.unwrap()))
+            .filter_map(|(p, x)| x.map(|x| (p, x)))
             .collect::<Vec<_>>();
         info!("Of which, {} loaded", notedata_list.len());
         info!(

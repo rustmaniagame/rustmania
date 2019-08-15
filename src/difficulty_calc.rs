@@ -13,17 +13,21 @@ pub fn rate_chart(notes: &TimingData<CalcInfo>, target: f64) -> f64 {
                 .notes
                 .iter()
                 .enumerate()
-                .filter(|(_, CalcInfo(_, x))| *x == NoteType::Tap || *x == NoteType::Hold)
-                .map(|(index, CalcInfo(base_time, _))| {
-                    column
-                        .notes
-                        .iter()
-                        .take(index)
-                        .filter(|x| x.1 == NoteType::Tap || x.1 == NoteType::Hold)
-                        .map(|CalcInfo(other_time, _)| {
-                            1_000_000.0 / (base_time - other_time).pow(2) as f64
-                        })
-                        .sum::<f64>()
+                .filter_map(|(index, CalcInfo(base_time, note_type))| match *note_type {
+                    NoteType::Tap | NoteType::Hold => Some(
+                        column
+                            .notes
+                            .iter()
+                            .take(index)
+                            .filter_map(|CalcInfo(other_time, note_type)| match *note_type {
+                                NoteType::Tap | NoteType::Hold => {
+                                    Some(1_000_000.0 / (base_time - other_time).pow(2) as f64)
+                                }
+                                _ => None,
+                            })
+                            .sum::<f64>(),
+                    ),
+                    _ => None,
                 })
                 .collect::<Vec<_>>()
         })
