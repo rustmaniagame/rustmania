@@ -23,6 +23,7 @@ serde_yaml = "0.8.8"
 log = "0.4"
 fern = "0.5"
 array-init = "0.0.4"
+graphics = { path = "graphics" }
 
 [dependencies.ggez]
 git = "https://github.com/ggez/ggez.git"
@@ -31,3 +32,6 @@ git = "https://github.com/ggez/ggez.git"
 version = "0.2"
 default-features = false
 features = ["std", "bigint-std", "serde"]
+
+[workspace]
+members = ["graphics"]
