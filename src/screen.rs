@@ -68,9 +68,9 @@ impl<'a> EventHandler for Screen<'a> {
         _ctx: &mut Context,
         keycode: KeyCode,
         _keymod: KeyMods,
-        _repeat: bool,
+        repeat: bool,
     ) {
-        if _repeat {
+        if repeat {
             return;
         }
         let time_delta = self.start_time_to_milliseconds();

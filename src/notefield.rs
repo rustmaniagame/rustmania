@@ -135,7 +135,9 @@ impl<'a> Notefield<'a> {
         }
     }
     fn redraw_batch(&mut self) {
-        self.batches.iter_mut().for_each(|x| x.clear());
+        self.batches
+            .iter_mut()
+            .for_each(ggez::graphics::spritebatch::SpriteBatch::clear);
         for column_index in 0..4 {
             let (draw_start, draw_end) = self.column_info[column_index].on_screen;
             self.layout.add_column_of_notes(
@@ -175,7 +177,7 @@ impl<'a> Element for Notefield<'a> {
         let target_parameter =
             graphics::DrawParam::new().dest([0.0, -1.0 * (self.layout.delta_to_offset(time))]);
 
-        for batch in self.batches.iter() {
+        for batch in &self.batches {
             graphics::draw(ctx, batch, target_parameter)?;
         }
         if let Some(judgment) = self.last_judgement {

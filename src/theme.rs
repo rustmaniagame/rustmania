@@ -60,6 +60,7 @@ pub struct Resources {
     paths: Vec<PathBuf>,
     layouts: Vec<NoteLayout>,
     floats: Vec<f64>,
+    #[allow(clippy::used_underscore_binding)]
     _integers: Vec<i64>,
     strings: Vec<String>,
 }
@@ -70,15 +71,15 @@ impl Resources {
         paths: Vec<PathBuf>,
         layouts: Vec<NoteLayout>,
         floats: Vec<f64>,
-        _integers: Vec<i64>,
+        integers: Vec<i64>,
         strings: Vec<String>,
     ) -> Self {
-        Resources {
+        Self {
             notes,
             paths,
             layouts,
             floats,
-            _integers,
+            _integers: integers,
             strings,
         }
     }

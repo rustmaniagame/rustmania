@@ -61,7 +61,7 @@ pub enum NoteType {
 
 impl ChartMetadata {
     pub fn new() -> Self {
-        ChartMetadata {
+        Self {
             title: None,
             subtitle: None,
             artist: None,
@@ -90,7 +90,7 @@ impl ChartMetadata {
 
 impl ChartData {
     fn new(notes: Vec<Vec<(Rational32, NoteRow)>>) -> Self {
-        ChartData { notes }
+        Self { notes }
     }
     pub fn measures(&self) -> slice::Iter<Vec<(Rational32, NoteRow)>> {
         self.notes.iter()
@@ -106,7 +106,7 @@ impl NoteData {
             static ref RE: Regex = Regex::new(r"(?m)(//.*$)").unwrap();
         }
 
-        let mut chart = NoteData {
+        let mut chart = Self {
             notes: Vec::new(),
             data: ChartMetadata::new(),
         };
@@ -116,7 +116,7 @@ impl NoteData {
         let string_trimmed = RE.replace_all(&chart_string, "");
 
         let (_, tags) = sm_parser::break_to_tags(&string_trimmed).unwrap();
-        for (tag, contents) in tags.iter() {
+        for (tag, contents) in &tags {
             sm_parser::parse_tag(tag, contents, &mut chart);
         }
         Ok(chart)
