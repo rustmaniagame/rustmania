@@ -1,15 +1,55 @@
-use crate::screen::{Element, Screen};
+use crate::screen::{Element, Message, Screen};
+use ggez::{
+    event::{EventHandler, KeyCode, KeyMods},
+    Context, GameError,
+};
 
-pub struct _GameState<'a> {
-    _scene_stack: Vec<Screen<'a>>,
+pub struct GameState<'a> {
+    scene_stack: Vec<Screen<'a>>,
     _loose_elements: Vec<Box<dyn Element + 'a>>,
+    current_screen: usize,
 }
 
-impl<'a> _GameState<'a> {
+impl<'a> GameState<'a> {
     pub fn _new() -> Self {
-        _GameState {
-            _scene_stack: Vec::new(),
+        GameState {
+            scene_stack: Vec::new(),
             _loose_elements: Vec::new(),
+            current_screen: 0,
         }
+    }
+    pub fn from(scene_stack: Vec<Screen<'a>>) -> Self {
+        Self {
+            scene_stack,
+            _loose_elements: Vec::new(),
+            current_screen: 0,
+        }
+    }
+}
+
+impl<'a> EventHandler for GameState<'a> {
+    fn update(&mut self, _ctx: &mut Context) -> Result<(), GameError> {
+        Ok(())
+    }
+    fn draw(&mut self, ctx: &mut Context) -> Result<(), GameError> {
+        match self.scene_stack[self.current_screen].draw(ctx)? {
+            Message::Normal => {}
+            Message::Finish => {
+                self.current_screen += 1;
+            }
+        };
+        Ok(())
+    }
+    fn key_down_event(
+        &mut self,
+        ctx: &mut Context,
+        keycode: KeyCode,
+        keymod: KeyMods,
+        repeat: bool,
+    ) {
+        self.scene_stack[self.current_screen].key_down_event(ctx, keycode, keymod, repeat);
+    }
+    fn key_up_event(&mut self, ctx: &mut Context, keycode: KeyCode, keymod: KeyMods) {
+        self.scene_stack[self.current_screen].key_up_event(ctx, keycode, keymod);
     }
 }

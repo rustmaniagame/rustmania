@@ -3,7 +3,7 @@ extern crate ggez;
 use crate::{
     notedata::NoteType,
     player_config::NoteLayout,
-    screen::Element,
+    screen::{Element, Message},
     timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData},
     NOTEFIELD_SIZE,
 };
@@ -155,12 +155,17 @@ impl<'a> Notefield<'a> {
 }
 
 impl<'a> Element for Notefield<'a> {
-    fn run(&mut self, ctx: &mut ggez::Context, time: Option<i64>) -> Result<(), ggez::GameError> {
+    fn run(
+        &mut self,
+        ctx: &mut ggez::Context,
+        time: Option<i64>,
+    ) -> Result<Message, ggez::GameError> {
         self.layout.draw_receptors(ctx)?;
         let time = match time {
             Some(time) => time,
-            None => return Ok(()),
+            None => return Ok(Message::Normal),
         };
+        let mut completed = true;
         for column_index in 0..4 {
             if let Some(value) = self.column_info[column_index].active_hold {
                 let delta = value - time;
@@ -172,6 +177,8 @@ impl<'a> Element for Notefield<'a> {
                 self.handle_judgement(Judgement::Miss);
             };
             self.column_info[column_index].update_on_screen(self.layout, time, self.draw_distance);
+            completed &= self.column_info[column_index].next_to_hit
+                == self.column_info[column_index].notes.notes.len()
         }
         self.redraw_batch();
         let target_parameter =
@@ -198,10 +205,14 @@ impl<'a> Element for Notefield<'a> {
                     .sum::<f64>())
                 * 100.0
         );
-        Ok(())
+        Ok(if completed {
+            Message::Finish
+        } else {
+            Message::Normal
+        })
     }
-    fn start(&mut self, _time: Option<Instant>) -> Result<(), ggez::GameError> {
-        Ok(())
+    fn start(&mut self, _time: Option<Instant>) -> Result<Message, ggez::GameError> {
+        Ok(Message::Normal)
     }
     fn handle_event(&mut self, keycode: ggez::event::KeyCode, time: Option<i64>, key_down: bool) {
         let index = match keycode {

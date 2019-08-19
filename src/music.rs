@@ -1,4 +1,4 @@
-use crate::screen::Element;
+use crate::screen::{Element, Message};
 use cpal;
 use ggez::{event::KeyCode, Context, GameError};
 use lewton::inside_ogg::OggStreamReader;
@@ -143,16 +143,16 @@ where
 }
 
 impl Element for Music {
-    fn run(&mut self, _ctx: &mut Context, _time: Option<i64>) -> Result<(), GameError> {
-        Ok(())
+    fn run(&mut self, _ctx: &mut Context, _time: Option<i64>) -> Result<Message, GameError> {
+        Ok(Message::Normal)
     }
-    fn start(&mut self, time: Option<Instant>) -> Result<(), GameError> {
+    fn start(&mut self, time: Option<Instant>) -> Result<Message, GameError> {
         if let Some(time) = time {
             let rate = self.rate;
             let path = self.path.clone();
             thread::spawn(move || play_file(time, rate, path));
         }
-        Ok(())
+        Ok(Message::Normal)
     }
     fn handle_event(&mut self, _keycode: KeyCode, _time: Option<i64>, _key_down: bool) {}
 }

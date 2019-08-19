@@ -1,4 +1,4 @@
-use crate::screen::Element;
+use crate::screen::{Element, Message};
 use ggez::event::KeyCode;
 use ggez::graphics::DrawParam;
 use ggez::{graphics, Context, GameError};
@@ -23,12 +23,12 @@ impl TextBox {
 }
 
 impl Element for TextBox {
-    fn run(&mut self, context: &mut Context, _time: Option<i64>) -> Result<(), GameError> {
+    fn run(&mut self, context: &mut Context, _time: Option<i64>) -> Result<Message, GameError> {
         graphics::draw(context, &self.image, DrawParam::new().dest(self.position))?;
-        Ok(())
+        Ok(Message::Normal)
     }
-    fn start(&mut self, _time: Option<Instant>) -> Result<(), GameError> {
-        Ok(())
+    fn start(&mut self, _time: Option<Instant>) -> Result<Message, GameError> {
+        Ok(Message::Normal)
     }
     fn handle_event(&mut self, _key: KeyCode, _time: Option<i64>, _key_down: bool) {}
 }

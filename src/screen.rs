@@ -1,13 +1,13 @@
 use ggez::{
-    event::{EventHandler, KeyCode, KeyMods},
+    event::{KeyCode, KeyMods},
     graphics::{self, Color},
     Context, GameError,
 };
 use std::time::{Duration, Instant};
 
 pub trait Element: Send {
-    fn run(&mut self, context: &mut Context, time: Option<i64>) -> Result<(), GameError>;
-    fn start(&mut self, time: Option<Instant>) -> Result<(), GameError>;
+    fn run(&mut self, context: &mut Context, time: Option<i64>) -> Result<Message, GameError>;
+    fn start(&mut self, time: Option<Instant>) -> Result<Message, GameError>;
     fn handle_event(&mut self, key: KeyCode, time: Option<i64>, key_down: bool);
 }
 
@@ -15,6 +15,11 @@ pub struct Screen<'a> {
     start_time: Option<Instant>,
     elements: Vec<Box<dyn Element + 'a>>,
     _key_handler: (),
+}
+
+pub enum Message {
+    Normal,
+    Finish,
 }
 
 fn to_milliseconds(dur: Duration) -> i64 {
@@ -50,20 +55,23 @@ impl<'a> Screen<'a> {
     }
 }
 
-impl<'a> EventHandler for Screen<'a> {
-    fn update(&mut self, _ctx: &mut Context) -> Result<(), GameError> {
-        Ok(())
+impl<'a> Screen<'a> {
+    fn _update(&mut self, _ctx: &mut Context) -> Result<Message, GameError> {
+        Ok(Message::Normal)
     }
-    fn draw(&mut self, ctx: &mut Context) -> Result<(), GameError> {
+    pub fn draw(&mut self, ctx: &mut Context) -> Result<Message, GameError> {
         graphics::clear(ctx, Color::new(0.0, 0.0, 0.0, 1.0));
         let time_delta = self.start_time_to_milliseconds();
         for element in &mut self.elements {
-            element.run(ctx, time_delta)?;
+            match element.run(ctx, time_delta)? {
+                Message::Normal => {}
+                Message::Finish => return Ok(Message::Finish),
+            }
         }
         graphics::present(ctx)?;
-        Ok(())
+        Ok(Message::Normal)
     }
-    fn key_down_event(
+    pub fn key_down_event(
         &mut self,
         _ctx: &mut Context,
         keycode: KeyCode,
@@ -78,7 +86,7 @@ impl<'a> EventHandler for Screen<'a> {
             element.handle_event(keycode, time_delta, true);
         }
     }
-    fn key_up_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _keymod: KeyMods) {
+    pub fn key_up_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _keymod: KeyMods) {
         let time_delta = self.start_time_to_milliseconds();
         for element in &mut self.elements {
             element.handle_event(keycode, time_delta, false);
