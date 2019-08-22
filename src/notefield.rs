@@ -178,7 +178,8 @@ impl<'a> Element for Notefield<'a> {
             };
             self.column_info[column_index].update_on_screen(self.layout, time, self.draw_distance);
             completed &= self.column_info[column_index].next_to_hit
-                == self.column_info[column_index].notes.notes.len()
+                == self.column_info[column_index].notes.notes.len();
+            completed &= self.column_info[column_index].active_hold.is_none();
         }
         self.redraw_batch();
         let target_parameter =
