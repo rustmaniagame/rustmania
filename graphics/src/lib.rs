@@ -50,7 +50,6 @@ struct DeviceData {
     queue: QueueGroup<gfx_backend::Backend, Graphics>,
     swapchains: Vec<SwapchainData>,
     render_passes: Vec<<gfx_backend::Backend as Backend>::RenderPass>,
-    framebuffers: Vec<<gfx_backend::Backend as Backend>::Framebuffer>,
 }
 
 #[derive(Debug)]
@@ -63,6 +62,7 @@ struct SwapchainData {
     finished_semaphores: Option<Vec<<gfx_backend::Backend as Backend>::Semaphore>>,
     current_frame: usize,
     image_views: Option<Vec<<gfx_backend::Backend as Backend>::ImageView>>,
+    framebuffers: Vec<<gfx_backend::Backend as Backend>::Framebuffer>,
 }
 
 impl Default for WinitState {
@@ -107,30 +107,8 @@ impl Context {
         context.add_swapchain(0)?;
         context.add_semaphors(0, 0)?;
         context.devices[0].add_render_pass()?;
-
         context.devices[0].add_image_views(0)?;
-
-        context.devices[0].framebuffers = {
-            context.devices[0].swapchains[0]
-                .image_views.as_ref().unwrap()
-                .iter()
-                .map(|image_view| unsafe {
-                    context.devices[0]
-                        .device
-                        .create_framebuffer(
-                            &context.devices[0].render_passes[0],
-                            vec![image_view],
-                            Extent {
-                                width: context.devices[0].swapchains[0].config.extent.width as u32,
-                                height: context.devices[0].swapchains[0].config.extent.height
-                                    as u32,
-                                depth: 1,
-                            },
-                        )
-                        .map_err(|_| "Failed to create a framebuffer!")
-                })
-                .collect::<Result<Vec<_>, &str>>()?
-        };
+        context.devices[0].add_framebuffers(0, 0)?;
 
         context.command_pools.push(unsafe {
             context.devices[0]
@@ -203,7 +181,6 @@ impl Context {
             queue: _,
             swapchains: _,
             render_passes: _,
-            framebuffers: _,
         } = self
             .devices
             .get(device_index)
@@ -254,6 +231,7 @@ impl Context {
             None,
             None,
             None,
+            vec![],
         ));
         Ok(())
     }
@@ -284,7 +262,6 @@ impl DeviceData {
             queue,
             swapchains: vec![],
             render_passes: vec![],
-            framebuffers: vec![],
         }
     }
     //make this index safe
@@ -370,11 +347,15 @@ impl DeviceData {
             .collect::<Result<Vec<_>, &str>>()?);
         Ok(())
     }
+    fn add_framebuffers(&mut self, swapchain_index: usize, render_pass_index: usize) -> Result<(), &'static str> {
+        unsafe { self.swapchains[swapchain_index].create_framebuffers(&self.device, &self.render_passes[render_pass_index])? };
+        Ok(())
+    }
     fn create_command_buffers(
         &mut self,
         command_pool: &mut CommandPool<gfx_backend::Backend, Graphics>,
     ) -> Vec<CommandBuffer<gfx_backend::Backend, Graphics, MultiShot, Primary>> {
-        self.framebuffers
+        self.swapchains[0].framebuffers
             .iter()
             .map(|_| command_pool.acquire_command_buffer::<MultiShot>())
             .collect()
@@ -422,7 +403,7 @@ impl DeviceData {
             buffer.begin(false);
             buffer.begin_render_pass_inline(
                 &self.render_passes[0],
-                &self.framebuffers[i_usize],
+                &self.swapchains[0].framebuffers[i_usize],
                 self.swapchains[0].config.extent.to_extent().rect(),
                 clear_values.iter(),
             );
@@ -482,6 +463,7 @@ impl SwapchainData {
         available_semaphores: Option<Vec<<gfx_backend::Backend as Backend>::Semaphore>>,
         finished_semaphores: Option<Vec<<gfx_backend::Backend as Backend>::Semaphore>>,
         image_views: Option<Vec<<gfx_backend::Backend as Backend>::ImageView>>,
+        framebuffers: Vec<<gfx_backend::Backend as Backend>::Framebuffer>,
     ) -> Self {
         Self {
             swapchain,
@@ -491,7 +473,8 @@ impl SwapchainData {
             available_semaphores,
             finished_semaphores,
             current_frame: 0,
-            image_views
+            image_views,
+            framebuffers,
         }
     }
     unsafe fn get_current_image(&mut self) -> Result<(u32, usize), &'static str> {
@@ -504,6 +487,27 @@ impl SwapchainData {
             )
             .map_err(|_| "Couldn't acquire an image from the swapchain!")?;
         Ok((image_index, image_index as usize))
+    }
+    unsafe fn create_framebuffers(&mut self, device: &gfx_backend::Device, render_pass: &<gfx_backend::Backend as Backend>::RenderPass) -> Result<(), &'static str> {
+        self.framebuffers = self
+            .image_views.as_ref().ok_or("No image views on this swapchain")?
+            .iter()
+            .map(|image_view| {
+                device
+                    .create_framebuffer(
+                        render_pass,
+                        vec![image_view],
+                        Extent {
+                            width: self.config.extent.width as u32,
+                            height: self.config.extent.height
+                                as u32,
+                            depth: 1,
+                        },
+                    )
+                    .map_err(|_| "Failed to create a framebuffer!")
+            })
+            .collect::<Result<Vec<_>, &str>>()?;
+        Ok(())
     }
     fn advance_frame(&mut self) {
         self.current_frame = match &self.available_semaphores {
