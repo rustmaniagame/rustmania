@@ -39,7 +39,6 @@ pub struct Context {
     surface: <gfx_backend::Backend as Backend>::Surface,
     adapters: Vec<Adapter<gfx_backend::Backend>>,
     devices: Vec<DeviceData>,
-    image_views: Vec<<gfx_backend::Backend as Backend>::ImageView>,
     command_pools: Vec<CommandPool<gfx_backend::Backend, Graphics>>,
     command_buffers: Vec<CommandBuffer<gfx_backend::Backend, Graphics, MultiShot, Primary>>,
 }
@@ -63,6 +62,7 @@ struct SwapchainData {
     available_semaphores: Option<Vec<<gfx_backend::Backend as Backend>::Semaphore>>,
     finished_semaphores: Option<Vec<<gfx_backend::Backend as Backend>::Semaphore>>,
     current_frame: usize,
+    image_views: Option<Vec<<gfx_backend::Backend as Backend>::ImageView>>,
 }
 
 impl Default for WinitState {
@@ -108,30 +108,11 @@ impl Context {
         context.add_semaphors(0, 0)?;
         context.devices[0].add_render_pass()?;
 
-        context.image_views = context.devices[0].swapchains[0]
-            .backbuffer
-            .iter()
-            .map(|image| unsafe {
-                context.devices[0]
-                    .device
-                    .create_image_view(
-                        &image,
-                        ViewKind::D2,
-                        context.devices[0].swapchains[0].config.format,
-                        Swizzle::NO,
-                        SubresourceRange {
-                            aspects: Aspects::COLOR,
-                            levels: 0..1,
-                            layers: 0..1,
-                        },
-                    )
-                    .map_err(|_| "Couldn't create the image_view for the image!")
-            })
-            .collect::<Result<Vec<_>, &str>>()?;
+        context.devices[0].add_image_views(0)?;
 
         context.devices[0].framebuffers = {
-            context
-                .image_views
+            context.devices[0].swapchains[0]
+                .image_views.as_ref().unwrap()
                 .iter()
                 .map(|image_view| unsafe {
                     context.devices[0]
@@ -187,7 +168,6 @@ impl Context {
             surface,
             adapters,
             devices: vec![],
-            image_views: vec![],
             command_pools: vec![],
             command_buffers: vec![],
         }
@@ -270,6 +250,7 @@ impl Context {
             swapchain,
             backbuffer,
             swapchain_config,
+            None,
             None,
             None,
             None,
@@ -365,6 +346,28 @@ impl DeviceData {
                     .map_err(|_| "Couldn't create a render pass!")?
             }
         });
+        Ok(())
+    }
+    fn add_image_views(&mut self, swapchain_index: usize) -> Result<(), &'static str> {
+        self.swapchains[swapchain_index].image_views = Some(self.swapchains[swapchain_index]
+            .backbuffer
+            .iter()
+            .map(|image| unsafe {
+                self.device
+                    .create_image_view(
+                        &image,
+                        ViewKind::D2,
+                        self.swapchains[swapchain_index].config.format,
+                        Swizzle::NO,
+                        SubresourceRange {
+                            aspects: Aspects::COLOR,
+                            levels: 0..1,
+                            layers: 0..1,
+                        },
+                    )
+                    .map_err(|_| "Couldn't create the image_view for the image!")
+            })
+            .collect::<Result<Vec<_>, &str>>()?);
         Ok(())
     }
     fn create_command_buffers(
@@ -478,6 +481,7 @@ impl SwapchainData {
         fences: Option<Vec<<gfx_backend::Backend as Backend>::Fence>>,
         available_semaphores: Option<Vec<<gfx_backend::Backend as Backend>::Semaphore>>,
         finished_semaphores: Option<Vec<<gfx_backend::Backend as Backend>::Semaphore>>,
+        image_views: Option<Vec<<gfx_backend::Backend as Backend>::ImageView>>,
     ) -> Self {
         Self {
             swapchain,
@@ -487,6 +491,7 @@ impl SwapchainData {
             available_semaphores,
             finished_semaphores,
             current_frame: 0,
+            image_views
         }
     }
     unsafe fn get_current_image(&mut self) -> Result<(u32, usize), &'static str> {
