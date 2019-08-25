@@ -4,7 +4,7 @@ cache: cargo
 
 matrix:
   include:
-    - rust: nightly
+    - rust: stable
       env: LINT=true SKIP_TESTS=true
 
     - rust: nightly
@@ -35,11 +35,7 @@ install:
     fi
 
 before_script:
-  - if [ "$LINT" = "true" ]; then
-      rustup component add rustfmt;
-      rustup component add clippy || cargo install --force clippy \
-        --git https://github.com/rust-lang/rust-clippy;
-    fi
+  - if [ "$LINT" = "true" ]; then rustup component add rustfmt clippy; fi
 
 script:
   - if [ "$LINT" = "true" ]; then cargo fmt --all -- --check; fi
