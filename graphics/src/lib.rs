@@ -12,7 +12,7 @@ use arrayvec::ArrayVec;
 use core::mem::ManuallyDrop;
 
 use winit::{
-    dpi::LogicalSize, CreationError, Event, EventsLoop, Window, WindowBuilder, WindowEvent,
+    dpi::LogicalSize, CreationError, EventsLoop, Window, WindowBuilder,
 };
 
 use gfx_hal::{
@@ -245,7 +245,7 @@ impl Context {
             .ok_or("No device with this index")?
             .add_semaphors(swapchain_index)
     }
-    fn clear(&mut self, color: [f32; 4]) -> Result<(), &'static str> {
+    pub fn clear(&mut self, color: [f32; 4]) -> Result<(), &'static str> {
         self.devices[0].clear_frame(color, &mut self.command_buffers)
     }
 }
@@ -384,7 +384,7 @@ impl DeviceData {
         }
         Ok(())
     }
-    pub fn clear_frame(
+    fn clear_frame(
         &mut self,
         color: [f32; 4],
         command_buffers: &mut [CommandBuffer<gfx_backend::Backend, Graphics, MultiShot, Primary>],
@@ -514,27 +514,6 @@ impl SwapchainData {
             Some(semaphores) => (self.current_frame + 1) % semaphores.len(),
             None => 0,
         };
-    }
-}
-
-pub fn draw_red_window() {
-    let mut winit_state = WinitState::default();
-    let mut context = Context::build(&winit_state.window, "Rustmania").unwrap();
-    let (_frame_width, _frame_height) = winit_state
-        .window
-        .get_inner_size()
-        .map(|logical| logical.into())
-        .unwrap_or((0.0, 0.0));
-    let mut running = true;
-    while running {
-        winit_state.events_loop.poll_events(|event| match event {
-            Event::WindowEvent {
-                event: WindowEvent::CloseRequested,
-                ..
-            } => running = false,
-            _ => (),
-        });
-        context.clear([1.0, 0.0, 0.0, 1.0]).expect("fail");
     }
 }
 
