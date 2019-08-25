@@ -5,33 +5,20 @@ cache: cargo
 matrix:
   include:
     - rust: nightly
-      env: FORMAT=true SKIP_TESTS=true
-
-    - rust: nightly
       env: LINT=true SKIP_TESTS=true
 
     - rust: nightly
-      env: TARGET=x86_64-unknown-linux-gnu
 
     - rust: stable
-      env: TARGET=x86_64-unknown-linux-gnu
 
     - rust: nightly
       os: osx
-      env: TARGET=x86_64-apple-darwin
 
     - rust: stable
       os: osx
-      env: TARGET=x86_64-apple-darwin
-
-    - rust: nightly
-      env: TARGET=i686-unknown-linux-gnu
-
-    - rust: stable
-      env: TARGET=i686-unknown-linux-gnu
 
 before_install:
-  # Update APT for ggez dependencies on linux
+  # Update APT for sound library dependencies on linux
   - if [ "$TRAVIS_OS_NAME" = "linux" ] &&
        [ "$SKIP_TESTS" != "true" ] || [ "$LINT" = "true" ]; then
       travis_apt_get_update;
@@ -41,23 +28,26 @@ install:
   - if [ ! -z "$TARGET" ]; then
       rustup target add ${TARGET};
     fi
-  # Install ggez dependencies on linux
-  - if [ "$TARGET" = "i686-unknown-linux-gnu" ]; then
-      sudo apt-get install gcc-multilib libasound2-dev:i386 libudev-dev:i386;
-      export PKG_CONFIG_ALLOW_CROSS=1;
-    elif [ "$TRAVIS_OS_NAME" = "linux" ] &&
+  # Install sound library dependencies on linux
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] &&
          [ "$SKIP_TESTS" != "true" ] || [ "$LINT" = "true" ]; then
       sudo apt-get install libasound2-dev libudev-dev;
     fi
 
 before_script:
-  - if [ "$FORMAT" = "true" ]; then rustup component add rustfmt; fi
   - if [ "$LINT" = "true" ]; then
+      rustup component add rustfmt;
       rustup component add clippy || cargo install --force clippy \
         --git https://github.com/rust-lang/rust-clippy;
     fi
 
 script:
-  - if [ "$FORMAT" = "true" ]; then cargo fmt --all -- --check; fi
+  - if [ "$LINT" = "true" ]; then cargo fmt --all -- --check; fi
   - if [ "$LINT" = "true" ]; then cargo clippy -- -D clippy::pedantic; fi
-  - if [ "$SKIP_TESTS" != "true" ]; then cargo test --target ${TARGET}; fi
+  - if [ "$SKIP_TESTS" != "true" ]; then
+      if [ -z "$TARGET" ]; then
+        cargo test;
+      else
+        cargo test --target ${TARGET};
+      fi
+    fi
