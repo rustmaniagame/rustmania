@@ -219,7 +219,7 @@ fn main() {
     let results_screen = ScreenBuilder {
         elements: vec![ElementType::TEXT(1, 1, 2)],
     }
-        .build(&resources);
+    .build(&resources);
 
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
         let mut path = PathBuf::from(manifest_dir);

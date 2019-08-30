@@ -1,3 +1,5 @@
+#![warn(clippy::pedantic)]
+
 #[cfg(feature = "dx12")]
 use gfx_backend_dx12 as gfx_backend;
 #[cfg(feature = "metal")]
@@ -11,9 +13,7 @@ use arrayvec::ArrayVec;
 
 use core::mem::ManuallyDrop;
 
-use winit::{
-    dpi::LogicalSize, CreationError, EventsLoop, Window, WindowBuilder,
-};
+use winit::{dpi::LogicalSize, CreationError, EventsLoop, Window, WindowBuilder};
 
 use gfx_hal::{
     command::{ClearColor, ClearValue, CommandBuffer, MultiShot, Primary},
@@ -102,7 +102,7 @@ impl WinitState {
 
 impl Context {
     pub fn build(window: &Window, name: &str) -> Result<Self, &'static str> {
-        let mut context = Context::from_window(window, name);
+        let mut context = Self::from_window(window, name);
         context.add_device()?;
         context.add_swapchain(0)?;
         context.add_semaphors(0, 0)?;
@@ -178,9 +178,7 @@ impl Context {
         let DeviceData {
             adapter_index,
             device,
-            queue: _,
-            swapchains: _,
-            render_passes: _,
+            ..
         } = self
             .devices
             .get(device_index)
@@ -326,36 +324,46 @@ impl DeviceData {
         Ok(())
     }
     fn add_image_views(&mut self, swapchain_index: usize) -> Result<(), &'static str> {
-        self.swapchains[swapchain_index].image_views = Some(self.swapchains[swapchain_index]
-            .backbuffer
-            .iter()
-            .map(|image| unsafe {
-                self.device
-                    .create_image_view(
-                        &image,
-                        ViewKind::D2,
-                        self.swapchains[swapchain_index].config.format,
-                        Swizzle::NO,
-                        SubresourceRange {
-                            aspects: Aspects::COLOR,
-                            levels: 0..1,
-                            layers: 0..1,
-                        },
-                    )
-                    .map_err(|_| "Couldn't create the image_view for the image!")
-            })
-            .collect::<Result<Vec<_>, &str>>()?);
+        self.swapchains[swapchain_index].image_views = Some(
+            self.swapchains[swapchain_index]
+                .backbuffer
+                .iter()
+                .map(|image| unsafe {
+                    self.device
+                        .create_image_view(
+                            &image,
+                            ViewKind::D2,
+                            self.swapchains[swapchain_index].config.format,
+                            Swizzle::NO,
+                            SubresourceRange {
+                                aspects: Aspects::COLOR,
+                                levels: 0..1,
+                                layers: 0..1,
+                            },
+                        )
+                        .map_err(|_| "Couldn't create the image_view for the image!")
+                })
+                .collect::<Result<Vec<_>, &str>>()?,
+        );
         Ok(())
     }
-    fn add_framebuffers(&mut self, swapchain_index: usize, render_pass_index: usize) -> Result<(), &'static str> {
-        unsafe { self.swapchains[swapchain_index].create_framebuffers(&self.device, &self.render_passes[render_pass_index])? };
+    fn add_framebuffers(
+        &mut self,
+        swapchain_index: usize,
+        render_pass_index: usize,
+    ) -> Result<(), &'static str> {
+        unsafe {
+            self.swapchains[swapchain_index]
+                .create_framebuffers(&self.device, &self.render_passes[render_pass_index])?
+        };
         Ok(())
     }
     fn create_command_buffers(
         &mut self,
         command_pool: &mut CommandPool<gfx_backend::Backend, Graphics>,
     ) -> Vec<CommandBuffer<gfx_backend::Backend, Graphics, MultiShot, Primary>> {
-        self.swapchains[0].framebuffers
+        self.swapchains[0]
+            .framebuffers
             .iter()
             .map(|_| command_pool.acquire_command_buffer::<MultiShot>())
             .collect()
@@ -369,7 +377,7 @@ impl DeviceData {
                         .as_ref()
                         .ok_or("Could not get fence")?
                         [self.swapchains[swapchain_index].current_frame],
-                    core::u64::MAX,
+                    u64::max_value(),
                 )
                 .map_err(|_| "Failed to wait on the fence!")?;
             self.device
@@ -455,6 +463,7 @@ impl DeviceData {
 }
 
 impl SwapchainData {
+    #![allow(clippy::too_many_arguments)]
     fn from(
         swapchain: <gfx_backend::Backend as Backend>::Swapchain,
         backbuffer: Vec<<gfx_backend::Backend as Backend>::Image>,
@@ -481,16 +490,22 @@ impl SwapchainData {
         let (image_index, _check_if_you_need_this) = self
             .swapchain
             .acquire_image(
-                core::u64::MAX,
+                u64::max_value(),
                 Some(&self.available_semaphores.as_ref().ok_or("fail")?[self.current_frame]),
                 Some(&self.fences.as_ref().ok_or("")?[self.current_frame]),
             )
             .map_err(|_| "Couldn't acquire an image from the swapchain!")?;
         Ok((image_index, image_index as usize))
     }
-    unsafe fn create_framebuffers(&mut self, device: &gfx_backend::Device, render_pass: &<gfx_backend::Backend as Backend>::RenderPass) -> Result<(), &'static str> {
+    unsafe fn create_framebuffers(
+        &mut self,
+        device: &gfx_backend::Device,
+        render_pass: &<gfx_backend::Backend as Backend>::RenderPass,
+    ) -> Result<(), &'static str> {
         self.framebuffers = self
-            .image_views.as_ref().ok_or("No image views on this swapchain")?
+            .image_views
+            .as_ref()
+            .ok_or("No image views on this swapchain")?
             .iter()
             .map(|image_view| {
                 device
@@ -499,8 +514,7 @@ impl SwapchainData {
                         vec![image_view],
                         Extent {
                             width: self.config.extent.width as u32,
-                            height: self.config.extent.height
-                                as u32,
+                            height: self.config.extent.height as u32,
                             depth: 1,
                         },
                     )

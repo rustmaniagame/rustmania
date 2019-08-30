@@ -39,7 +39,7 @@ before_script:
 
 script:
   - if [ "$LINT" = "true" ]; then cargo fmt --all -- --check; fi
-  - if [ "$LINT" = "true" ]; then cargo clippy -- -D clippy::pedantic; fi
+  - if [ "$LINT" = "true" ]; then cargo clippy -- -D clippy::all -D clippy::pedantic; fi
   - if [ "$SKIP_TESTS" != "true" ]; then
       if [ -z "$TARGET" ]; then
         cargo test;

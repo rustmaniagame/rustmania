@@ -1,7 +1,5 @@
 use graphics::{Context, WinitState};
-use winit::{
-    Event, WindowEvent,
-};
+use winit::{Event, WindowEvent};
 
 fn main() {
     let mut winit_state = WinitState::default();
