@@ -58,7 +58,7 @@ impl<'a> ColumnInfo<'a> {
         let mut offset = match self.notes.notes.get(self.next_to_hit) {
             Some(x) => x.0 - time,
             None => return false,
-        };;
+        };
         while offset < -180 {
             let n = self.notes.notes.get(self.next_to_hit);
             let n = match n {
