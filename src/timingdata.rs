@@ -66,22 +66,22 @@ impl TimingInfo for Judgement {}
 impl Judgement {
     pub fn wife(self, ts: f64) -> f64 {
         match self {
-            Judgement::Hit(maxms) => {
+            Self::Hit(maxms) => {
                 let avedeviation = 95.0 * ts;
                 let mut y =
                     1.0 - 2.0_f64.powf(-(maxms * maxms) as f64 / (avedeviation * avedeviation));
                 y *= y;
                 (10.0) * (1.0 - y) - 8.0
             }
-            Judgement::Miss => -8.0,
-            Judgement::Hold(ok) => {
+            Self::Miss => -8.0,
+            Self::Hold(ok) => {
                 if ok {
                     0.0
                 } else {
                     -6.0
                 }
             }
-            Judgement::Mine(hit) => {
+            Self::Mine(hit) => {
                 if hit {
                     -8.0
                 } else {
@@ -92,8 +92,8 @@ impl Judgement {
     }
     fn max_points(self) -> f64 {
         match self {
-            Judgement::Hit(_) | Judgement::Miss => 2.0,
-            Judgement::Hold(_) | Judgement::Mine(_) => 0.0,
+            Self::Hit(_) | Self::Miss => 2.0,
+            Self::Hold(_) | Self::Mine(_) => 0.0,
         }
     }
 }

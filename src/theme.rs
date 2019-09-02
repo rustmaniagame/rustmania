@@ -34,16 +34,16 @@ pub enum ElementType {
 impl ElementType {
     pub fn build<'a>(&self, resources: &'a Resources) -> Box<dyn Element + 'a> {
         match self {
-            ElementType::MUSIC(rate, name) => Box::new(Music::new(
+            Self::MUSIC(rate, name) => Box::new(Music::new(
                 resources.floats[*rate],
                 resources.paths[*name].clone(),
             )),
-            ElementType::NOTEFIELD(layout, timing_data) => Box::new(Notefield::new(
+            Self::NOTEFIELD(layout, timing_data) => Box::new(Notefield::new(
                 &resources.layouts[*layout],
                 &resources.notes[*timing_data],
                 600,
             )),
-            ElementType::TEXT(contents, x_pos, y_pos) => Box::new(crate::text::TextBox::new(
+            Self::TEXT(contents, x_pos, y_pos) => Box::new(crate::text::TextBox::new(
                 resources.strings[*contents].clone(),
                 [
                     resources.floats[*x_pos] as f32,
