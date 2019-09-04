@@ -22,7 +22,7 @@ bincode = "1.1.2"
 serde_yaml = "0.8.9"
 log = "0.4"
 fern = "0.5"
-array-init = "0.0.4"
+array-init = "0.1.0"
 graphics = { path = "graphics" }
 
 [dependencies.ggez]
