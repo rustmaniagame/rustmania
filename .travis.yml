@@ -2,48 +2,49 @@ language: rust
 
 cache: cargo
 
+os: linux
+
 matrix:
   include:
-    - rust: stable
-      env: LINT=true SKIP_TESTS=true
+    - name: "Clippy & Rustfmt"
+      # gfx_device_gl 0.16.1 requires this nightly version
+      rust: nightly-2019-08-16
+      # Install sound library dependencies
+      addons: &addons
+        apt:
+            packages:
+            - libasound2-dev
+            - libudev-dev
+      env: CLIPPY_REV_SHA=348d398
+      before_script:
+        - rustup component add rustfmt-preview
+        - cargo install --git https://github.com/rust-lang/rust-clippy --rev $CLIPPY_REV_SHA --force clippy
+      script:
+        - cargo fmt --all -- --check
+        - cargo clippy -- -D warnings
 
-    - rust: nightly
+    - name: "Stable"
+      rust: stable
+      addons: *addons
 
-    - rust: stable
+    - name: "Nightly"
+      rust: nightly-2019-08-16
+      addons: *addons
 
-    - rust: nightly
+    - name: "Stable"
+      rust: stable
       os: osx
 
-    - rust: stable
+    - name: "Nightly"
+      rust: nightly-2019-08-16
       os: osx
-
-before_install:
-  # Update APT for sound library dependencies on linux
-  - if [ "$TRAVIS_OS_NAME" = "linux" ] &&
-       [ "$SKIP_TESTS" != "true" ] || [ "$LINT" = "true" ]; then
-      travis_apt_get_update;
-    fi
-
-install:
-  - if [ ! -z "$TARGET" ]; then
-      rustup target add ${TARGET};
-    fi
-  # Install sound library dependencies on linux
-  - if [ "$TRAVIS_OS_NAME" = "linux" ] &&
-         [ "$SKIP_TESTS" != "true" ] || [ "$LINT" = "true" ]; then
-      sudo apt-get install libasound2-dev libudev-dev;
-    fi
-
-before_script:
-  - if [ "$LINT" = "true" ]; then rustup component add rustfmt clippy; fi
 
 script:
-  - if [ "$LINT" = "true" ]; then cargo fmt --all -- --check; fi
-  - if [ "$LINT" = "true" ]; then cargo clippy -- -D clippy::all -D clippy::pedantic; fi
-  - if [ "$SKIP_TESTS" != "true" ]; then
-      if [ -z "$TARGET" ]; then
-        cargo test;
-      else
-        cargo test --target ${TARGET};
-      fi
-    fi
+  - cargo build --verbose
+  - cargo test --verbose
+
+branches:
+  only:
+    - staging # bors r+
+    - trying  # bors try
+    - master
