@@ -1,8 +1,8 @@
 # Rustmania
 
-| **`Travis CI`** | **`AppVeyor`** |
-|-----------------| ---------------|
-| [![Travis CI](https://img.shields.io/travis/rustmaniagame/rustmania/master?logo=travis)](https://travis-ci.org/rustmaniagame/rustmania) | [![AppVeyor](https://img.shields.io/appveyor/ci/RGates94/rustmania/master?logo=appveyor)](https://ci.appveyor.com/project/RGates94/rustmania/branch/master) |
+| | | | |
+|-|-|-|-|
+| [![Travis](https://badgen.net/travis/rustmaniagame/rustmania?icon=travis&label=Travis)](https://travis-ci.org/rustmaniagame/rustmania) | [![AppVeyor](https://badgen.net/appveyor/ci/rgates94/rustmania/master?icon=appveyor&label=AppVeyor)](https://ci.appveyor.com/project/RGates94/rustmania/branch/master) | [![Dependabot](https://badgen.net/dependabot/rustmaniagame/rustmania?icon=dependabot)](https://dependabot.com/) | [![License](https://badgen.net/badge/license/MIT/blue)](https://raw.githubusercontent.com/rustmaniagame/rustmania/master/LICENSE) |
 
 RustMania is a Vertically Scrolling Rhythm Game inspired by Stepmania and Etterna.
 
