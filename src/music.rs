@@ -1,5 +1,5 @@
 use crate::screen::{Element, Message};
-use cpal;
+use cpal::traits::{DeviceTrait, EventLoopTrait, HostTrait};
 use ggez::{event::KeyCode, Context, GameError};
 use lewton::inside_ogg::OggStreamReader;
 use minimp3::Decoder;
@@ -30,11 +30,18 @@ fn play_file<T>(start_time: Instant, rate: f64, path: T)
 where
     T: AsRef<Path>,
 {
-    let device = cpal::default_output_device().expect("Failed to get default output device");
-    let format = device
-        .default_output_format()
-        .expect("Failed to get default output format");
-    let event_loop = cpal::EventLoop::new();
+    let host = cpal::default_host();
+    let event_loop = host.event_loop();
+    let device = host
+        .default_output_device()
+        .expect("no output device available");
+    let mut supported_formats_range = device
+        .supported_output_formats()
+        .expect("error while querying formats");
+    let format = supported_formats_range
+        .next()
+        .expect("no supported format?!")
+        .with_max_sample_rate();
     let stream_id = event_loop.build_output_stream(&device, &format).unwrap();
 
     let sample_rate = f64::from(format.sample_rate.0);
@@ -46,9 +53,9 @@ where
             Some("ogg") => decode_ogg(path),
             Some("mp3") => decode_mp3(path),
             Some("wav") => decode_wav(path),
-            _ => panic!("Unrecognized file type"),
+            _ => panic!("unrecognized file type"),
         },
-        _ => panic!("No file type found"),
+        _ => panic!("no file type found"),
     };
 
     let mut sample_index = 0.0;
@@ -71,9 +78,16 @@ where
         }
     };
 
-    event_loop.play_stream(stream_id.clone());
+    event_loop
+        .play_stream(stream_id.clone())
+        .expect("failed to play_stream");
 
-    event_loop.run(move |_, data| {
+    event_loop.run(move |_, stream_result| {
+        let data = match stream_result {
+            Ok(data) => data,
+            Err(err) => panic!("an error occurred on stream {:?}: {}", stream_id, err),
+        };
+
         if let cpal::StreamData::Output {
             buffer: cpal::UnknownTypeOutputBuffer::F32(mut buffer),
         } = data
