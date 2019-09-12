@@ -1,7 +1,7 @@
 use super::*;
 use nom::{
-    complete, do_parse, double, many0, named, separated_list, tag, take_until,
-    take_until_and_consume, ws,
+    complete, do_parse, many0, named, number::complete::double, separated_list, tag, take,
+    take_until, ws,
 };
 
 //Needs: DISPLAYBPM, SELECTABLE, BGCHANGES, FGCHANGES
@@ -121,10 +121,12 @@ named!(pub break_to_tags<&str, Vec<(&str,&str)>>,many0!(complete!(read_sm_tag)))
 
 named!(read_sm_tag<&str,(&str,&str)>,
        do_parse!(
-           take_until_and_consume!("#") >>
-               name: take_until_and_consume!(":") >>
-               contents: take_until!(";") >>
-               (name, contents)
+           take_until!("#") >>
+           take!(1) >>
+           name: take_until!(":") >>
+           take!(1) >>
+            contents: take_until!(";") >>
+            (name, contents)
        ));
 
 named!( bpm_parse<&str,Vec<(f64,f64)>>, separated_list!(tag!(","), bpm_line));
