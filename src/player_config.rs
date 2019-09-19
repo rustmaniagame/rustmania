@@ -11,7 +11,7 @@ use serde_derive::Deserialize;
 use std::{fs::File, io::Read};
 use toml;
 
-#[derive(PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct NoteLayout {
     pub sprites: NoteSprites,
     pub column_positions: [i64; NOTEFIELD_SIZE],

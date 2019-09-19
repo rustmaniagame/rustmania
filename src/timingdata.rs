@@ -9,7 +9,7 @@ fn value(fraction: Rational32) -> f64 {
     f64::from(*fraction.numer()) / f64::from(*fraction.denom())
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct TimingData<T>
 where
     T: TimingInfo,
@@ -17,7 +17,7 @@ where
     pub notes: [TimingColumn<T>; NOTEFIELD_SIZE],
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct TimingColumn<T>
 where
     T: TimingInfo,
@@ -25,7 +25,7 @@ where
     pub notes: Vec<T>,
 }
 
-pub trait TimingInfo {}
+pub trait TimingInfo: Copy {}
 
 pub trait LayoutInfo {
     fn from_layout(time: i64, sprite: graphics::Rect, note: NoteType) -> Self;

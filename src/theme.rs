@@ -14,7 +14,7 @@ pub struct ScreenBuilder {
 }
 
 impl ScreenBuilder {
-    pub fn build<'a>(&self, resources: &'a Resources) -> Screen<'a> {
+    pub fn build(&self, resources: &Resources) -> Screen {
         let element_list = self
             .elements
             .iter()
@@ -32,15 +32,15 @@ pub enum ElementType {
 }
 
 impl ElementType {
-    pub fn build<'a>(&self, resources: &'a Resources) -> Box<dyn Element + 'a> {
+    pub fn build(&self, resources: &Resources) -> Box<dyn Element> {
         match self {
             Self::MUSIC(rate, name) => Box::new(Music::new(
                 resources.floats[*rate],
                 resources.paths[*name].clone(),
             )),
             Self::NOTEFIELD(layout, timing_data) => Box::new(Notefield::new(
-                &resources.layouts[*layout],
-                &resources.notes[*timing_data],
+                resources.layouts[*layout].clone(),
+                resources.notes[*timing_data].clone(),
                 600,
             )),
             Self::TEXT(contents, x_pos, y_pos) => Box::new(crate::text::TextBox::new(

@@ -11,9 +11,9 @@ pub trait Element: Send {
     fn handle_event(&mut self, key: KeyCode, time: Option<i64>, key_down: bool);
 }
 
-pub struct Screen<'a> {
+pub struct Screen {
     start_time: Option<Instant>,
-    elements: Vec<Box<dyn Element + 'a>>,
+    elements: Vec<Box<dyn Element>>,
     _key_handler: (),
 }
 
@@ -26,8 +26,8 @@ fn to_milliseconds(dur: Duration) -> i64 {
     dur.as_secs() as i64 * 1000 + i64::from(dur.subsec_millis())
 }
 
-impl<'a> Screen<'a> {
-    pub fn new(elements: Vec<Box<dyn Element + 'a>>) -> Self {
+impl Screen {
+    pub fn new(elements: Vec<Box<dyn Element>>) -> Self {
         Screen {
             start_time: Some(Instant::now() + Duration::from_secs(3)),
             elements,
@@ -55,7 +55,7 @@ impl<'a> Screen<'a> {
     }
 }
 
-impl<'a> Screen<'a> {
+impl Screen {
     fn _update(&mut self, _ctx: &mut Context) -> Result<Message, GameError> {
         Ok(Message::Normal)
     }

@@ -9,25 +9,25 @@ use ggez::graphics::{self, spritebatch::SpriteBatch};
 use std::time::Instant;
 
 #[derive(PartialEq, Debug)]
-pub struct Notefield<'a> {
-    layout: &'a NoteLayout,
-    column_info: [ColumnInfo<'a>; NOTEFIELD_SIZE],
+pub struct Notefield {
+    layout: NoteLayout,
+    column_info: [ColumnInfo; NOTEFIELD_SIZE],
     batches: Vec<SpriteBatch>,
     draw_distance: i64,
     last_judgement: Option<Judgement>,
 }
 
 #[derive(PartialEq, Debug)]
-struct ColumnInfo<'a> {
+struct ColumnInfo {
     on_screen: (usize, usize),
     next_to_hit: usize,
     active_hold: Option<i64>,
-    notes: &'a TimingColumn<GameplayInfo>,
+    notes: TimingColumn<GameplayInfo>,
     judgement_list: TimingColumn<Judgement>,
 }
 
-impl<'a> ColumnInfo<'a> {
-    fn from_column(notes: &'a TimingColumn<GameplayInfo>) -> Self {
+impl ColumnInfo {
+    fn from_column(notes: TimingColumn<GameplayInfo>) -> Self {
         ColumnInfo {
             on_screen: (0, 0),
             next_to_hit: 0,
@@ -111,23 +111,22 @@ impl<'a> ColumnInfo<'a> {
     }
 }
 
-impl<'a> Notefield<'a> {
-    pub fn new(
-        layout: &'a NoteLayout,
-        notes: &'a TimingData<GameplayInfo>,
-        draw_distance: i64,
-    ) -> Self {
-        Notefield {
+impl Notefield {
+    pub fn new(layout: NoteLayout, notes: TimingData<GameplayInfo>, draw_distance: i64) -> Self {
+        let batches = vec![
+            SpriteBatch::new(layout.sprites.hold_end.clone()),
+            SpriteBatch::new(layout.sprites.hold_body.clone()),
+            SpriteBatch::new(layout.sprites.arrows.clone()),
+            SpriteBatch::new(layout.sprites.mine.clone()),
+        ];
+        Self {
             layout,
-            column_info: array_init::array_init(|i| ColumnInfo::from_column(&notes.notes[i])),
+            column_info: array_init::array_init(|i| {
+                ColumnInfo::from_column(notes.notes[i].clone())
+            }),
             //Using a Vec of SpriteBatch should be temporary, optimally we want to reference these
             // by a NoteType key, but this would require ggez refactoring.
-            batches: vec![
-                SpriteBatch::new(layout.sprites.hold_end.clone()),
-                SpriteBatch::new(layout.sprites.hold_body.clone()),
-                SpriteBatch::new(layout.sprites.arrows.clone()),
-                SpriteBatch::new(layout.sprites.mine.clone()),
-            ],
+            batches,
             draw_distance,
             last_judgement: None,
         }
@@ -152,7 +151,7 @@ impl<'a> Notefield<'a> {
     }
 }
 
-impl<'a> Element for Notefield<'a> {
+impl Element for Notefield {
     fn run(
         &mut self,
         ctx: &mut ggez::Context,
@@ -174,7 +173,7 @@ impl<'a> Element for Notefield<'a> {
             if self.column_info[column_index].update_misses(time) {
                 self.handle_judgement(Judgement::Miss);
             };
-            self.column_info[column_index].update_on_screen(self.layout, time, self.draw_distance);
+            self.column_info[column_index].update_on_screen(&self.layout, time, self.draw_distance);
             completed &= self.column_info[column_index].next_to_hit
                 == self.column_info[column_index].notes.notes.len();
             completed &= self.column_info[column_index].active_hold.is_none();

@@ -4,13 +4,13 @@ use ggez::{
     Context, GameError,
 };
 
-pub struct GameState<'a> {
-    scene_stack: Vec<Screen<'a>>,
-    _loose_elements: Vec<Box<dyn Element + 'a>>,
+pub struct GameState {
+    scene_stack: Vec<Screen>,
+    _loose_elements: Vec<Box<dyn Element>>,
     current_screen: usize,
 }
 
-impl<'a> GameState<'a> {
+impl GameState {
     pub fn _new() -> Self {
         GameState {
             scene_stack: Vec::new(),
@@ -18,7 +18,7 @@ impl<'a> GameState<'a> {
             current_screen: 0,
         }
     }
-    pub fn from(scene_stack: Vec<Screen<'a>>) -> Self {
+    pub fn from(scene_stack: Vec<Screen>) -> Self {
         Self {
             scene_stack,
             _loose_elements: Vec::new(),
@@ -27,7 +27,7 @@ impl<'a> GameState<'a> {
     }
 }
 
-impl<'a> EventHandler for GameState<'a> {
+impl EventHandler for GameState {
     fn update(&mut self, _ctx: &mut Context) -> Result<(), GameError> {
         Ok(())
     }
