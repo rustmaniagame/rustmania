@@ -1,4 +1,4 @@
-use crate::screen::{Element, Message, Screen};
+use crate::screen::{Message, Screen};
 use ggez::{
     event::{EventHandler, KeyCode, KeyMods},
     Context, GameError,
@@ -6,7 +6,6 @@ use ggez::{
 
 pub struct GameState {
     scene_stack: Vec<Screen>,
-    _loose_elements: Vec<Box<dyn Element>>,
     current_screen: usize,
 }
 
@@ -14,14 +13,12 @@ impl GameState {
     pub fn _new() -> Self {
         GameState {
             scene_stack: Vec::new(),
-            _loose_elements: Vec::new(),
             current_screen: 0,
         }
     }
     pub fn from(scene_stack: Vec<Screen>) -> Self {
         Self {
             scene_stack,
-            _loose_elements: Vec::new(),
             current_screen: 0,
         }
     }
