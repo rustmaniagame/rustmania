@@ -40,7 +40,7 @@ impl ElementType {
             )),
             Self::NOTEFIELD(layout, timing_data) => Box::new(Notefield::new(
                 resources.layouts[*layout].clone(),
-                resources.notes[*timing_data].clone(),
+                &resources.notes[*timing_data],
                 600,
             )),
             Self::TEXT(contents, x_pos, y_pos) => Box::new(crate::text::TextBox::new(
@@ -66,6 +66,16 @@ pub struct Resources {
 }
 
 impl Resources {
+    pub fn _new() -> Self {
+        Self {
+            notes: vec![],
+            paths: vec![],
+            layouts: vec![],
+            floats: vec![],
+            _integers: vec![],
+            strings: vec![],
+        }
+    }
     pub fn from(
         notes: Vec<TimingData<GameplayInfo>>,
         paths: Vec<PathBuf>,

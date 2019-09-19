@@ -28,7 +28,7 @@ fn to_milliseconds(dur: Duration) -> i64 {
 
 impl Screen {
     pub fn new(elements: Vec<Box<dyn Element>>) -> Self {
-        Screen {
+        Self {
             start_time: Some(Instant::now() + Duration::from_secs(3)),
             elements,
             _key_handler: (),

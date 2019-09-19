@@ -28,7 +28,7 @@ struct ColumnInfo {
 
 impl ColumnInfo {
     fn from_column(notes: TimingColumn<GameplayInfo>) -> Self {
-        ColumnInfo {
+        Self {
             on_screen: (0, 0),
             next_to_hit: 0,
             active_hold: None,
@@ -112,7 +112,7 @@ impl ColumnInfo {
 }
 
 impl Notefield {
-    pub fn new(layout: NoteLayout, notes: TimingData<GameplayInfo>, draw_distance: i64) -> Self {
+    pub fn new(layout: NoteLayout, notes: &TimingData<GameplayInfo>, draw_distance: i64) -> Self {
         let batches = vec![
             SpriteBatch::new(layout.sprites.hold_end.clone()),
             SpriteBatch::new(layout.sprites.hold_body.clone()),

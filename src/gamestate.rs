@@ -1,25 +1,34 @@
-use crate::screen::{Message, Screen};
+use crate::{
+    screen::{Message, Screen},
+    theme::{Resources, ScreenBuilder},
+};
 use ggez::{
     event::{EventHandler, KeyCode, KeyMods},
     Context, GameError,
 };
 
 pub struct GameState {
-    scene_stack: Vec<Screen>,
-    current_screen: usize,
+    scene_stack: Vec<ScreenBuilder>,
+    current_screen: Option<Screen>,
+    screen_index: usize,
+    resources: Resources,
 }
 
 impl GameState {
     pub fn _new() -> Self {
-        GameState {
+        Self {
             scene_stack: Vec::new(),
-            current_screen: 0,
+            current_screen: None,
+            screen_index: 0,
+            resources: Resources::_new(),
         }
     }
-    pub fn from(scene_stack: Vec<Screen>) -> Self {
+    pub fn from(scene_stack: Vec<ScreenBuilder>, resources: Resources) -> Self {
         Self {
             scene_stack,
-            current_screen: 0,
+            current_screen: None,
+            screen_index: 0,
+            resources,
         }
     }
 }
@@ -29,12 +38,23 @@ impl EventHandler for GameState {
         Ok(())
     }
     fn draw(&mut self, ctx: &mut Context) -> Result<(), GameError> {
-        match self.scene_stack[self.current_screen].draw(ctx)? {
-            Message::Normal => {}
-            Message::Finish => {
-                self.current_screen += 1;
+        if let Some(ref mut screen) = self.current_screen {
+            match screen.draw(ctx)? {
+                Message::Normal => {}
+                Message::Finish => {
+                    self.screen_index += 1;
+                    self.current_screen = None;
+                }
+            };
+        } else {
+            self.current_screen = self
+                .scene_stack
+                .get(self.screen_index)
+                .map(|screen| screen.build(&self.resources));
+            if let Some(ref mut screen) = self.current_screen {
+                screen.start()?;
             }
-        };
+        }
         Ok(())
     }
     fn key_down_event(
@@ -44,9 +64,13 @@ impl EventHandler for GameState {
         keymod: KeyMods,
         repeat: bool,
     ) {
-        self.scene_stack[self.current_screen].key_down_event(ctx, keycode, keymod, repeat);
+        if let Some(ref mut screen) = self.current_screen {
+            screen.key_down_event(ctx, keycode, keymod, repeat)
+        };
     }
     fn key_up_event(&mut self, ctx: &mut Context, keycode: KeyCode, keymod: KeyMods) {
-        self.scene_stack[self.current_screen].key_up_event(ctx, keycode, keymod);
+        if let Some(ref mut screen) = self.current_screen {
+            screen.key_up_event(ctx, keycode, keymod)
+        };
     }
 }

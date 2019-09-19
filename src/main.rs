@@ -190,7 +190,7 @@ fn main() {
         ],
     );
 
-    let screen_to_build = match matches.value_of("Theme") {
+    let gameplay_screen = match matches.value_of("Theme") {
         Some(value) => {
             // This currently is not getting the music rate so the theme will have incorrect behavior
             // if the rate specified in the theme is different than the rate passed in through the CLI
@@ -215,12 +215,9 @@ fn main() {
         },
     };
 
-    let mut gameplay_screen = screen_to_build.build(&resources);
-
     let results_screen = ScreenBuilder {
         elements: vec![ElementType::TEXT(1, 1, 2)],
-    }
-    .build(&resources);
+    };
 
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
         let mut path = PathBuf::from(manifest_dir);
@@ -228,10 +225,7 @@ fn main() {
         mount(context, &path, true);
     }
 
-    if let Err(e) = gameplay_screen.start() {
-        debug!("Error starting screen: {}", e)
-    }
-    let mut gamestate = GameState::from(vec![gameplay_screen, results_screen]);
+    let mut gamestate = GameState::from(vec![gameplay_screen, results_screen], resources);
     if let Err(e) = ggez::event::run(context, events_loop, &mut gamestate) {
         debug!("Error: {}", e);
     } else {
