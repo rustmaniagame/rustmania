@@ -135,7 +135,7 @@ impl Notefield {
         self.batches
             .iter_mut()
             .for_each(ggez::graphics::spritebatch::SpriteBatch::clear);
-        for column_index in 0..4 {
+        for column_index in 0..NOTEFIELD_SIZE {
             let (draw_start, draw_end) = self.column_info[column_index].on_screen;
             self.layout.add_column_of_notes(
                 &self.column_info[column_index].notes.notes[draw_start..draw_end],
@@ -163,7 +163,7 @@ impl Element for Notefield {
             None => return Ok(Message::Normal),
         };
         let mut completed = true;
-        for column_index in 0..4 {
+        for column_index in 0..NOTEFIELD_SIZE {
             if let Some(value) = self.column_info[column_index].active_hold {
                 let delta = value - time;
                 if delta > 0 {
