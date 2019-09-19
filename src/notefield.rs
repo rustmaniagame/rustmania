@@ -1,5 +1,3 @@
-extern crate ggez;
-
 use crate::{
     notedata::NoteType,
     player_config::NoteLayout,
