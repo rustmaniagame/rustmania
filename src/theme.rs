@@ -1,3 +1,4 @@
+use crate::timingdata::{Judgement, TimingColumn};
 use crate::{
     music::Music,
     notefield::Notefield,
@@ -18,7 +19,7 @@ impl ScreenBuilder {
         let element_list = self
             .elements
             .iter()
-            .map(|element| element.build(resources))
+            .map(|element| (element.build(resources), 0))
             .collect();
         Screen::new(element_list)
     }
@@ -55,15 +56,29 @@ impl ElementType {
     }
 }
 
+pub enum Resource {
+    _Notes(TimingData<GameplayInfo>),
+    _Path(PathBuf),
+    _Layout(Box<NoteLayout>),
+    _Float(f64),
+    _Integer(i64),
+    String(String),
+    Replay(Vec<TimingColumn<Judgement>>),
+    _Multiple(Vec<Resource>),
+}
+
 pub struct Resources {
     notes: Vec<TimingData<GameplayInfo>>,
     paths: Vec<PathBuf>,
     layouts: Vec<NoteLayout>,
     floats: Vec<f64>,
     #[allow(clippy::used_underscore_binding)]
-    _integers: Vec<i64>,
+    integers: Vec<i64>,
     strings: Vec<String>,
+    replays: Vec<Vec<TimingColumn<Judgement>>>,
 }
+
+pub type ResourceCallback = fn(Option<Resource>) -> Option<Resource>;
 
 impl Resources {
     pub fn _new() -> Self {
@@ -72,8 +87,9 @@ impl Resources {
             paths: vec![],
             layouts: vec![],
             floats: vec![],
-            _integers: vec![],
+            integers: vec![],
             strings: vec![],
+            replays: vec![],
         }
     }
     pub fn from(
@@ -83,14 +99,28 @@ impl Resources {
         floats: Vec<f64>,
         integers: Vec<i64>,
         strings: Vec<String>,
+        replays: Vec<Vec<TimingColumn<Judgement>>>,
     ) -> Self {
         Self {
             notes,
             paths,
             layouts,
             floats,
-            _integers: integers,
+            integers,
             strings,
+            replays,
+        }
+    }
+    pub fn push(&mut self, resource: Resource) {
+        match resource {
+            Resource::_Notes(notes) => self.notes.push(notes),
+            Resource::_Path(path) => self.paths.push(path),
+            Resource::_Layout(layout) => self.layouts.push(*layout),
+            Resource::_Float(f) => self.floats.push(f),
+            Resource::_Integer(int) => self.integers.push(int),
+            Resource::String(string) => self.strings.push(string),
+            Resource::Replay(replay) => self.replays.push(replay),
+            Resource::_Multiple(list) => list.into_iter().for_each(|resource| self.push(resource)),
         }
     }
 }

@@ -1,4 +1,7 @@
-use crate::screen::{Element, Message};
+use crate::{
+    screen::{Element, Message},
+    theme::Resource,
+};
 use cpal::traits::{DeviceTrait, EventLoopTrait, HostTrait};
 use ggez::{event::KeyCode, Context, GameError};
 use lewton::inside_ogg::OggStreamReader;
@@ -167,6 +170,9 @@ impl Element for Music {
             thread::spawn(move || play_file(time, rate, path));
         }
         Ok(Message::Normal)
+    }
+    fn finish(&mut self) -> Option<Resource> {
+        None
     }
     fn handle_event(&mut self, _keycode: KeyCode, _time: Option<i64>, _key_down: bool) {}
 }

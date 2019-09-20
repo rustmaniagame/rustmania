@@ -75,6 +75,26 @@ fn sprite_finder(
     }
 }
 
+mod callbacks {
+    use crate::theme::Resource;
+    use crate::timingdata::TimingColumn;
+
+    pub fn map_to_string(resource: Option<Resource>) -> Option<Resource> {
+        resource.map(|resource| match resource {
+            Resource::Replay(replay) => Resource::String(
+                (replay
+                    .iter()
+                    .map(|column| column.current_points(1.0))
+                    .sum::<f64>()
+                    / replay.iter().map(TimingColumn::max_points).sum::<f64>()
+                    * 100.0)
+                    .to_string(),
+            ),
+            _ => Resource::String("".to_owned()),
+        })
+    }
+}
+
 fn main() {
     let mut rng = rand::thread_rng();
     let matches = App::new("Rustmania")
@@ -188,6 +208,7 @@ fn main() {
             notedata.data.title.expect("Needs a title").clone(),
             String::from("Results screen placeholder text"),
         ],
+        vec![],
     );
 
     let gameplay_screen = match matches.value_of("Theme") {
@@ -216,7 +237,7 @@ fn main() {
     };
 
     let results_screen = ScreenBuilder {
-        elements: vec![ElementType::TEXT(1, 1, 2)],
+        elements: vec![ElementType::TEXT(2, 1, 2)],
     };
 
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
@@ -225,7 +246,11 @@ fn main() {
         mount(context, &path, true);
     }
 
-    let mut gamestate = GameState::from(vec![gameplay_screen, results_screen], resources);
+    let mut gamestate = GameState::from(
+        vec![gameplay_screen, results_screen],
+        resources,
+        vec![callbacks::map_to_string],
+    );
     if let Err(e) = ggez::event::run(context, events_loop, &mut gamestate) {
         debug!("Error: {}", e);
     } else {

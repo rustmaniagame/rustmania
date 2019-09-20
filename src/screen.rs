@@ -1,3 +1,4 @@
+use crate::theme::{Resource, ResourceCallback, Resources};
 use ggez::{
     event::{KeyCode, KeyMods},
     graphics::{self, Color},
@@ -8,12 +9,13 @@ use std::time::{Duration, Instant};
 pub trait Element: Send {
     fn run(&mut self, context: &mut Context, time: Option<i64>) -> Result<Message, GameError>;
     fn start(&mut self, time: Option<Instant>) -> Result<Message, GameError>;
+    fn finish(&mut self) -> Option<Resource>;
     fn handle_event(&mut self, key: KeyCode, time: Option<i64>, key_down: bool);
 }
 
 pub struct Screen {
     start_time: Option<Instant>,
-    elements: Vec<Box<dyn Element>>,
+    elements: Vec<(Box<dyn Element>, usize)>,
     _key_handler: (),
 }
 
@@ -27,7 +29,7 @@ fn to_milliseconds(dur: Duration) -> i64 {
 }
 
 impl Screen {
-    pub fn new(elements: Vec<Box<dyn Element>>) -> Self {
+    pub fn new(elements: Vec<(Box<dyn Element>, usize)>) -> Self {
         Self {
             start_time: Some(Instant::now() + Duration::from_secs(3)),
             elements,
@@ -35,10 +37,17 @@ impl Screen {
         }
     }
     pub fn start(&mut self) -> Result<(), GameError> {
-        for element in &mut self.elements {
+        for (element, _callback_index) in &mut self.elements {
             element.start(self.start_time)?;
         }
         Ok(())
+    }
+    pub fn finish(&mut self, resources: &mut Resources, callbacks: &[ResourceCallback]) {
+        for (elem, callback_index) in &mut self.elements {
+            if let Some(resource) = callbacks[*callback_index](elem.finish()) {
+                resources.push(resource);
+            }
+        }
     }
     fn start_time_to_milliseconds(&self) -> Option<i64> {
         match self.start_time {
@@ -62,7 +71,7 @@ impl Screen {
     pub fn draw(&mut self, ctx: &mut Context) -> Result<Message, GameError> {
         graphics::clear(ctx, Color::new(0.0, 0.0, 0.0, 1.0));
         let time_delta = self.start_time_to_milliseconds();
-        for element in &mut self.elements {
+        for (element, _callback_index) in &mut self.elements {
             match element.run(ctx, time_delta)? {
                 Message::Normal => {}
                 Message::Finish => return Ok(Message::Finish),
@@ -82,13 +91,13 @@ impl Screen {
             return;
         }
         let time_delta = self.start_time_to_milliseconds();
-        for element in &mut self.elements {
+        for (element, _callback_index) in &mut self.elements {
             element.handle_event(keycode, time_delta, true);
         }
     }
     pub fn key_up_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _keymod: KeyMods) {
         let time_delta = self.start_time_to_milliseconds();
-        for element in &mut self.elements {
+        for (element, _callback_index) in &mut self.elements {
             element.handle_event(keycode, time_delta, false);
         }
     }

@@ -2,6 +2,7 @@ use crate::{
     notedata::NoteType,
     player_config::NoteLayout,
     screen::{Element, Message},
+    theme::Resource,
     timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData},
     NOTEFIELD_SIZE,
 };
@@ -211,6 +212,14 @@ impl Element for Notefield {
     }
     fn start(&mut self, _time: Option<Instant>) -> Result<Message, ggez::GameError> {
         Ok(Message::Normal)
+    }
+    fn finish(&mut self) -> Option<Resource> {
+        Some(Resource::Replay(
+            self.column_info
+                .iter()
+                .map(|x| x.judgement_list.clone())
+                .collect(),
+        ))
     }
     fn handle_event(&mut self, keycode: ggez::event::KeyCode, time: Option<i64>, key_down: bool) {
         let index = match keycode {

@@ -90,7 +90,7 @@ impl Judgement {
             }
         }
     }
-    fn max_points(self) -> f64 {
+    pub fn max_points(self) -> f64 {
         match self {
             Self::Hit(_) | Self::Miss => 2.0,
             Self::Hold(_) | Self::Mine(_) => 0.0,

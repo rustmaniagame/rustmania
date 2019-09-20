@@ -1,6 +1,6 @@
 use crate::{
     screen::{Message, Screen},
-    theme::{Resources, ScreenBuilder},
+    theme::{Resource, ResourceCallback, Resources, ScreenBuilder},
 };
 use ggez::{
     event::{EventHandler, KeyCode, KeyMods},
@@ -12,6 +12,7 @@ pub struct GameState {
     current_screen: Option<Screen>,
     screen_index: usize,
     resources: Resources,
+    callbacks: Vec<fn(Option<Resource>) -> Option<Resource>>,
 }
 
 impl GameState {
@@ -21,14 +22,20 @@ impl GameState {
             current_screen: None,
             screen_index: 0,
             resources: Resources::_new(),
+            callbacks: vec![],
         }
     }
-    pub fn from(scene_stack: Vec<ScreenBuilder>, resources: Resources) -> Self {
+    pub fn from(
+        scene_stack: Vec<ScreenBuilder>,
+        resources: Resources,
+        callbacks: Vec<ResourceCallback>,
+    ) -> Self {
         Self {
             scene_stack,
             current_screen: None,
             screen_index: 0,
             resources,
+            callbacks,
         }
     }
 }
@@ -43,6 +50,7 @@ impl EventHandler for GameState {
                 Message::Normal => {}
                 Message::Finish => {
                     self.screen_index += 1;
+                    screen.finish(&mut self.resources, &self.callbacks);
                     self.current_screen = None;
                 }
             };
