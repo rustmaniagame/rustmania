@@ -1,7 +1,4 @@
-use crate::{
-    screen::{Message, Screen},
-    theme::{Resource, ResourceCallback, Resources, ScreenBuilder},
-};
+use crate::screen::{Message, ResourceCallback, Resources, Screen, ScreenBuilder};
 use ggez::{
     event::{EventHandler, KeyCode, KeyMods},
     Context, GameError,
@@ -12,7 +9,7 @@ pub struct GameState {
     current_screen: Option<Screen>,
     screen_index: usize,
     resources: Resources,
-    callbacks: Vec<fn(Option<Resource>) -> Option<Resource>>,
+    callbacks: Vec<ResourceCallback>,
 }
 
 impl GameState {

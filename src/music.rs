@@ -1,7 +1,4 @@
-use crate::{
-    screen::{Element, Message},
-    theme::Resource,
-};
+use crate::screen::{Element, Message, Resource};
 use cpal::traits::{DeviceTrait, EventLoopTrait, HostTrait};
 use ggez::{event::KeyCode, Context, GameError};
 use lewton::inside_ogg::OggStreamReader;

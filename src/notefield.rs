@@ -1,8 +1,7 @@
 use crate::{
     notedata::NoteType,
     player_config::NoteLayout,
-    screen::{Element, Message},
-    theme::Resource,
+    screen::{Element, Message, Resource},
     timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData},
     NOTEFIELD_SIZE,
 };

@@ -17,14 +17,13 @@ mod player_config;
 mod screen;
 mod song_loader;
 mod text;
-mod theme;
 mod timingdata;
 
 use crate::{
     gamestate::GameState,
     notedata::NoteType,
     player_config::NoteSkin,
-    theme::{ElementType, Resources, ScreenBuilder},
+    screen::{ElementType, Resources, ScreenBuilder},
 };
 use clap::{crate_authors, crate_version, App, Arg};
 use ggez::{filesystem::mount, graphics::Rect, ContextBuilder};
@@ -76,7 +75,7 @@ fn sprite_finder(
 }
 
 mod callbacks {
-    use crate::theme::Resource;
+    use crate::screen::Resource;
     use crate::timingdata::TimingColumn;
 
     pub fn map_to_string(resource: Option<Resource>) -> Option<Resource> {

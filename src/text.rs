@@ -1,10 +1,9 @@
-use crate::{
-    screen::{Element, Message},
-    theme::Resource,
+use crate::screen::{Element, Message, Resource};
+use ggez::{
+    event::KeyCode,
+    graphics::{self, DrawParam},
+    Context, GameError,
 };
-use ggez::event::KeyCode;
-use ggez::graphics::DrawParam;
-use ggez::{graphics, Context, GameError};
 use std::time::Instant;
 
 pub struct TextBox {
