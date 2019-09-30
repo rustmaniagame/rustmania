@@ -29,6 +29,7 @@ pub enum ElementType {
     TEXT(usize, usize, usize),
 }
 
+#[derive(Clone)]
 pub enum Resource {
     _Notes(TimingData<GameplayInfo>),
     _Path(PathBuf),
@@ -40,18 +41,52 @@ pub enum Resource {
     _Multiple(Vec<Resource>),
 }
 
+#[derive(Copy, Clone)]
+pub enum ResourceType {
+    _Notes,
+    _Path,
+    _Layout,
+    _Float,
+    _Integer,
+    _String,
+    Replay,
+    _Multiple,
+}
+
 pub type ResourceCallback = fn(Option<Resource>) -> Option<Resource>;
 
+#[derive(Clone)]
 pub struct Resources {
     notes: Vec<TimingData<GameplayInfo>>,
     paths: Vec<PathBuf>,
     layouts: Vec<NoteLayout>,
     floats: Vec<f64>,
-    #[allow(clippy::used_underscore_binding)]
     integers: Vec<i64>,
     strings: Vec<String>,
     replays: Vec<Vec<TimingColumn<Judgement>>>,
+    multiples: Vec<Vec<Resource>>,
 }
+
+#[derive(Copy, Clone)]
+pub struct ScriptMap {
+    pub resource_type: ResourceType,
+    pub resource_index: usize,
+    pub script_index: usize,
+}
+
+#[derive(Copy, Clone)]
+pub struct ElementMap {
+    pub resource_index: usize,
+    pub element_index: usize,
+}
+
+#[derive(Copy, Clone)]
+pub enum ResourceMap {
+    Script(ScriptMap),
+    Element(ElementMap),
+}
+
+pub type ResourceMaps = Vec<ResourceMap>;
 
 #[derive(Deserialize, Serialize)]
 pub struct ScreenBuilder {
@@ -60,7 +95,8 @@ pub struct ScreenBuilder {
 
 pub struct Screen {
     start_time: Option<Instant>,
-    elements: Vec<(Box<dyn Element>, usize)>,
+    elements: Vec<Box<dyn Element>>,
+    pub resource_maps: ResourceMaps,
     _key_handler: (),
 }
 
@@ -107,8 +143,10 @@ impl Resources {
             integers: vec![],
             strings: vec![],
             replays: vec![],
+            multiples: vec![],
         }
     }
+    #[allow(clippy::too_many_arguments)]
     pub fn from(
         notes: Vec<TimingData<GameplayInfo>>,
         paths: Vec<PathBuf>,
@@ -117,6 +155,7 @@ impl Resources {
         integers: Vec<i64>,
         strings: Vec<String>,
         replays: Vec<Vec<TimingColumn<Judgement>>>,
+        multiples: Vec<Vec<Resource>>,
     ) -> Self {
         Self {
             notes,
@@ -126,6 +165,7 @@ impl Resources {
             integers,
             strings,
             replays,
+            multiples,
         }
     }
     pub fn push(&mut self, resource: Resource) {
@@ -140,39 +180,110 @@ impl Resources {
             Resource::_Multiple(list) => list.into_iter().for_each(|resource| self.push(resource)),
         }
     }
+    pub fn get(&self, index: usize, resource_type: ResourceType) -> Resource {
+        match resource_type {
+            ResourceType::_Notes => Resource::_Notes(self.notes[index].clone()),
+            ResourceType::_Path => Resource::_Path(self.paths[index].clone()),
+            ResourceType::_Layout => Resource::_Layout(Box::new(self.layouts[index].clone())),
+            ResourceType::_Float => Resource::_Float(self.floats[index]),
+            ResourceType::_Integer => Resource::_Integer(self.integers[index]),
+            ResourceType::_String => Resource::String(self.strings[index].clone()),
+            ResourceType::Replay => Resource::Replay(self.replays[index].clone()),
+            ResourceType::_Multiple => Resource::_Multiple(self.multiples[index].clone()),
+        }
+    }
+    pub fn set(&mut self, index: usize, value: Resource) -> Option<()> {
+        match value {
+            Resource::_Notes(val) => {
+                *self.notes.get_mut(index)? = val;
+                Some(())
+            }
+            Resource::_Path(val) => {
+                *self.paths.get_mut(index)? = val;
+                Some(())
+            }
+            Resource::_Layout(val) => {
+                *self.layouts.get_mut(index)? = *val;
+                Some(())
+            }
+            Resource::_Float(val) => {
+                *self.floats.get_mut(index)? = val;
+                Some(())
+            }
+            Resource::_Integer(val) => {
+                *self.integers.get_mut(index)? = val;
+                Some(())
+            }
+            Resource::String(val) => {
+                *self.strings.get_mut(index)? = val;
+                Some(())
+            }
+            Resource::Replay(val) => {
+                *self.replays.get_mut(index)? = val;
+                Some(())
+            }
+            Resource::_Multiple(val) => {
+                *self.multiples.get_mut(index)? = val;
+                Some(())
+            }
+        }
+    }
 }
 
 impl ScreenBuilder {
-    pub fn build(&self, resources: &Resources) -> Screen {
+    pub fn build(&self, resources: &Resources, scripts: ResourceMaps) -> Screen {
         let element_list = self
             .elements
             .iter()
-            .map(|element| (element.build(resources), 0))
+            .map(|element| element.build(resources))
             .collect();
-        Screen::new(element_list)
+        Screen::new(element_list, scripts)
     }
 }
 
 impl Screen {
-    pub fn new(elements: Vec<(Box<dyn Element>, usize)>) -> Self {
+    pub fn new(elements: Vec<Box<dyn Element>>, scripts: ResourceMaps) -> Self {
         Self {
             start_time: Some(Instant::now() + Duration::from_secs(3)),
             elements,
+            resource_maps: scripts,
             _key_handler: (),
         }
     }
     pub fn start(&mut self) -> Result<(), GameError> {
-        for (element, _callback_index) in &mut self.elements {
+        for element in &mut self.elements {
             element.start(self.start_time)?;
         }
         Ok(())
     }
     pub fn finish(&mut self, resources: &mut Resources, callbacks: &[ResourceCallback]) {
-        for (elem, callback_index) in &mut self.elements {
-            if let Some(resource) = callbacks[*callback_index](elem.finish()) {
-                resources.push(resource);
+        for map in &self.resource_maps {
+            match map {
+                ResourceMap::Element(ElementMap {
+                    resource_index,
+                    element_index,
+                }) => {
+                    if let Some(resource) = self.elements[*element_index].finish() {
+                        if resources.set(*resource_index, resource.clone()).is_none() {
+                            resources.push(resource)
+                        }
+                    }
+                }
+                ResourceMap::Script(ScriptMap {
+                    resource_type,
+                    resource_index,
+                    script_index,
+                }) => {
+                    if let Some(resource) = callbacks[*script_index](Some(
+                        resources.get(*resource_index, *resource_type),
+                    )) {
+                        resources.push(resource);
+                    }
+                }
             }
-        }
+        } /*
+
+          }*/
     }
     fn start_time_to_milliseconds(&self) -> Option<i64> {
         match self.start_time {
@@ -196,7 +307,7 @@ impl Screen {
     pub fn draw(&mut self, ctx: &mut Context) -> Result<Message, GameError> {
         graphics::clear(ctx, Color::new(0.0, 0.0, 0.0, 1.0));
         let time_delta = self.start_time_to_milliseconds();
-        for (element, _callback_index) in &mut self.elements {
+        for element in &mut self.elements {
             match element.run(ctx, time_delta)? {
                 Message::Normal => {}
                 Message::Finish => return Ok(Message::Finish),
@@ -216,13 +327,13 @@ impl Screen {
             return;
         }
         let time_delta = self.start_time_to_milliseconds();
-        for (element, _callback_index) in &mut self.elements {
+        for element in &mut self.elements {
             element.handle_event(keycode, time_delta, true);
         }
     }
     pub fn key_up_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _keymod: KeyMods) {
         let time_delta = self.start_time_to_milliseconds();
-        for (element, _callback_index) in &mut self.elements {
+        for element in &mut self.elements {
             element.handle_event(keycode, time_delta, false);
         }
     }

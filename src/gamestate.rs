@@ -1,11 +1,11 @@
-use crate::screen::{Message, ResourceCallback, Resources, Screen, ScreenBuilder};
+use crate::screen::{Message, ResourceCallback, ResourceMaps, Resources, Screen, ScreenBuilder};
 use ggez::{
     event::{EventHandler, KeyCode, KeyMods},
     Context, GameError,
 };
 
 pub struct GameState {
-    scene_stack: Vec<ScreenBuilder>,
+    scene_stack: Vec<(ScreenBuilder, ResourceMaps)>,
     current_screen: Option<Screen>,
     screen_index: usize,
     resources: Resources,
@@ -23,7 +23,7 @@ impl GameState {
         }
     }
     pub fn from(
-        scene_stack: Vec<ScreenBuilder>,
+        scene_stack: Vec<(ScreenBuilder, ResourceMaps)>,
         resources: Resources,
         callbacks: Vec<ResourceCallback>,
     ) -> Self {
@@ -55,7 +55,7 @@ impl EventHandler for GameState {
             self.current_screen = self
                 .scene_stack
                 .get(self.screen_index)
-                .map(|screen| screen.build(&self.resources));
+                .map(|screen| screen.0.build(&self.resources, screen.1.clone()));
             if let Some(ref mut screen) = self.current_screen {
                 screen.start()?;
             }

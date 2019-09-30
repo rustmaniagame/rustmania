@@ -23,7 +23,9 @@ use crate::{
     gamestate::GameState,
     notedata::NoteType,
     player_config::NoteSkin,
-    screen::{ElementType, Resources, ScreenBuilder},
+    screen::{
+        ElementMap, ElementType, ResourceMap, ResourceType, Resources, ScreenBuilder, ScriptMap,
+    },
 };
 use clap::{crate_authors, crate_version, App, Arg};
 use ggez::{filesystem::mount, graphics::Rect, ContextBuilder};
@@ -208,6 +210,7 @@ fn main() {
             String::from("Results screen placeholder text"),
         ],
         vec![],
+        vec![],
     );
 
     let gameplay_screen = match matches.value_of("Theme") {
@@ -246,7 +249,23 @@ fn main() {
     }
 
     let mut gamestate = GameState::from(
-        vec![gameplay_screen, results_screen],
+        vec![
+            (
+                gameplay_screen,
+                vec![
+                    ResourceMap::Element(ElementMap {
+                        element_index: 0,
+                        resource_index: 0,
+                    }),
+                    ResourceMap::Script(ScriptMap {
+                        resource_type: ResourceType::Replay,
+                        resource_index: 0,
+                        script_index: 0,
+                    }),
+                ],
+            ),
+            (results_screen, vec![]),
+        ],
         resources,
         vec![callbacks::map_to_string],
     );
