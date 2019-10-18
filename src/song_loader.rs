@@ -44,15 +44,15 @@ where
     })
 }
 
-
-
 pub fn load_songs_folder<T>(songs_directory: T) -> Vec<(PathBuf, (f64, NoteData))>
 where
     T: AsRef<Path> + Send + Sync,
 {
     let (sender, receiver) = sync_channel(2);
-    let (_, out) = join(|| send_songs(songs_directory.as_ref(), sender),
-    || receiver.into_iter().collect::<Vec<_>>());
+    let (_, out) = join(
+        || send_songs(songs_directory.as_ref(), sender),
+        || receiver.into_iter().collect::<Vec<_>>(),
+    );
     out
 }
 
