@@ -5,84 +5,69 @@ use crate::{
     timingdata::{CalcInfo, TimingData},
 };
 use bincode::deserialize;
-use rayon::{iter::ParallelIterator, prelude::*};
+use rayon::{iter::ParallelIterator, join, prelude::*};
 use std::{
-    ffi::OsStr,
     fs::{read_dir, File},
     io::Read,
     path::{Path, PathBuf},
+    sync::mpsc::{sync_channel, SyncSender},
 };
 
-pub fn load_song<T>(simfile_folder: T) -> Option<(f64, NoteData)>
+pub fn load_song<T>(sim: T) -> Option<(f64, NoteData)>
 where
     T: AsRef<Path> + Clone,
 {
-    load_song_rm(simfile_folder.clone()).or_else(|| load_song_sm(simfile_folder.clone()))
+    if let Some(extension) = sim.as_ref().extension() {
+        let mut sim = match File::open(sim.clone()) {
+            Ok(file) => file,
+            Err(_) => return None,
+        };
+        match extension.to_str() {
+            Some("sm") => notedata::NoteData::from_sm(sim).ok(),
+            Some("rm") => {
+                let mut n = vec![];
+                sim.read_to_end(&mut n)
+                    .expect("Failed to read to end of .rm file");
+                deserialize(&n).ok()
+            }
+            _ => None,
+        }
+    } else {
+        None
+    }
+    .map(|x| {
+        if let Some(timing) = TimingData::<CalcInfo>::from_notedata(&x, sprite_finder, 1.0).get(0) {
+            (difficulty_calc::rate_chart(&timing, 1.86), x)
+        } else {
+            (0.0, x)
+        }
+    })
 }
 
-pub fn load_song_sm<T>(simfile_folder: T) -> Option<(f64, NoteData)>
+
+
+pub fn load_songs_folder<T>(songs_directory: T) -> Vec<(PathBuf, (f64, NoteData))>
 where
-    T: AsRef<Path>,
+    T: AsRef<Path> + Send + Sync,
 {
-    read_dir(simfile_folder)
-        .expect("Couldn't open folder")
-        .filter_map(Result::ok)
-        .filter(|entry| entry.path().extension() == Some(OsStr::new("sm")))
-        .filter_map(|sim| File::open(sim.path()).ok())
-        .find_map(|sim| notedata::NoteData::from_sm(sim).ok())
-        .map(|x| {
-            (
-                difficulty_calc::rate_chart(
-                    &TimingData::<CalcInfo>::from_notedata(&x, sprite_finder, 1.0)[0],
-                    1.86,
-                ),
-                x,
-            )
-        })
+    let (sender, receiver) = sync_channel(2);
+    let (_, out) = join(|| send_songs(songs_directory.as_ref(), sender),
+    || receiver.into_iter().collect::<Vec<_>>());
+    out
 }
 
-pub fn load_song_rm<T>(simfile_folder: T) -> Option<(f64, NoteData)>
-where
-    T: AsRef<Path>,
-{
-    read_dir(simfile_folder)
-        .expect("Couldn't open folder")
-        .filter_map(Result::ok)
-        .filter(|entry| entry.path().extension() == Some(OsStr::new("rm")))
-        .filter_map(|sim| File::open(sim.path()).ok())
-        .find_map(|mut sim| {
-            let mut n = vec![];
-            sim.read_to_end(&mut n).unwrap();
-            deserialize(&n).ok()
-        })
-        .map(|x| {
-            (
-                difficulty_calc::rate_chart(
-                    &TimingData::<CalcInfo>::from_notedata(&x, sprite_finder, 1.0)[0],
-                    1.86,
-                ),
-                x,
-            )
-        })
-}
-
-pub fn load_songs_folder<T>(songs_directory: T) -> Vec<(PathBuf, Option<(f64, NoteData)>)>
-where
-    T: AsRef<Path>,
-{
-    get_subfolder_list(songs_directory.as_ref())
-        .par_iter()
-        .map(|x| (x.clone(), load_song(x)))
-        .collect()
-}
-
-pub fn get_subfolder_list(songs_folder: &Path) -> Vec<PathBuf> {
-    let mut output: Vec<PathBuf> = Vec::new();
-    output.push(songs_folder.to_path_buf());
+pub fn send_songs(songs_folder: &Path, sender: SyncSender<(PathBuf, (f64, NoteData))>) {
     read_dir(songs_folder)
-        .expect("Couldn't open folder")
-        .filter_map(Result::ok)
-        .filter(|dir_path| dir_path.path().is_dir())
-        .for_each(|dir_entry| output.append(&mut get_subfolder_list(&dir_entry.path())));
-    output
+        .expect("Failed to open folder")
+        .collect::<Vec<_>>()
+        .into_par_iter()
+        .for_each_with(sender, |s, x| {
+            if let Ok(entry) = x {
+                if entry.path().is_dir() {
+                    send_songs(&entry.path(), s.clone())
+                } else if let Some(song) = load_song(entry.path()) {
+                    let _ = s.send((entry.path(), song));
+                }
+            }
+        })
 }

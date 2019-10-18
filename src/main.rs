@@ -137,10 +137,7 @@ fn main() {
         let notedata_list = song_loader::load_songs_folder(songs_folder);
         let duration = Instant::now() - start_time;
         info!("Found {} total songs", notedata_list.len());
-        let mut notedata_list = notedata_list
-            .into_iter()
-            .filter_map(|(p, x)| x.map(|x| (p, x)))
-            .collect::<Vec<_>>();
+        let mut notedata_list = notedata_list.into_iter().collect::<Vec<_>>();
         info!("Of which, {} loaded", notedata_list.len());
         info!(
             "This took {}.{} seconds",
@@ -151,14 +148,18 @@ fn main() {
         notedata_list
             .iter()
             .for_each(|x| info!("{:?}, {}", (x.1).1.data.title, (x.1).0));
-        let (simfile_folder, (difficulty, notedata)) = notedata_list
+        let (simfile_path, (difficulty, notedata)) = notedata_list
             .choose(&mut rng)
             .expect("Failed to select chart from cache")
             .clone();
-        let simfile_folder = simfile_folder
-            .into_os_string()
-            .into_string()
-            .expect("failed to parse path");
+        let simfile_folder = String::from(
+            simfile_path
+                .parent()
+                .expect("No parent folder for selected file")
+                .as_os_str()
+                .to_str()
+                .expect("failed to parse path"),
+        );
         (simfile_folder, difficulty, notedata)
     };
     println!(
