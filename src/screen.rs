@@ -96,12 +96,11 @@ pub struct ScreenBuilder {
 pub struct Screen {
     start_time: Option<Instant>,
     elements: Vec<Box<dyn Element>>,
-    pub resource_maps: ResourceMaps,
-    _key_handler: (),
+    resource_maps: ResourceMaps,
 }
 
 pub enum Message {
-    Normal,
+    None,
     Finish,
 }
 
@@ -247,7 +246,6 @@ impl Screen {
             start_time: Some(Instant::now() + Duration::from_secs(3)),
             elements,
             resource_maps: scripts,
-            _key_handler: (),
         }
     }
     pub fn start(&mut self) -> Result<(), GameError> {
@@ -302,19 +300,19 @@ impl Screen {
 
 impl Screen {
     fn _update(&mut self, _ctx: &mut Context) -> Result<Message, GameError> {
-        Ok(Message::Normal)
+        Ok(Message::None)
     }
     pub fn draw(&mut self, ctx: &mut Context) -> Result<Message, GameError> {
         graphics::clear(ctx, Color::new(0.0, 0.0, 0.0, 1.0));
         let time_delta = self.start_time_to_milliseconds();
         for element in &mut self.elements {
             match element.run(ctx, time_delta)? {
-                Message::Normal => {}
+                Message::None => {}
                 Message::Finish => return Ok(Message::Finish),
             }
         }
         graphics::present(ctx)?;
-        Ok(Message::Normal)
+        Ok(Message::None)
     }
     pub fn key_down_event(
         &mut self,

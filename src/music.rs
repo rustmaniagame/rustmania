@@ -158,7 +158,7 @@ where
 
 impl Element for Music {
     fn run(&mut self, _ctx: &mut Context, _time: Option<i64>) -> Result<Message, GameError> {
-        Ok(Message::Normal)
+        Ok(Message::None)
     }
     fn start(&mut self, time: Option<Instant>) -> Result<Message, GameError> {
         if let Some(time) = time {
@@ -166,7 +166,7 @@ impl Element for Music {
             let path = self.path.clone();
             thread::spawn(move || play_file(time, rate, path));
         }
-        Ok(Message::Normal)
+        Ok(Message::None)
     }
     fn finish(&mut self) -> Option<Resource> {
         None

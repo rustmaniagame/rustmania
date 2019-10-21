@@ -160,7 +160,7 @@ impl Element for Notefield {
         self.layout.draw_receptors(ctx)?;
         let time = match time {
             Some(time) => time,
-            None => return Ok(Message::Normal),
+            None => return Ok(Message::None),
         };
         let mut completed = true;
         for column_index in 0..NOTEFIELD_SIZE {
@@ -206,11 +206,11 @@ impl Element for Notefield {
         Ok(if completed {
             Message::Finish
         } else {
-            Message::Normal
+            Message::None
         })
     }
     fn start(&mut self, _time: Option<Instant>) -> Result<Message, ggez::GameError> {
-        Ok(Message::Normal)
+        Ok(Message::None)
     }
     fn finish(&mut self) -> Option<Resource> {
         Some(Resource::Replay(
