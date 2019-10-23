@@ -5,13 +5,8 @@ use crate::{
     timingdata::{CalcInfo, TimingData},
 };
 use bincode::deserialize;
-use rayon::{iter::ParallelIterator, join, prelude::*};
-use std::{
-    fs::{read_dir, File},
-    io::Read,
-    path::{Path, PathBuf},
-    sync::mpsc::{sync_channel, SyncSender},
-};
+use rayon::{iter::ParallelIterator, prelude::*};
+use std::{fs::{read_dir, File}, io::Read, path::{Path, PathBuf}, sync::mpsc::{sync_channel, SyncSender}, thread};
 
 pub fn load_song<T>(sim: T) -> Option<(f64, NoteData)>
 where
@@ -49,11 +44,9 @@ where
     T: AsRef<Path> + Send + Sync,
 {
     let (sender, receiver) = sync_channel(2);
-    let (_, out) = join(
-        || send_songs(songs_directory.as_ref(), sender),
-        || receiver.into_iter().collect::<Vec<_>>(),
-    );
-    out
+    let out = thread::spawn(|| receiver.into_iter().collect::<Vec<_>>());
+    send_songs(songs_directory.as_ref(), sender);
+    out.join().expect("Failed to collect songs")
 }
 
 pub fn send_songs(songs_folder: &Path, sender: SyncSender<(PathBuf, (f64, NoteData))>) {
