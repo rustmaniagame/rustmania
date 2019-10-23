@@ -6,7 +6,13 @@ use crate::{
 };
 use bincode::deserialize;
 use rayon::{iter::ParallelIterator, prelude::*};
-use std::{fs::{read_dir, File}, io::Read, path::{Path, PathBuf}, sync::mpsc::{sync_channel, SyncSender}, thread};
+use std::{
+    fs::{read_dir, File},
+    io::Read,
+    path::{Path, PathBuf},
+    sync::mpsc::{sync_channel, SyncSender},
+    thread,
+};
 
 pub fn load_song<T>(sim: T) -> Option<(f64, NoteData)>
 where

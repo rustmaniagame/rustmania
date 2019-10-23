@@ -25,7 +25,7 @@ pub trait Element: Send {
 #[derive(Deserialize, Serialize)]
 pub enum ElementType {
     MUSIC(usize, usize),
-    NOTEFIELD(usize, usize),
+    NOTEFIELD(usize, usize, usize),
     TEXT(usize, usize, usize),
 }
 
@@ -35,7 +35,7 @@ pub enum Resource {
     _Path(PathBuf),
     _Layout(Box<NoteLayout>),
     _Float(f64),
-    _Integer(i64),
+    Integer(i64),
     String(String),
     Replay(Vec<TimingColumn<Judgement>>),
     _Multiple(Vec<Resource>),
@@ -115,10 +115,10 @@ impl ElementType {
                 resources.floats[*rate],
                 resources.paths[*name].clone(),
             )),
-            Self::NOTEFIELD(layout, timing_data) => Box::new(Notefield::new(
+            Self::NOTEFIELD(layout, timing_data, draw_distance) => Box::new(Notefield::new(
                 resources.layouts[*layout].clone(),
                 &resources.notes[*timing_data],
-                600,
+                resources.integers[*draw_distance],
             )),
             Self::TEXT(contents, x_pos, y_pos) => Box::new(crate::text::TextBox::new(
                 resources.strings[*contents].clone(),
@@ -173,7 +173,7 @@ impl Resources {
             Resource::_Path(path) => self.paths.push(path),
             Resource::_Layout(layout) => self.layouts.push(*layout),
             Resource::_Float(f) => self.floats.push(f),
-            Resource::_Integer(int) => self.integers.push(int),
+            Resource::Integer(int) => self.integers.push(int),
             Resource::String(string) => self.strings.push(string),
             Resource::Replay(replay) => self.replays.push(replay),
             Resource::_Multiple(list) => list.into_iter().for_each(|resource| self.push(resource)),
@@ -185,7 +185,7 @@ impl Resources {
             ResourceType::_Path => Resource::_Path(self.paths[index].clone()),
             ResourceType::_Layout => Resource::_Layout(Box::new(self.layouts[index].clone())),
             ResourceType::_Float => Resource::_Float(self.floats[index]),
-            ResourceType::_Integer => Resource::_Integer(self.integers[index]),
+            ResourceType::_Integer => Resource::Integer(self.integers[index]),
             ResourceType::_String => Resource::String(self.strings[index].clone()),
             ResourceType::Replay => Resource::Replay(self.replays[index].clone()),
             ResourceType::_Multiple => Resource::_Multiple(self.multiples[index].clone()),
@@ -209,7 +209,7 @@ impl Resources {
                 *self.floats.get_mut(index)? = val;
                 Some(())
             }
-            Resource::_Integer(val) => {
+            Resource::Integer(val) => {
                 *self.integers.get_mut(index)? = val;
                 Some(())
             }

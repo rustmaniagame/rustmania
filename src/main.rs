@@ -205,7 +205,7 @@ fn main() {
         ))],
         vec![p1_layout, p2_layout],
         vec![music_rate, 0.0, 12.0],
-        vec![],
+        vec![600],
         vec![
             notedata.data.title.expect("Needs a title").clone(),
             String::from("Results screen placeholder text"),
@@ -231,8 +231,8 @@ fn main() {
         }
         None => ScreenBuilder {
             elements: vec![
-                ElementType::NOTEFIELD(0, 0),
-                ElementType::NOTEFIELD(1, 0),
+                ElementType::NOTEFIELD(0, 0, 0),
+                ElementType::NOTEFIELD(1, 0, 0),
                 ElementType::MUSIC(0, 0),
                 ElementType::TEXT(0, 1, 2),
             ],
