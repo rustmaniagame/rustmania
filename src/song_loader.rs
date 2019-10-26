@@ -71,11 +71,15 @@ pub fn send_songs(songs_folder: &Path, sender: SyncSender<Option<(PathBuf, (f64,
                     send_songs(&entry.path(), s.clone())
                 } else {
                     match load_song(entry.path()) {
-                        Ok(song) => { let _ = s.send(Some((entry.path(), song))); },
+                        Ok(song) => {
+                            let _ = s.send(Some((entry.path(), song)));
+                        }
                         Err(err) => match err {
                             LoadError::WrongExtension => {}
-                            LoadError::FailedParse => { s.send(None).expect("Failed to send song along channel") }
-                        }
+                            LoadError::FailedParse => {
+                                s.send(None).expect("Failed to send song along channel")
+                            }
+                        },
                     }
                 }
             }

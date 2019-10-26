@@ -5,7 +5,8 @@
     clippy::cast_possible_wrap,
     clippy::cast_precision_loss,
     clippy::cast_sign_loss,
-    clippy::module_name_repetitions
+    clippy::module_name_repetitions,
+    clippy::or_fun_call
 )]
 
 mod difficulty_calc;
@@ -137,7 +138,10 @@ fn main() {
         let notedata_list = song_loader::load_songs_folder(songs_folder);
         let duration = Instant::now() - start_time;
         info!("Found {} total songs", notedata_list.len());
-        let mut notedata_list = notedata_list.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+        let mut notedata_list = notedata_list
+            .into_iter()
+            .filter_map(|x| x)
+            .collect::<Vec<_>>();
         info!("Of which, {} loaded", notedata_list.len());
         info!(
             "This took {}.{} seconds",
@@ -145,9 +149,9 @@ fn main() {
             duration.subsec_millis()
         );
         notedata_list.sort_by(|a, b| (a.1).0.partial_cmp(&(b.1).0).unwrap_or(Ordering::Less));
-        notedata_list
-            .iter()
-            .for_each(|(path, (difficulty, data))| info!("{:?}, {}, {:?}", data.data.title, difficulty, path));
+        notedata_list.iter().for_each(|(path, (difficulty, data))| {
+            info!("{:?}, {}, {:?}", data.data.title, difficulty, path)
+        });
         let (simfile_path, (difficulty, notedata)) = notedata_list
             .choose(&mut rng)
             .expect("Failed to select chart from cache")
@@ -201,13 +205,13 @@ fn main() {
         vec![PathBuf::from(format!(
             "{}/{}",
             simfile_folder,
-            notedata.data.music_path.unwrap_or("".to_string())
+            notedata.data.music_path.unwrap_or(String::new())
         ))],
         vec![p1_layout, p2_layout],
         vec![music_rate, 0.0, 12.0],
         vec![600],
         vec![
-            notedata.data.title.unwrap_or("".to_string()).clone(),
+            notedata.data.title.unwrap_or(String::new()).clone(),
             String::from("Results screen placeholder text"),
         ],
         vec![],
