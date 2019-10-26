@@ -147,7 +147,7 @@ fn main() {
         notedata_list.sort_by(|a, b| (a.1).0.partial_cmp(&(b.1).0).unwrap_or(Ordering::Less));
         notedata_list
             .iter()
-            .for_each(|x| info!("{:?}, {}", (x.1).1.data.title, (x.1).0));
+            .for_each(|(path, (difficulty, data))| info!("{:?}, {}, {:?}", data.data.title, difficulty, path));
         let (simfile_path, (difficulty, notedata)) = notedata_list
             .choose(&mut rng)
             .expect("Failed to select chart from cache")
@@ -201,13 +201,13 @@ fn main() {
         vec![PathBuf::from(format!(
             "{}/{}",
             simfile_folder,
-            notedata.data.music_path.expect("No music path specified")
+            notedata.data.music_path.unwrap_or("".to_string())
         ))],
         vec![p1_layout, p2_layout],
         vec![music_rate, 0.0, 12.0],
         vec![600],
         vec![
-            notedata.data.title.expect("Needs a title").clone(),
+            notedata.data.title.unwrap_or("".to_string()).clone(),
             String::from("Results screen placeholder text"),
         ],
         vec![],
