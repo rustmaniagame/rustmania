@@ -1,5 +1,5 @@
 use crate::{
-    notedata::{ChartData, ChartMetadata, NoteData, NoteType},
+    notedata::{ChartMetadata, Measure, NoteData, NoteType},
     NOTEFIELD_SIZE,
 };
 use ggez::graphics;
@@ -118,13 +118,14 @@ where
     where
         U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
     {
-        let metadata = &data.data;
-        data.charts()
+        let metadata = &data.meta;
+        data.charts
+            .iter()
             .map(|chart| Self::from_chartdata::<U>(chart, metadata, &sprite_finder, rate))
             .collect()
     }
     pub fn from_chartdata<U>(
-        data: &ChartData,
+        data: &[Measure],
         meta: &ChartMetadata,
         sprite_finder: &U,
         rate: f64,
@@ -133,49 +134,47 @@ where
         U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
     {
         let offset = meta.offset.unwrap_or(0.0) * 1000.0;
-        let mut bpms: Vec<_> = meta
-            .bpms
-            .iter()
-            .map(|(x, y, z)| (*x, *y, *z, 0.0))
-            .collect();
+        let mut bpms: Vec<_> = meta.bpms.iter().map(|beat_pair| (beat_pair, 0.0)).collect();
         match bpms.get_mut(0) {
-            Some(bpm) => bpm.3 = offset,
+            Some(bpm) => bpm.1 = offset,
             None => return Self::new(),
         };
         for i in 1..bpms.len() {
-            bpms[i].3 = bpms[i - 1].3
-                + ((f64::from(bpms[i].0 - bpms[i - 1].0) + value(bpms[i].1 - bpms[i - 1].1))
+            bpms[i].1 = bpms[i - 1].1
+                + ((f64::from(bpms[i].0.beat - bpms[i - 1].0.beat)
+                    + value(bpms[i].0.sub_beat - bpms[i - 1].0.sub_beat))
                     * 240_000.0
-                    / bpms[i - 1].2);
+                    / bpms[i - 1].0.value);
         }
         let mut bpms = bpms.into_iter();
         let mut current_bpm = bpms.next().unwrap();
         let mut next_bpm = bpms.next();
         let mut output: [TimingColumn<T>; NOTEFIELD_SIZE] =
             array_init::array_init(|_| TimingColumn::new());
-        for (measure_index, measure) in data.measures().enumerate() {
-            for (inner_time, row) in measure.iter() {
+        for (measure_index, measure) in data.iter().enumerate() {
+            for (row, inner_time) in measure.iter() {
                 if let Some(bpm) = next_bpm {
-                    if measure_index as i32 > bpm.0
-                        || (measure_index as i32 == bpm.0 && bpm.1 <= inner_time.fract())
+                    if measure_index as i32 > bpm.0.beat
+                        || (measure_index as i32 == bpm.0.beat
+                            && bpm.0.sub_beat <= inner_time.fract())
                     {
                         current_bpm = bpm;
                         next_bpm = bpms.next();
                     }
                 }
-                let row_time = (current_bpm.3
+                let row_time = (current_bpm.1
                     + 240_000.0
-                        * ((measure_index - current_bpm.0 as usize) as f64
-                            + value(inner_time - current_bpm.1))
-                        / current_bpm.2)
+                        * ((measure_index - current_bpm.0.beat as usize) as f64
+                            + value(inner_time - current_bpm.0.sub_beat))
+                        / current_bpm.0.value)
                     / rate;
-                for (note, column_index) in row.notes() {
+                for note in row.iter() {
                     let sprite =
-                        sprite_finder(measure_index, 0.0, *inner_time, *note, *column_index);
+                        sprite_finder(measure_index, 0.0, *inner_time, note.note_type, note.column);
                     //This if let can hide errors in the parser or .sm file
                     // An else clause should be added where errors are handled
-                    if let Some(column) = output.get_mut(*column_index) {
-                        column.add(T::from_layout(row_time as i64, sprite, *note));
+                    if let Some(column) = output.get_mut(note.column) {
+                        column.add(T::from_layout(row_time as i64, sprite, note.note_type));
                     }
                 }
             }

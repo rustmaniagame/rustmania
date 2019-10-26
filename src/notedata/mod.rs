@@ -1,15 +1,43 @@
 mod sm_parser;
 
-use lazy_static::lazy_static;
 use num_rational::Rational32;
-use regex::Regex;
 use serde_derive::{Deserialize, Serialize};
-use std::{io, slice};
+use std::io;
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub struct ChartData {
-    pub notes: Vec<Vec<(Rational32, NoteRow)>>, // Measures<Submeasures<Submeasure beat, Noterows>>
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BeatPair<T> {
+    pub beat: i32,
+    pub sub_beat: Rational32,
+    pub value: T,
 }
+
+#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
+pub enum NoteType {
+    Tap,
+    Hold,
+    Roll,
+    Mine,
+    Lift,
+    Fake,
+    HoldEnd,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
+pub enum DisplayBpm {
+    Range(f64, f64),
+    Static(f64),
+    Random,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Note {
+    pub note_type: NoteType,
+    pub column: usize,
+}
+
+type NoteRow = Vec<Note>;
+pub type Measure = Vec<(NoteRow, Rational32)>;
+type Chart = Vec<Measure>;
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ChartMetadata {
@@ -27,36 +55,37 @@ pub struct ChartMetadata {
     pub cd_title: Option<String>,
     pub music_path: Option<String>,
     pub offset: Option<f64>,
-    pub bpms: Vec<(i32, Rational32, f64)>,
-    pub stops: Option<Vec<(i32, Rational32, f64)>>,
+    pub bpms: Vec<BeatPair<f64>>,
+    pub stops: Option<Vec<BeatPair<f64>>>,
     pub sample_start: Option<f64>,
     pub sample_length: Option<f64>,
-    pub display_bpm: Option<(f64, Option<f64>)>,
+    pub display_bpm: Option<DisplayBpm>,
     pub selectable: Option<String>, //it is unclear how this is used in practice, may be better as Option<bool>
-    pub background_changes: Option<Vec<(i32, Rational32, String)>>,
-    pub foreground_changes: Option<Vec<(i32, Rational32, String)>>,
+    pub background_changes: Option<Vec<BeatPair<String>>>,
+    pub foreground_changes: Option<Vec<BeatPair<String>>>,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct NoteData {
-    pub notes: Vec<ChartData>,
-    pub data: ChartMetadata,
+    pub charts: Vec<Chart>,
+    pub meta: ChartMetadata,
 }
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub struct NoteRow {
-    row: Vec<(NoteType, usize)>,
+impl<T> BeatPair<T> {
+    fn from_pair(beat: f64, value: T) -> Option<Self> {
+        let ratio = Rational32::approximate_float(beat)?;
+        Some(Self {
+            beat: ratio.to_integer(),
+            sub_beat: ratio.fract(),
+            value,
+        })
+    }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
-pub enum NoteType {
-    Tap,
-    Hold,
-    Roll,
-    Mine,
-    Lift,
-    Fake,
-    HoldEnd,
+impl Note {
+    fn new(note_type: NoteType, column: usize) -> Self {
+        Self { note_type, column }
+    }
 }
 
 impl ChartMetadata {
@@ -76,7 +105,7 @@ impl ChartMetadata {
             cd_title: None,
             music_path: None,
             offset: None,
-            bpms: Vec::new(),
+            bpms: vec![],
             stops: None,
             sample_start: None,
             sample_length: None,
@@ -88,86 +117,21 @@ impl ChartMetadata {
     }
 }
 
-impl ChartData {
-    fn new(notes: Vec<Vec<(Rational32, NoteRow)>>) -> Self {
-        Self { notes }
-    }
-    pub fn measures(&self) -> slice::Iter<Vec<(Rational32, NoteRow)>> {
-        self.notes.iter()
-    }
-}
-
 impl NoteData {
+    fn new() -> Self {
+        Self {
+            charts: vec![],
+            meta: ChartMetadata::new(),
+        }
+    }
+
     pub fn from_sm<T>(mut simfile: T) -> Result<Self, io::Error>
     where
         T: io::Read,
     {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(r"(?m)(//.*$)").unwrap();
-        }
-
-        let mut chart = Self {
-            notes: Vec::new(),
-            data: ChartMetadata::new(),
-        };
         let mut chart_string = String::new();
         simfile.read_to_string(&mut chart_string)?;
 
-        let string_trimmed = RE.replace_all(&chart_string, "");
-
-        let (_, tags) = sm_parser::break_to_tags(&string_trimmed).unwrap();
-        for (tag, contents) in &tags {
-            sm_parser::parse_tag(tag, contents, &mut chart);
-        }
-        Ok(chart)
-    }
-    pub fn charts(&self) -> slice::Iter<ChartData> {
-        self.notes.iter()
-    }
-}
-
-impl NoteRow {
-    pub fn notes(&self) -> slice::Iter<(NoteType, usize)> {
-        self.row.iter()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::notedata::NoteType;
-    use std::fs::File;
-
-    #[test]
-    fn simple_file_parse() {
-        assert_eq!(
-            NoteData::from_sm(File::open("test_files/notes_test.sm").unwrap()).unwrap(),
-            NoteData {
-                notes: vec![ChartData::new(vec![
-                    vec![(
-                        Rational32::new(0, 1),
-                        NoteRow {
-                            row: vec![(NoteType::Tap, 3)],
-                        },
-                    ),],
-                    vec![],
-                    vec![
-                        (
-                            Rational32::new(0, 1),
-                            NoteRow {
-                                row: vec![(NoteType::Mine, 1), (NoteType::Hold, 3)],
-                            },
-                        ),
-                        (
-                            Rational32::new(1, 2),
-                            NoteRow {
-                                row: vec![(NoteType::Fake, 0), (NoteType::HoldEnd, 3)],
-                            },
-                        ),
-                    ],
-                ])],
-                data: ChartMetadata::new(),
-            }
-        );
+        sm_parser::parse(&chart_string).map_err(|_| io::Error::from(io::ErrorKind::InvalidInput))
     }
 }
