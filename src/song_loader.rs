@@ -14,27 +14,32 @@ use std::{
     thread,
 };
 
-pub fn load_song<T>(sim: T) -> Option<(f64, NoteData)>
+pub enum LoadError {
+    WrongExtension,
+    FailedParse,
+}
+
+pub fn load_song<T>(sim: T) -> Result<(f64, NoteData), LoadError>
 where
     T: AsRef<Path> + Clone,
 {
     if let Some(extension) = sim.as_ref().extension() {
         let mut sim = match File::open(sim.clone()) {
             Ok(file) => file,
-            Err(_) => return None,
+            Err(_) => return Err(LoadError::FailedParse),
         };
         match extension.to_str() {
-            Some("sm") => notedata::NoteData::from_sm(sim).ok(),
+            Some("sm") => notedata::NoteData::from_sm(sim).map_err(|_| LoadError::FailedParse),
             Some("rm") => {
                 let mut n = vec![];
                 sim.read_to_end(&mut n)
                     .expect("Failed to read to end of .rm file");
-                deserialize(&n).ok()
+                deserialize(&n).map_err(|_| LoadError::FailedParse)
             }
-            _ => None,
+            _ => Err(LoadError::WrongExtension),
         }
     } else {
-        None
+        Err(LoadError::WrongExtension)
     }
     .map(|x| {
         if let Some(timing) = TimingData::<CalcInfo>::from_notedata(&x, sprite_finder, 1.0).get(0) {
@@ -45,7 +50,7 @@ where
     })
 }
 
-pub fn load_songs_folder<T>(songs_directory: T) -> Vec<(PathBuf, (f64, NoteData))>
+pub fn load_songs_folder<T>(songs_directory: T) -> Vec<Option<(PathBuf, (f64, NoteData))>>
 where
     T: AsRef<Path> + Send + Sync,
 {
@@ -55,7 +60,7 @@ where
     out.join().expect("Failed to collect songs")
 }
 
-pub fn send_songs(songs_folder: &Path, sender: SyncSender<(PathBuf, (f64, NoteData))>) {
+pub fn send_songs(songs_folder: &Path, sender: SyncSender<Option<(PathBuf, (f64, NoteData))>>) {
     read_dir(songs_folder)
         .expect("Failed to open folder")
         .collect::<Vec<_>>()
@@ -64,8 +69,14 @@ pub fn send_songs(songs_folder: &Path, sender: SyncSender<(PathBuf, (f64, NoteDa
             if let Ok(entry) = x {
                 if entry.path().is_dir() {
                     send_songs(&entry.path(), s.clone())
-                } else if let Some(song) = load_song(entry.path()) {
-                    let _ = s.send((entry.path(), song));
+                } else {
+                    match load_song(entry.path()) {
+                        Ok(song) => { let _ = s.send(Some((entry.path(), song))); },
+                        Err(err) => match err {
+                            LoadError::WrongExtension => {}
+                            LoadError::FailedParse => { s.send(None).expect("Failed to send song along channel") }
+                        }
+                    }
                 }
             }
         })

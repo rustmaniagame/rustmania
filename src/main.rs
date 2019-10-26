@@ -137,7 +137,7 @@ fn main() {
         let notedata_list = song_loader::load_songs_folder(songs_folder);
         let duration = Instant::now() - start_time;
         info!("Found {} total songs", notedata_list.len());
-        let mut notedata_list = notedata_list.into_iter().collect::<Vec<_>>();
+        let mut notedata_list = notedata_list.into_iter().filter_map(|x| x).collect::<Vec<_>>();
         info!("Of which, {} loaded", notedata_list.len());
         info!(
             "This took {}.{} seconds",
