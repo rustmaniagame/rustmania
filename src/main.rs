@@ -5,8 +5,7 @@
     clippy::cast_possible_wrap,
     clippy::cast_precision_loss,
     clippy::cast_sign_loss,
-    clippy::module_name_repetitions,
-    clippy::or_fun_call
+    clippy::module_name_repetitions
 )]
 
 mod difficulty_calc;
@@ -205,13 +204,13 @@ fn main() {
         vec![PathBuf::from(format!(
             "{}/{}",
             simfile_folder,
-            notedata.data.music_path.unwrap_or(String::new())
+            notedata.data.music_path.unwrap_or_else(String::new)
         ))],
         vec![p1_layout, p2_layout],
         vec![music_rate, 0.0, 12.0],
         vec![600],
         vec![
-            notedata.data.title.unwrap_or(String::new()).clone(),
+            notedata.data.title.unwrap_or_else(String::new).clone(),
             String::from("Results screen placeholder text"),
         ],
         vec![],
