@@ -1,157 +1,367 @@
 use super::*;
 use nom::{
-    complete, do_parse, many0, named, number::complete::double, separated_list, tag, take,
-    take_until, ws,
+    branch::alt,
+    bytes::complete::{is_not, tag, take_until},
+    character::complete::{char, multispace0, multispace1, none_of, not_line_ending},
+    combinator::{map, map_opt},
+    error::ErrorKind,
+    multi::{count, fold_many0, fold_many1, many0, separated_nonempty_list},
+    number::complete::double,
+    sequence::{preceded, separated_pair, terminated},
+    Err, IResult,
 };
+use num_rational::Rational32;
 
-//Needs: DISPLAYBPM, SELECTABLE, BGCHANGES, FGCHANGES
-pub fn parse_tag(tag: &str, contents: &str, data: &mut NoteData) {
-    match tag {
-        "TITLE" => data.data.title = Some(contents.to_string()),
-        "SUBTITLE" => data.data.subtitle = Some(contents.to_string()),
-        "ARTIST" => data.data.artist = Some(contents.to_string()),
-        "TITLETRANSLIT" => data.data.title_translit = Some(contents.to_string()),
-        "SUBTITLETRANSLIT" => data.data.subtitle_translit = Some(contents.to_string()),
-        "ARTISTTRANSLIT" => data.data.artist_translit = Some(contents.to_string()),
-        "GENRE" => data.data.genre = Some(contents.to_string()),
-        "CREDIT" => data.data.credit = Some(contents.to_string()),
-        "BANNER" => data.data.banner_path = Some(contents.to_string()),
-        "BACKGROUND" => data.data.background_path = Some(contents.to_string()),
-        "LYRICSPATH" => data.data.lyrics_path = Some(contents.to_string()),
-        "CDTITLE" => data.data.cd_title = Some(contents.to_string()),
-        "MUSIC" => data.data.music_path = Some(contents.to_string()),
-        "OFFSET" => {
-            data.data.offset = match contents.parse::<f64>() {
-                Ok(thing) => Some(-1.0 * thing),
-                Err(_) => None,
-            }
-        }
-        "BPMS" => {
-            data.data.bpms = match bpm_parse(&format!("{};", contents)) {
-                Ok(thing) => thing
-                    .1
-                    .into_iter()
-                    .map(|(x, y)| {
-                        let time_beater = Rational32::approximate_float(x as f64)
-                            .expect("Failed to parse bpm time.");
-                        (time_beater.floor().to_integer(), time_beater.fract(), y)
-                    })
-                    .collect(),
-                Err(_) => Vec::new(),
-            }
-        }
-        "STOPS" => {
-            data.data.stops = match bpm_parse(&format!("{};", contents)) {
-                Ok(thing) => Some(
-                    thing
-                        .1
-                        .into_iter()
-                        .map(|(x, y)| {
-                            let time_beater = Rational32::approximate_float(x as f64)
-                                .expect("Failed to parse stop time.");
-                            (time_beater.floor().to_integer(), time_beater.fract(), y)
-                        })
-                        .collect(),
-                ),
-                Err(_) => None,
-            }
-        }
-        "SAMPLESTART" => data.data.sample_start = contents.parse().ok(),
-        "SAMPLELENGTH" => data.data.sample_length = contents.parse().ok(),
-        "NOTES" => data.notes.push(parse_main_block(contents)),
-        _ => {}
+fn ws_trimmed<'a, P, O>(parser: P) -> impl Fn(&'a str) -> IResult<&str, O>
+where
+    P: Fn(&'a str) -> IResult<&str, O>,
+{
+    move |input: &str| preceded(multispace0, terminated(&parser, multispace0))(input)
+}
+
+fn comma_separated<'a, P, O>(parser: P) -> impl Fn(&'a str) -> IResult<&str, Vec<O>>
+where
+    P: Fn(&'a str) -> IResult<&str, O>,
+{
+    move |input: &str| separated_nonempty_list(ws_trimmed(char(',')), &parser)(input)
+}
+
+fn beat_pair<'a, P, O>(parser: P) -> impl Fn(&'a str) -> IResult<&str, BeatPair<O>>
+where
+    P: Fn(&'a str) -> IResult<&str, O>,
+{
+    move |input: &'a str| {
+        map_opt(
+            separated_pair(double, ws_trimmed(char('=')), &parser),
+            |(beat, value)| BeatPair::from_pair(beat, value),
+        )(input)
     }
 }
 
-fn parse_main_block(contents: &str) -> ChartData {
-    let forbidden: &[_] = &[';', '\n', '\r'];
-    ChartData::new(
-        contents
-            .trim_end_matches(forbidden)
-            .lines()
-            .filter(|x| *x != "")
-            .skip(5)
-            .collect::<Vec<_>>()
-            .split(|&x| x.starts_with(','))
-            .map(|measure| parse_measure(measure))
-            .collect::<Vec<_>>(),
-    )
+fn offset(input: &str) -> IResult<&str, f64> {
+    map(double, |value| -value)(input)
 }
 
-fn char_to_notetype(character: char) -> Option<NoteType> {
-    match character {
-        '1' => Some(NoteType::Tap),
-        '2' => Some(NoteType::Hold),
-        '3' => Some(NoteType::HoldEnd),
-        '4' => Some(NoteType::Roll),
-        'M' => Some(NoteType::Mine),
-        'L' => Some(NoteType::Lift),
-        'F' => Some(NoteType::Fake),
-        _ => None,
+fn display_bpm(input: &str) -> IResult<&str, DisplayBpm> {
+    alt((
+        map(
+            separated_pair(double, ws_trimmed(char(':')), double),
+            |(min, max)| DisplayBpm::Range(min, max),
+        ),
+        map(double, DisplayBpm::Static),
+        map(char('*'), |_| DisplayBpm::Random),
+    ))(input)
+}
+
+fn notetype(input: &str) -> IResult<&str, Option<NoteType>> {
+    alt((
+        map(char('0'), |_| None),
+        map(char('1'), |_| Some(NoteType::Tap)),
+        map(char('2'), |_| Some(NoteType::Hold)),
+        map(char('3'), |_| Some(NoteType::HoldEnd)),
+        map(char('4'), |_| Some(NoteType::Roll)),
+        map(char('M'), |_| Some(NoteType::Mine)),
+        map(char('L'), |_| Some(NoteType::Lift)),
+        map(char('F'), |_| Some(NoteType::Fake)),
+        map(none_of("\r\n,"), |_| None),
+    ))(input)
+}
+
+fn noterow(input: &str) -> IResult<&str, NoteRow> {
+    map(
+        fold_many1(notetype, (vec![], 0), |(mut noterow, mut index), item| {
+            if let Some(item) = item {
+                noterow.push(Note::new(item, index))
+            }
+            index += 1;
+            (noterow, index)
+        }),
+        |(noterow, _)| noterow,
+    )(input)
+}
+
+fn measure(input: &str) -> IResult<&str, Measure> {
+    map(
+        fold_many0(
+            terminated(noterow, multispace1),
+            (vec![], 0),
+            |(mut noterows, mut index), item| {
+                if !item.is_empty() {
+                    noterows.push((item, index))
+                }
+                index += 1;
+                (noterows, index)
+            },
+        ),
+        |(noterows, total)| {
+            noterows
+                .into_iter()
+                .map(|(item, index)| (item, Rational32::new(index, total)))
+                .collect()
+        },
+    )(input)
+}
+
+fn chart(input: &str) -> IResult<&str, Chart> {
+    preceded(
+        terminated(
+            count(terminated(take_until(":"), char(':')), 5),
+            many0(alt((comment, multispace1))),
+        ),
+        separated_nonempty_list(
+            preceded(
+                many0(alt((comment, multispace1))),
+                terminated(char(','), many0(alt((comment, multispace1)))),
+            ),
+            measure,
+        ),
+    )(input)
+}
+
+fn sm_tag(input: &str) -> IResult<&str, (&str, &str)> {
+    separated_pair(
+        preceded(char('#'), ws_trimmed(is_not(": \t\r\n"))),
+        char(':'),
+        terminated(take_until(";"), char(';')),
+    )(input)
+}
+
+fn comment(input: &str) -> IResult<&str, &str> {
+    preceded(tag("//"), not_line_ending)(input)
+}
+
+fn notedata(input: &str) -> IResult<&str, NoteData> {
+    let mut input = input;
+    let mut nd = NoteData::new();
+
+    while let Ok((output, (tag, value))) = preceded(take_until("#"), sm_tag)(input) {
+        input = output;
+
+        if !value.trim().is_empty() {
+            match tag {
+                "TITLE" => nd.meta.title = Some(value.to_owned()),
+                "SUBTITLE" => nd.meta.subtitle = Some(value.to_owned()),
+                "ARTIST" => nd.meta.artist = Some(value.to_owned()),
+                "TITLETRANSLIT" => nd.meta.title_translit = Some(value.to_owned()),
+                "SUBTITLETRANSLIT" => nd.meta.subtitle_translit = Some(value.to_owned()),
+                "ARTISTTRANSLIT" => nd.meta.artist_translit = Some(value.to_owned()),
+                "GENRE" => nd.meta.genre = Some(value.to_owned()),
+                "CREDIT" => nd.meta.credit = Some(value.to_owned()),
+                "BANNER" => nd.meta.banner_path = Some(value.to_owned()),
+                "BACKGROUND" => nd.meta.background_path = Some(value.to_owned()),
+                "LYRICSPATH" => nd.meta.lyrics_path = Some(value.to_owned()),
+                "CDTITLE" => nd.meta.cd_title = Some(value.to_owned()),
+                "MUSIC" => nd.meta.music_path = Some(value.to_owned()),
+                "SAMPLESTART" => nd.meta.sample_start = Some(ws_trimmed(double)(value)?.1),
+                "SAMPLELENGTH" => nd.meta.sample_length = Some(ws_trimmed(double)(value)?.1),
+                "OFFSET" => nd.meta.offset = Some(ws_trimmed(offset)(value)?.1),
+                "DISPLAYBPM" => nd.meta.display_bpm = Some(ws_trimmed(display_bpm)(value)?.1),
+                "BPMS" => nd.meta.bpms = ws_trimmed(comma_separated(beat_pair(double)))(value)?.1,
+                "STOPS" => {
+                    nd.meta.stops = Some(ws_trimmed(comma_separated(beat_pair(double)))(value)?.1)
+                }
+                "NOTES" => nd.charts.push(chart(value)?.1),
+                _ => {}
+            }
+        }
     }
+    Ok((input, nd))
 }
 
-fn parse_measure(measure: &[&str]) -> Vec<(Rational32, NoteRow)> {
-    let division = measure.len();
-    measure
-        .iter()
-        .enumerate()
-        .map(|(subindex, beat)| {
-            (
-                Rational32::new(subindex as i32, division as i32),
-                parse_line(*beat),
-            )
-        })
-        .filter(|(_, x)| !x.row.is_empty())
-        .collect()
+pub fn parse(input: &str) -> Result<NoteData, Err<(&str, ErrorKind)>> {
+    notedata(input).map(|notedata| notedata.1)
 }
-
-fn parse_line(contents: &str) -> NoteRow {
-    NoteRow {
-        row: contents
-            .chars()
-            .enumerate()
-            .map(|(index, character)| (char_to_notetype(character), index))
-            .filter_map(|(index, character)| index.map(|index| (index, character)))
-            .collect(),
-    }
-}
-
-named!(pub break_to_tags<&str, Vec<(&str,&str)>>,many0!(complete!(read_sm_tag)));
-
-named!(read_sm_tag<&str,(&str,&str)>,
-       do_parse!(
-           take_until!("#") >>
-           take!(1) >>
-           name: take_until!(":") >>
-           take!(1) >>
-            contents: take_until!(";") >>
-            (name, contents)
-       ));
-
-named!( bpm_parse<&str,Vec<(f64,f64)>>, separated_list!(tag!(","), bpm_line));
-
-named!(bpm_line<&str, (f64,f64)>,
-       ws!(do_parse!(
-           time: double >>
-               tag!("=")   >>
-               bpm: double >>
-               ( time / 4.0, bpm ) )
-       )
-);
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nom::Err::Error;
 
     #[test]
-    fn parse_lines_correctly() {
-        assert_eq!(NoteRow { row: vec![] }, parse_line("0000"));
+    fn parse_beat_pair() {
+        let parsed_beat_pair = BeatPair::from_pair(123.456, 654.321).unwrap();
         assert_eq!(
-            NoteRow {
-                row: vec![(NoteType::Tap, 2)],
-            },
-            parse_line("0010")
+            beat_pair(double)("123.456  = 654.321  foo"),
+            Ok(("  foo", parsed_beat_pair.clone()))
+        );
+        assert_eq!(
+            beat_pair(double)("123.456=654.321foo"),
+            Ok(("foo", parsed_beat_pair))
+        );
+    }
+
+    #[test]
+    fn parse_offset() {
+        assert_eq!(offset("1.2  foo"), Ok(("  foo", -1.2)));
+        assert_eq!(offset("-3.4foo"), Ok(("foo", 3.4)));
+    }
+
+    #[test]
+    fn parse_display_bpm() {
+        assert_eq!(
+            display_bpm("1.2  :   3.4  foo"),
+            Ok(("  foo", DisplayBpm::Range(1.2, 3.4)))
+        );
+        assert_eq!(display_bpm("1.2foo"), Ok(("foo", DisplayBpm::Static(1.2))));
+        assert_eq!(display_bpm("*"), Ok(("", DisplayBpm::Random)));
+    }
+
+    #[test]
+    fn parse_notetype() {
+        assert_eq!(notetype("1foo"), Ok(("foo", Some(NoteType::Tap))));
+        assert_eq!(notetype("2foo"), Ok(("foo", Some(NoteType::Hold))));
+        assert_eq!(notetype("3foo"), Ok(("foo", Some(NoteType::HoldEnd))));
+        assert_eq!(notetype("4foo"), Ok(("foo", Some(NoteType::Roll))));
+        assert_eq!(notetype("Mfoo"), Ok(("foo", Some(NoteType::Mine))));
+        assert_eq!(notetype("Lfoo"), Ok(("foo", Some(NoteType::Lift))));
+        assert_eq!(notetype("Ffoo"), Ok(("foo", Some(NoteType::Fake))));
+        assert_eq!(notetype("0foo"), Ok(("foo", None)));
+        assert_eq!(notetype("\rfoo"), Err(Error(("\rfoo", ErrorKind::NoneOf))));
+        assert_eq!(notetype("\nfoo"), Err(Error(("\nfoo", ErrorKind::NoneOf))));
+        assert_eq!(notetype(",foo"), Err(Error((",foo", ErrorKind::NoneOf))));
+    }
+
+    #[test]
+    fn parse_noterow() {
+        assert_eq!(
+            noterow("0101\n"),
+            Ok((
+                "\n",
+                vec![Note::new(NoteType::Tap, 1), Note::new(NoteType::Tap, 3)]
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_measure() {
+        assert_eq!(
+            measure(
+                "0000\n \
+                 0100\n \
+                 0000\n \
+                 0010\n \
+                 0000\n"
+            ),
+            Ok((
+                "",
+                vec![
+                    (vec![Note::new(NoteType::Tap, 1)], Rational32::new(1, 5)),
+                    (vec![Note::new(NoteType::Tap, 2)], Rational32::new(3, 5)),
+                ]
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_comment() {
+        assert_eq!(comment("// foo\nbar"), Ok(("\nbar", " foo")));
+    }
+
+    #[test]
+    fn parse_chart() {
+        assert_eq!(
+            chart(
+                "
+                      foo::
+                      bar ::
+                      0.000,0.000  :\n\n \
+                 0000\n \
+                 0100\n \
+                 0000\n \
+                 0000\n \
+                 , // baz\n
+                 0000\n \
+                 0000\n \
+                 0010\n \
+                 0000\n"
+            ),
+            Ok((
+                "",
+                vec![
+                    vec![(vec![Note::new(NoteType::Tap, 1)], Rational32::new(1, 4))],
+                    vec![(vec![Note::new(NoteType::Tap, 2)], Rational32::new(1, 2))],
+                ]
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_sm_tag() {
+        assert_eq!(
+            sm_tag("# foo  : bar  ;  baz"),
+            Ok(("  baz", ("foo", " bar  ")))
+        );
+        assert_eq!(sm_tag("#foo:bar;baz"), Ok(("baz", ("foo", "bar"))));
+    }
+
+    #[test]
+    fn parse_notedata() {
+        assert_eq!(
+            notedata(
+                "content that is
+
+        #TITLE:bar1;
+
+        not part of a tag is discarded
+
+        #SUBTITLE:bar2;#ARTIST:bar3;#TITLETRANSLIT:bar4;#SUBTITLETRANSLIT:bar5;
+        #ARTISTTRANSLIT:bar6;#GENRE:bar7;#CREDIT:bar8;#BANNER:bar9;
+        #BACKGROUND:bar10;#LYRICSPATH:bar11;#CDTITLE:bar12;#MUSIC:bar13;
+        #SAMPLESTART:  1.2 ;#SAMPLELENGTH: 3.4  ;#BPMS:  1.0=2 ;
+        #STOPS: 3.0=4  ;#OFFSET:  1 ;#DISPLAYBPM: *  ;#STOPS:
+        ;
+        #NOTES: ::::: \
+            0000\n \
+            0100\n \
+            0000\n \
+            0000\n \
+            ;
+        #NOTES: ::::: \
+            0000\n \
+            0000\n \
+            0010\n \
+            0000\n \
+            ;"
+            ),
+            Ok((
+                "",
+                NoteData {
+                    meta: ChartMetadata {
+                        title: Some("bar1".to_owned()),
+                        subtitle: Some("bar2".to_owned()),
+                        artist: Some("bar3".to_owned()),
+                        title_translit: Some("bar4".to_owned()),
+                        subtitle_translit: Some("bar5".to_owned()),
+                        artist_translit: Some("bar6".to_owned()),
+                        genre: Some("bar7".to_owned()),
+                        credit: Some("bar8".to_owned()),
+                        banner_path: Some("bar9".to_owned()),
+                        background_path: Some("bar10".to_owned()),
+                        lyrics_path: Some("bar11".to_owned()),
+                        cd_title: Some("bar12".to_owned()),
+                        music_path: Some("bar13".to_owned()),
+                        sample_start: Some(1.2),
+                        sample_length: Some(3.4),
+                        bpms: vec![BeatPair::from_pair(1., 2.).unwrap()],
+                        stops: Some(vec![BeatPair::from_pair(3., 4.).unwrap()]),
+                        offset: Some(-1.),
+                        display_bpm: Some(DisplayBpm::Random),
+                        background_changes: None,
+                        foreground_changes: None,
+                        selectable: None,
+                    },
+                    charts: vec![
+                        vec![vec![(
+                            vec![Note::new(NoteType::Tap, 1)],
+                            Rational32::new(1, 4),
+                        )]],
+                        vec![vec![(
+                            vec![Note::new(NoteType::Tap, 2)],
+                            Rational32::new(2, 4),
+                        )]],
+                    ],
+                }
+            ))
         );
     }
 }
