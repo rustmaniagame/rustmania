@@ -34,7 +34,7 @@ use num_rational::Rational32;
 use rand::seq::SliceRandom;
 use std::{
     cmp::Ordering,
-    fs::{remove_file, File},
+    fs::{File, OpenOptions},
     io::Read,
     path::PathBuf,
     str::from_utf8,
@@ -46,7 +46,12 @@ const NOTEFIELD_SIZE: usize = 4;
 fn set_up_logging() -> Result<(), fern::InitError> {
     fern::Dispatch::new()
         .format(|out, message, _record| out.finish(format_args!("{}", message)))
-        .chain(fern::log_file("log.txt")?)
+        .chain(
+            OpenOptions::new()
+                .write(true)
+                .create(true)
+                .open("log.txt")?,
+        )
         .apply()?;
     Ok(())
 }
@@ -123,9 +128,7 @@ fn main() {
         .after_help("Licenced under MIT.")
         .get_matches();
 
-    // We delete log.txt because fern appends the logs to the end of the file
-    let _ = remove_file("log.txt");
-    set_up_logging().unwrap_or(());
+    set_up_logging().expect("Failed to setup logging");
 
     let songs_folder = match matches.value_of("SimFile") {
         Some(value) => format!("Songs/{}", value),
