@@ -27,15 +27,6 @@ struct ColumnInfo {
 }
 
 impl ColumnInfo {
-    fn from_column(notes: TimingColumn<GameplayInfo>) -> Self {
-        Self {
-            on_screen: (0, 0),
-            next_to_hit: 0,
-            active_hold: None,
-            notes,
-            judgement_list: TimingColumn::new(),
-        }
-    }
     fn update_on_screen(&mut self, layout: &NoteLayout, time: i64, draw_distance: i64) -> bool {
         let mut updated = false;
         let (draw_start, draw_end) = &mut self.on_screen;
@@ -111,6 +102,18 @@ impl ColumnInfo {
     }
 }
 
+impl From<TimingColumn<GameplayInfo>> for ColumnInfo {
+    fn from(notes: TimingColumn<GameplayInfo>) -> Self {
+        Self {
+            on_screen: (0, 0),
+            next_to_hit: 0,
+            active_hold: None,
+            notes,
+            judgement_list: TimingColumn::new(),
+        }
+    }
+}
+
 impl Notefield {
     pub fn new(layout: NoteLayout, notes: &TimingData<GameplayInfo>, draw_distance: i64) -> Self {
         let batches = vec![
@@ -121,9 +124,7 @@ impl Notefield {
         ];
         Self {
             layout,
-            column_info: array_init::array_init(|i| {
-                ColumnInfo::from_column(notes.notes[i].clone())
-            }),
+            column_info: array_init::array_init(|i| ColumnInfo::from(notes.notes[i].clone())),
             //Using a Vec of SpriteBatch should be temporary, optimally we want to reference these
             // by a NoteType key, but this would require ggez refactoring.
             batches,

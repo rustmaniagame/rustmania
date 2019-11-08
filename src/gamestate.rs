@@ -22,7 +22,7 @@ impl GameState {
             callbacks: vec![],
         }
     }
-    pub fn from(
+    pub fn new(
         scene_stack: Vec<(ScreenBuilder, ResourceMaps)>,
         resources: Resources,
         callbacks: Vec<ResourceCallback>,

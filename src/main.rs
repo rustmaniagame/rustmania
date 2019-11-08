@@ -191,7 +191,7 @@ fn main() {
         .build()
         .expect("Failed to build context");
 
-    let default_note_skin = NoteSkin::from_path(&format!("Noteskins\\{}", noteskin), context)
+    let default_note_skin = NoteSkin::new(&format!("Noteskins\\{}", noteskin), context)
         .expect("Could not open default noteskin");
 
     let p1_options = player_config::PlayerOptions::new(200, 125, 0.8, true, (-128.0, 383.0));
@@ -202,7 +202,7 @@ fn main() {
 
     let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, music_rate);
 
-    let resources = Resources::from(
+    let resources = Resources::new(
         notes,
         vec![PathBuf::from(format!(
             "{}/{}",
@@ -255,7 +255,7 @@ fn main() {
         mount(context, &path, true);
     }
 
-    let mut gamestate = GameState::from(
+    let mut gamestate = GameState::new(
         vec![
             (
                 gameplay_screen,

@@ -146,7 +146,7 @@ impl Resources {
         }
     }
     #[allow(clippy::too_many_arguments)]
-    pub fn from(
+    pub fn new(
         notes: Vec<TimingData<GameplayInfo>>,
         paths: Vec<PathBuf>,
         layouts: Vec<NoteLayout>,

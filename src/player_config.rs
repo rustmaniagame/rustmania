@@ -263,7 +263,7 @@ struct NoteSkinInfo {
 }
 
 impl NoteSkin {
-    pub fn from_path(path: &str, context: &mut ggez::Context) -> Option<Self> {
+    pub fn new(path: &str, context: &mut ggez::Context) -> Option<Self> {
         let mut config_file = match File::open(format!("{}/config.toml", path)) {
             Ok(file) => file,
             Err(_) => return None,
