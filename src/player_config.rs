@@ -8,7 +8,7 @@ use ggez::{
     graphics::{self, Rect, WrapMode},
 };
 use serde_derive::Deserialize;
-use std::{fs::File, io::Read};
+use std::{fs::File, io::Read, path::Path};
 use toml;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -263,8 +263,8 @@ struct NoteSkinInfo {
 }
 
 impl NoteSkin {
-    pub fn new(path: &str, context: &mut ggez::Context) -> Option<Self> {
-        let mut config_file = match File::open(format!("{}/config.toml", path)) {
+    pub fn new(path: &Path, context: &mut ggez::Context) -> Option<Self> {
+        let mut config_file = match File::open(path.join("config.toml")) {
             Ok(file) => file,
             Err(_) => return None,
         };
@@ -323,10 +323,10 @@ impl NoteSkin {
 
 fn image_from_subdirectory(
     context: &mut ggez::Context,
-    path: &str,
+    path: &Path,
     extension: &str,
 ) -> GameResult<graphics::Image> {
-    graphics::Image::new(context, format!("/{}/{}", path, extension))
+    graphics::Image::new(context, Path::new("/").join(path).join(extension))
 }
 
 impl PlayerOptions {

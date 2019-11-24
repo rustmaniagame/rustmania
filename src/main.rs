@@ -36,7 +36,7 @@ use std::{
     cmp::Ordering,
     fs::{File, OpenOptions},
     io::Read,
-    path::PathBuf,
+    path::{Path, PathBuf},
     str::from_utf8,
     time::Instant,
 };
@@ -191,7 +191,7 @@ fn main() {
         .build()
         .expect("Failed to build context");
 
-    let default_note_skin = NoteSkin::new(&format!("Noteskins\\{}", noteskin), context)
+    let default_note_skin = NoteSkin::new(Path::new("Noteskins").join(noteskin).as_path(), context)
         .expect("Could not open default noteskin");
 
     let p1_options = player_config::PlayerOptions::new(200, 125, 0.8, true, (-128.0, 383.0));
