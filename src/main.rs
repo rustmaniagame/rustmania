@@ -1,4 +1,3 @@
-#![allow(deprecated)]
 #![warn(clippy::pedantic)]
 #![allow(
     clippy::cast_possible_truncation,
