@@ -37,7 +37,7 @@ pub struct Note {
 
 type NoteRow = Vec<Note>;
 pub type Measure = Vec<(NoteRow, Fraction)>;
-type Chart = Vec<Measure>;
+pub type Chart = Vec<Measure>;
 
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ChartMetadata {
