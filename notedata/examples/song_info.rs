@@ -37,22 +37,30 @@ fn main() {
         let sim = File::open(sim.as_path()).expect("");
         match extension.to_str() {
             Some("sm") => notedata::NoteData::from_sm(sim).expect("Could not deserialize .sm"),
+            Some("dwi") => notedata::NoteData::from_dwi(sim).expect("Could note deseialize .dwi"),
             _ => panic!("Unsupported extension"),
         }
     } else {
         panic!("Couldn't read extension for simfile");
     };
 
-    if let Some(title) = notedata.meta.title {
+    if let Some(title) = &notedata.meta.title {
         println!("Song title is: {}", title);
     } else {
         println!("Song has no title");
     }
+    if let Some(title) = &notedata.meta.artist {
+        println!("Song artist is: {}", title);
+    } else {
+        println!("Song has no artist info");
+    }
     if !notedata.meta.bpms.is_empty() {
         println!("Bpms are: {}", notedata.meta.bpms[0].value);
         for bpm in notedata.meta.bpms.iter().skip(1) {
-            println!(", {}", bpm.value)
+            println!(", {}", bpm.value);
         }
+    } else {
+        println!("Song has no BPM info");
     }
     if let Some(offset) = notedata.meta.offset {
         println!("Song offset is: {}", offset);

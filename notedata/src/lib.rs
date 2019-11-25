@@ -1,3 +1,4 @@
+mod dwi_parser;
 mod sm_parser;
 
 mod parser_generic;
@@ -107,5 +108,14 @@ impl NoteData {
         simfile.read_to_string(&mut chart_string)?;
 
         sm_parser::parse(&chart_string).map_err(|_| io::Error::from(io::ErrorKind::InvalidInput))
+    }
+    pub fn from_dwi<T>(mut simfile: T) -> Result<Self, io::Error>
+    where
+        T: io::Read,
+    {
+        let mut chart_string = String::new();
+        simfile.read_to_string(&mut chart_string)?;
+
+        dwi_parser::parse(&chart_string).map_err(|_| io::Error::from(io::ErrorKind::InvalidInput))
     }
 }
