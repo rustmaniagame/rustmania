@@ -100,8 +100,8 @@ impl NoteData {
     }
 
     pub fn from_sm<T>(mut simfile: T) -> Result<Self, io::Error>
-        where
-            T: io::Read,
+    where
+        T: io::Read,
     {
         let mut chart_string = String::new();
         simfile.read_to_string(&mut chart_string)?;

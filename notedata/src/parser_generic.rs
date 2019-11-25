@@ -6,8 +6,8 @@ use nom::{
 };
 
 pub fn ws_trimmed<'a, P, O>(parser: P) -> impl Fn(&'a str) -> IResult<&str, O>
-    where
-        P: Fn(&'a str) -> IResult<&str, O>,
+where
+    P: Fn(&'a str) -> IResult<&str, O>,
 {
     move |input: &str| preceded(multispace0, terminated(&parser, multispace0))(input)
 }
