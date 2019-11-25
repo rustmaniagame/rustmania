@@ -10,7 +10,6 @@
 mod difficulty_calc;
 mod gamestate;
 mod music;
-mod notedata;
 mod notefield;
 mod player_config;
 mod screen;
@@ -20,7 +19,6 @@ mod timingdata;
 
 use crate::{
     gamestate::GameState,
-    notedata::NoteType,
     player_config::NoteSkin,
     screen::{
         ElementMap, ElementType, ResourceMap, ResourceType, Resources, ScreenBuilder, ScriptMap,
@@ -29,7 +27,7 @@ use crate::{
 use clap::{crate_authors, crate_version, App, Arg};
 use ggez::{filesystem::mount, graphics::Rect, ContextBuilder};
 use log::{debug, info};
-use num_rational::Rational32;
+use notedata::{Fraction, NoteType};
 use rand::seq::SliceRandom;
 use std::{
     cmp::Ordering,
@@ -58,7 +56,7 @@ fn set_up_logging() -> Result<(), fern::InitError> {
 fn sprite_finder(
     _measure: usize,
     _row_time: f64,
-    row_alignment: Rational32,
+    row_alignment: Fraction,
     note_type: NoteType,
     _column: usize,
 ) -> Rect {

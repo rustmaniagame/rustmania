@@ -1,13 +1,13 @@
 mod sm_parser;
 
-use num_rational::Rational32;
+pub use num_rational::Rational32 as Fraction;
 use serde_derive::{Deserialize, Serialize};
 use std::io;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BeatPair<T> {
     pub beat: i32,
-    pub sub_beat: Rational32,
+    pub sub_beat: Fraction,
     pub value: T,
 }
 
@@ -36,10 +36,10 @@ pub struct Note {
 }
 
 type NoteRow = Vec<Note>;
-pub type Measure = Vec<(NoteRow, Rational32)>;
+pub type Measure = Vec<(NoteRow, Fraction)>;
 type Chart = Vec<Measure>;
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ChartMetadata {
     pub title: Option<String>,
     pub subtitle: Option<String>,
@@ -60,7 +60,8 @@ pub struct ChartMetadata {
     pub sample_start: Option<f64>,
     pub sample_length: Option<f64>,
     pub display_bpm: Option<DisplayBpm>,
-    pub selectable: Option<String>, //it is unclear how this is used in practice, may be better as Option<bool>
+    pub selectable: Option<String>,
+    //it is unclear how this is used in practice, may be better as Option<bool>
     pub background_changes: Option<Vec<BeatPair<String>>>,
     pub foreground_changes: Option<Vec<BeatPair<String>>>,
 }
@@ -73,7 +74,7 @@ pub struct NoteData {
 
 impl<T> BeatPair<T> {
     fn from_pair(beat: f64, value: T) -> Option<Self> {
-        let ratio = Rational32::approximate_float(beat)?;
+        let ratio = Fraction::approximate_float(beat)?;
         Some(Self {
             beat: ratio.to_integer(),
             sub_beat: ratio.fract(),
@@ -88,46 +89,17 @@ impl Note {
     }
 }
 
-impl ChartMetadata {
-    pub fn new() -> Self {
-        Self {
-            title: None,
-            subtitle: None,
-            artist: None,
-            title_translit: None,
-            subtitle_translit: None,
-            artist_translit: None,
-            genre: None,
-            credit: None,
-            banner_path: None,
-            background_path: None,
-            lyrics_path: None,
-            cd_title: None,
-            music_path: None,
-            offset: None,
-            bpms: vec![],
-            stops: None,
-            sample_start: None,
-            sample_length: None,
-            display_bpm: None,
-            selectable: None,
-            background_changes: None,
-            foreground_changes: None,
-        }
-    }
-}
-
 impl NoteData {
     fn new() -> Self {
         Self {
             charts: vec![],
-            meta: ChartMetadata::new(),
+            meta: ChartMetadata::default(),
         }
     }
 
     pub fn from_sm<T>(mut simfile: T) -> Result<Self, io::Error>
-    where
-        T: io::Read,
+        where
+            T: io::Read,
     {
         let mut chart_string = String::new();
         simfile.read_to_string(&mut chart_string)?;

@@ -22,14 +22,10 @@ log = "0.4"
 fern = "0.5"
 array-init = "0.1.0"
 graphics = { path = "graphics" }
+notedata = { path = "notedata" }
 
 [dependencies.ggez]
 git = "https://github.com/ggez/ggez.git"
 
-[dependencies.num-rational]
-version = "0.2"
-default-features = false
-features = ["std", "bigint-std", "serde"]
-
 [workspace]
-members = ["graphics"]
+members = ["graphics", "notedata"]

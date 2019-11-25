@@ -1,5 +1,4 @@
 use crate::{
-    notedata::NoteType,
     timingdata::{GameplayInfo, Judgement},
     NOTEFIELD_SIZE,
 };
@@ -7,6 +6,7 @@ use ggez::{
     error::GameResult,
     graphics::{self, Rect, WrapMode},
 };
+use notedata::NoteType;
 use serde_derive::Deserialize;
 use std::{fs::File, io::Read, path::Path};
 use toml;

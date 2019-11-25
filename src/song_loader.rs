@@ -1,10 +1,9 @@
 use crate::{
-    difficulty_calc,
-    notedata::{self, NoteData},
-    sprite_finder,
+    difficulty_calc, sprite_finder,
     timingdata::{CalcInfo, TimingData},
 };
 use bincode::deserialize;
+use notedata::{self, NoteData};
 use rayon::{iter::ParallelIterator, prelude::*};
 use std::{
     fs::{read_dir, File},

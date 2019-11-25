@@ -1,7 +1,5 @@
-use crate::{
-    notedata::NoteType,
-    timingdata::{CalcInfo, Judgement, TimingData},
-};
+use crate::timingdata::{CalcInfo, Judgement, TimingData};
+use notedata::NoteType;
 use std::cmp::Ordering;
 
 pub fn rate_chart(notes: &TimingData<CalcInfo>, target: f64) -> f64 {

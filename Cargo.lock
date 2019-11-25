@@ -1348,6 +1348,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "notedata"
+version = "0.1.0"
+dependencies = [
+ "nom 5.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "num-rational 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_derive 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "num-bigint"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1908,7 +1918,7 @@ dependencies = [
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "minimp3 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "nom 5.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "num-rational 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "notedata 0.1.0",
  "rand 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rayon 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",

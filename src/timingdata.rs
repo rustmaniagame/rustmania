@@ -1,11 +1,8 @@
-use crate::{
-    notedata::{ChartMetadata, Measure, NoteData, NoteType},
-    NOTEFIELD_SIZE,
-};
+use crate::NOTEFIELD_SIZE;
 use ggez::graphics;
-use num_rational::Rational32;
+use notedata::{ChartMetadata, Fraction, Measure, NoteData, NoteType};
 
-fn value(fraction: Rational32) -> f64 {
+fn value(fraction: Fraction) -> f64 {
     f64::from(*fraction.numer()) / f64::from(*fraction.denom())
 }
 
@@ -116,7 +113,7 @@ where
 {
     pub fn from_notedata<U>(data: &NoteData, sprite_finder: U, rate: f64) -> Vec<Self>
     where
-        U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
+        U: Fn(usize, f64, Fraction, NoteType, usize) -> graphics::Rect,
     {
         let metadata = &data.meta;
         data.charts
@@ -131,7 +128,7 @@ where
         rate: f64,
     ) -> Self
     where
-        U: Fn(usize, f64, Rational32, NoteType, usize) -> graphics::Rect,
+        U: Fn(usize, f64, Fraction, NoteType, usize) -> graphics::Rect,
     {
         let offset = meta.offset.unwrap_or(0.0) * 1000.0;
         let mut bpms: Vec<_> = meta.bpms.iter().map(|beat_pair| (beat_pair, 0.0)).collect();
