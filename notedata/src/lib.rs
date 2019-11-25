@@ -1,5 +1,7 @@
 mod sm_parser;
 
+mod parser_generic;
+
 pub use num_rational::Rational32 as Fraction;
 use serde_derive::{Deserialize, Serialize};
 use std::io;

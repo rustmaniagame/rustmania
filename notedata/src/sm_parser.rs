@@ -1,8 +1,11 @@
-use super::*;
+use crate::{
+    parser_generic::{stepmania_tag, ws_trimmed},
+    BeatPair, Chart, DisplayBpm, Measure, Note, NoteData, NoteRow, NoteType,
+};
 use nom::{
     branch::alt,
-    bytes::complete::{is_not, tag, take_until},
-    character::complete::{char, multispace0, multispace1, none_of, not_line_ending},
+    bytes::complete::{tag, take_until},
+    character::complete::{char, multispace1, none_of, not_line_ending},
     combinator::{map, map_opt},
     error::ErrorKind,
     multi::{count, fold_many0, fold_many1, many0, separated_nonempty_list},
@@ -11,13 +14,6 @@ use nom::{
     Err, IResult,
 };
 use num_rational::Rational32;
-
-fn ws_trimmed<'a, P, O>(parser: P) -> impl Fn(&'a str) -> IResult<&str, O>
-where
-    P: Fn(&'a str) -> IResult<&str, O>,
-{
-    move |input: &str| preceded(multispace0, terminated(&parser, multispace0))(input)
-}
 
 fn comma_separated<'a, P, O>(parser: P) -> impl Fn(&'a str) -> IResult<&str, Vec<O>>
 where
@@ -118,14 +114,6 @@ fn chart(input: &str) -> IResult<&str, Chart> {
     )(input)
 }
 
-fn sm_tag(input: &str) -> IResult<&str, (&str, &str)> {
-    separated_pair(
-        preceded(char('#'), ws_trimmed(is_not(": \t\r\n"))),
-        char(':'),
-        terminated(take_until(";"), char(';')),
-    )(input)
-}
-
 fn comment(input: &str) -> IResult<&str, &str> {
     preceded(tag("//"), not_line_ending)(input)
 }
@@ -134,7 +122,7 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
     let mut input = input;
     let mut nd = NoteData::new();
 
-    while let Ok((output, (tag, value))) = preceded(take_until("#"), sm_tag)(input) {
+    while let Ok((output, (tag, value))) = preceded(take_until("#"), stepmania_tag)(input) {
         input = output;
 
         if !value.trim().is_empty() {
@@ -175,6 +163,7 @@ pub fn parse(input: &str) -> Result<NoteData, Err<(&str, ErrorKind)>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ChartMetadata;
     use nom::Err::Error;
 
     #[test]
@@ -288,10 +277,10 @@ mod tests {
     #[test]
     fn parse_sm_tag() {
         assert_eq!(
-            sm_tag("# foo  : bar  ;  baz"),
+            stepmania_tag("# foo  : bar  ;  baz"),
             Ok(("  baz", ("foo", " bar  ")))
         );
-        assert_eq!(sm_tag("#foo:bar;baz"), Ok(("baz", ("foo", "bar"))));
+        assert_eq!(stepmania_tag("#foo:bar;baz"), Ok(("baz", ("foo", "bar"))));
     }
 
     #[test]
