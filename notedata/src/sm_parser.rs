@@ -1,12 +1,12 @@
 use crate::{
-    parser_generic::{stepmania_tag, ws_trimmed},
-    BeatPair, Chart, DisplayBpm, Measure, Note, NoteData, NoteRow, NoteType,
+    parser_generic::{beat_pair, comma_separated, stepmania_tag, ws_trimmed},
+    Chart, DisplayBpm, Measure, Note, NoteData, NoteRow, NoteType,
 };
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
     character::complete::{char, multispace1, none_of, not_line_ending},
-    combinator::{map, map_opt},
+    combinator::map,
     error::ErrorKind,
     multi::{count, fold_many0, fold_many1, many0, separated_nonempty_list},
     number::complete::double,
@@ -14,25 +14,6 @@ use nom::{
     Err, IResult,
 };
 use num_rational::Rational32;
-
-fn comma_separated<'a, P, O>(parser: P) -> impl Fn(&'a str) -> IResult<&str, Vec<O>>
-where
-    P: Fn(&'a str) -> IResult<&str, O>,
-{
-    move |input: &str| separated_nonempty_list(ws_trimmed(char(',')), &parser)(input)
-}
-
-fn beat_pair<'a, P, O>(parser: P) -> impl Fn(&'a str) -> IResult<&str, BeatPair<O>>
-where
-    P: Fn(&'a str) -> IResult<&str, O>,
-{
-    move |input: &'a str| {
-        map_opt(
-            separated_pair(double, ws_trimmed(char('=')), &parser),
-            |(beat, value)| BeatPair::from_pair(beat, value),
-        )(input)
-    }
-}
 
 fn offset(input: &str) -> IResult<&str, f64> {
     map(double, |value| -value)(input)
@@ -163,21 +144,8 @@ pub fn parse(input: &str) -> Result<NoteData, Err<(&str, ErrorKind)>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ChartMetadata;
+    use crate::{BeatPair, ChartMetadata};
     use nom::Err::Error;
-
-    #[test]
-    fn parse_beat_pair() {
-        let parsed_beat_pair = BeatPair::from_pair(123.456, 654.321).unwrap();
-        assert_eq!(
-            beat_pair(double)("123.456  = 654.321  foo"),
-            Ok(("  foo", parsed_beat_pair.clone()))
-        );
-        assert_eq!(
-            beat_pair(double)("123.456=654.321foo"),
-            Ok(("foo", parsed_beat_pair))
-        );
-    }
 
     #[test]
     fn parse_offset() {
@@ -272,15 +240,6 @@ mod tests {
                 ]
             ))
         );
-    }
-
-    #[test]
-    fn parse_sm_tag() {
-        assert_eq!(
-            stepmania_tag("# foo  : bar  ;  baz"),
-            Ok(("  baz", ("foo", " bar  ")))
-        );
-        assert_eq!(stepmania_tag("#foo:bar;baz"), Ok(("baz", ("foo", "bar"))));
     }
 
     #[test]
