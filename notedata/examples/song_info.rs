@@ -55,10 +55,11 @@ fn main() {
         println!("Song has no artist info");
     }
     if !notedata.meta.bpms.is_empty() {
-        println!("Bpms are: {}", notedata.meta.bpms[0].value);
+        print!("Bpms are: {}", notedata.meta.bpms[0].value);
         for bpm in notedata.meta.bpms.iter().skip(1) {
-            println!(", {}", bpm.value);
+            print!(", {}", bpm.value);
         }
+        println!();
     } else {
         println!("Song has no BPM info");
     }
