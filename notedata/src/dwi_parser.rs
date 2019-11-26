@@ -1,11 +1,135 @@
 use crate::{
     parser_generic::{beat_pair, comma_separated, stepmania_tag, ws_trimmed},
-    BeatPair, NoteData,
+    BeatPair, Fraction, Measure, Note, NoteData, NoteRow, NoteType,
 };
 use nom::{
-    bytes::complete::take_until, error::ErrorKind, number::complete::double, sequence::preceded,
-    Err, IResult,
+    bytes::complete::take_until, error::ErrorKind, multi::fold_many_m_n, number::complete::double,
+    sequence::preceded, Err, IResult,
 };
+
+fn _dwi_noterow(input: &str) -> IResult<&str, NoteRow> {
+    match input.chars().next() {
+        //5 should not appear in normal dwi files, but it can be parsed by stepmania 5
+        Some('0') | Some('5') => Ok((&input[1..], vec![])),
+        Some('4') => Ok((
+            &input[1..],
+            vec![Note {
+                note_type: NoteType::Tap,
+                column: 0,
+            }],
+        )),
+        Some('2') => Ok((
+            &input[1..],
+            vec![Note {
+                note_type: NoteType::Tap,
+                column: 1,
+            }],
+        )),
+        Some('8') => Ok((
+            &input[1..],
+            vec![Note {
+                note_type: NoteType::Tap,
+                column: 2,
+            }],
+        )),
+        Some('6') => Ok((
+            &input[1..],
+            vec![Note {
+                note_type: NoteType::Tap,
+                column: 3,
+            }],
+        )),
+        Some('1') => Ok((
+            &input[1..],
+            vec![
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 0,
+                },
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 1,
+                },
+            ],
+        )),
+        Some('7') => Ok((
+            &input[1..],
+            vec![
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 0,
+                },
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 2,
+                },
+            ],
+        )),
+        Some('B') => Ok((
+            &input[1..],
+            vec![
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 0,
+                },
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 3,
+                },
+            ],
+        )),
+        Some('A') => Ok((
+            &input[1..],
+            vec![
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 1,
+                },
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 2,
+                },
+            ],
+        )),
+        Some('3') => Ok((
+            &input[1..],
+            vec![
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 1,
+                },
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 3,
+                },
+            ],
+        )),
+        Some('9') => Ok((
+            &input[1..],
+            vec![
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 2,
+                },
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 3,
+                },
+            ],
+        )),
+        _ => Err(Err::Failure((input, ErrorKind::Char))),
+    }
+}
+
+fn _dwi_measure_n(input: &str, n: usize) -> IResult<&str, Measure> {
+    fold_many_m_n(n, n, _dwi_noterow, (vec![], 0), |(mut acc, idx), item| {
+        if !item.is_empty() {
+            acc.push((item, Fraction::new(idx, n as i32)));
+        }
+        (acc, idx + 1)
+    })(input)
+    .map(|(x, (y, _))| (x, y))
+}
 
 pub fn parse(input: &str) -> Result<NoteData, Err<(&str, ErrorKind)>> {
     notedata(input).map(|notedata| notedata.1)
@@ -99,6 +223,44 @@ mod tests {
                     charts: vec![],
                 }
             ))
+        );
+    }
+    #[test]
+    fn temp() {
+        assert_eq!(
+            Ok((
+                "\n98764321",
+                vec![
+                    (
+                        vec![
+                            Note {
+                                note_type: NoteType::Tap,
+                                column: 0
+                            },
+                            Note {
+                                note_type: NoteType::Tap,
+                                column: 1
+                            }
+                        ],
+                        Fraction::new(0, 1)
+                    ),
+                    (
+                        vec![Note {
+                            note_type: NoteType::Tap,
+                            column: 0
+                        }],
+                        Fraction::new(3, 8)
+                    ),
+                    (
+                        vec![Note {
+                            note_type: NoteType::Tap,
+                            column: 2
+                        }],
+                        Fraction::new(3, 4)
+                    ),
+                ]
+            )),
+            _dwi_measure_n("10045080\n98764321", 8)
         );
     }
 }
