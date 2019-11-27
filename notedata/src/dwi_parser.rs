@@ -143,6 +143,37 @@ fn _dwi_measure_n(input: &str, n: usize) -> IResult<&str, Measure> {
     .map(|(x, (y, _))| (x, y))
 }
 
+fn _dwi_measure_8(input: &str) -> IResult<&str, Measure> {
+    _dwi_measure_n(input, 8)
+}
+
+fn _dwi_measure_16(input: &str) -> IResult<&str, Measure> {
+    _dwi_measure_n(input, 16)
+}
+
+fn _dwi_measure_24(input: &str) -> IResult<&str, Measure> {
+    _dwi_measure_n(input, 24)
+}
+
+fn _dwi_measure_64(input: &str) -> IResult<&str, Measure> {
+    _dwi_measure_n(input, 64)
+}
+
+fn _dwi_measure_192(input: &str) -> IResult<&str, Measure> {
+    _dwi_measure_n(input, 192)
+}
+
+fn _dwi_measure(input: &str) -> IResult<&str, Measure> {
+    match input.chars().next() {
+        Some('(') => terminated(_dwi_measure_16, char(')'))(&input[1..]),
+        Some('[') => terminated(_dwi_measure_24, char(']'))(&input[1..]),
+        Some('{') => terminated(_dwi_measure_64, char('}'))(&input[1..]),
+        Some('`') => terminated(_dwi_measure_192, char('\''))(&input[1..]),
+        Some(_) => _dwi_measure_8(input),
+        None => Err(Err::Error((input, ErrorKind::CrLf))),
+    }
+}
+
 fn _dwi_chord(input: &str) -> IResult<&str, NoteRow> {
     terminated(
         preceded(
@@ -261,7 +292,7 @@ mod tests {
     fn parse_measure() {
         assert_eq!(
             Ok((
-                "\n98764321",
+                "\n",
                 vec![
                     (
                         vec![
@@ -302,7 +333,86 @@ mod tests {
                     ),
                 ]
             )),
-            _dwi_measure_n("100<49>5080\n98764321", 8)
+            _dwi_measure("100<49>5080\n")
+        );
+        assert_eq!(
+            Ok((
+                "\n",
+                vec![
+                    (
+                        vec![
+                            Note {
+                                note_type: NoteType::Tap,
+                                column: 0
+                            },
+                            Note {
+                                note_type: NoteType::Tap,
+                                column: 2
+                            },
+                            Note {
+                                note_type: NoteType::Tap,
+                                column: 3
+                            }
+                        ],
+                        Fraction::new(7, 16)
+                    ),
+                    (
+                        vec![
+                            Note {
+                                note_type: NoteType::Tap,
+                                column: 0
+                            },
+                            Note {
+                                note_type: NoteType::Tap,
+                                column: 3
+                            }
+                        ],
+                        Fraction::new(7, 8)
+                    ),
+                ]
+            )),
+            _dwi_measure("(0000000<94>005000B0)\n")
+        );
+        assert_eq!(
+            Ok((
+                "\n",
+                vec![(
+                    vec![Note {
+                        note_type: NoteType::Tap,
+                        column: 1
+                    },],
+                    Fraction::new(1, 24)
+                )]
+            )),
+            _dwi_measure("[020000000000000000000000]\n")
+        );
+        assert_eq!(
+            Ok((
+                "\n",
+                vec![(
+                    vec![Note {
+                        note_type: NoteType::Tap,
+                        column: 1
+                    },],
+                    Fraction::new(1, 64)
+                )]
+            )),
+            _dwi_measure("{0200000000000000000000000000000000000000000000000000000000000000}\n")
+        );
+        assert_eq!(
+            Ok((
+                "\n",
+                vec![(
+                    vec![Note {
+                        note_type: NoteType::Tap,
+                        column: 1
+                    },],
+                    Fraction::new(1, 192)
+                )]
+            )),
+            _dwi_measure("`02000000000000000000000000000000000000000000000000000000000000000\
+            00000000000000000000000000000000000000000000000000000000000000000000000000000000000000\
+            00000000000000000000000000000000000000000\'\n")
         );
     }
 
