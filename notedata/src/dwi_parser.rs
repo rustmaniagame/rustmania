@@ -2,6 +2,7 @@ use crate::{
     parser_generic::{beat_pair, comma_separated, stepmania_tag, ws_trimmed},
     BeatPair, Fraction, Measure, Note, NoteData, NoteRow, NoteType,
 };
+use nom::branch::alt;
 use nom::{
     bytes::complete::take_until,
     character::complete::char,
@@ -127,12 +128,18 @@ fn _dwi_noterow(input: &str) -> IResult<&str, NoteRow> {
 }
 
 fn _dwi_measure_n(input: &str, n: usize) -> IResult<&str, Measure> {
-    fold_many_m_n(n, n, _dwi_noterow, (vec![], 0), |(mut acc, idx), item| {
-        if !item.is_empty() {
-            acc.push((item, Fraction::new(idx, n as i32)));
-        }
-        (acc, idx + 1)
-    })(input)
+    fold_many_m_n(
+        n,
+        n,
+        alt((_dwi_noterow, _dwi_chord)),
+        (vec![], 0),
+        |(mut acc, idx), item| {
+            if !item.is_empty() {
+                acc.push((item, Fraction::new(idx, n as i32)));
+            }
+            (acc, idx + 1)
+        },
+    )(input)
     .map(|(x, (y, _))| (x, y))
 }
 
@@ -270,10 +277,20 @@ mod tests {
                         Fraction::new(0, 1)
                     ),
                     (
-                        vec![Note {
-                            note_type: NoteType::Tap,
-                            column: 0
-                        }],
+                        vec![
+                            Note {
+                                note_type: NoteType::Tap,
+                                column: 0
+                            },
+                            Note {
+                                note_type: NoteType::Tap,
+                                column: 2
+                            },
+                            Note {
+                                note_type: NoteType::Tap,
+                                column: 3
+                            }
+                        ],
                         Fraction::new(3, 8)
                     ),
                     (
@@ -285,7 +302,7 @@ mod tests {
                     ),
                 ]
             )),
-            _dwi_measure_n("10045080\n98764321", 8)
+            _dwi_measure_n("100<49>5080\n98764321", 8)
         );
     }
 
