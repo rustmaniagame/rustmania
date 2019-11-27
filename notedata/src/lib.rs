@@ -1,10 +1,10 @@
 #![warn(clippy::pedantic)]
 #![allow(
-clippy::cast_possible_truncation,
-clippy::cast_possible_wrap,
-clippy::cast_precision_loss,
-clippy::cast_sign_loss,
-clippy::module_name_repetitions
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_precision_loss,
+    clippy::cast_sign_loss,
+    clippy::module_name_repetitions
 )]
 
 mod dwi_parser;
@@ -85,6 +85,13 @@ pub struct NoteData {
 }
 
 impl<T> BeatPair<T> {
+    fn at_start(value: T) -> Self {
+        Self {
+            beat: 0,
+            sub_beat: Fraction::new(0, 1),
+            value,
+        }
+    }
     fn from_pair(beat: f64, value: T) -> Option<Self> {
         let ratio = Fraction::approximate_float(beat)?;
         Some(Self {

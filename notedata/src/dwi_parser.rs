@@ -173,8 +173,7 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                 "TITLE" => nd.meta.title = Some(value.to_owned()),
                 "ARTIST" => nd.meta.artist = Some(value.to_owned()),
                 "BPM" => {
-                    let beat_pair = BeatPair::from_pair(0.0, ws_trimmed(double)(value)?.1)
-                        .expect("Could not parse initial bpm into internal format");
+                    let beat_pair = BeatPair::at_start(ws_trimmed(double)(value)?.1);
                     if let Some(bpm) = nd.meta.bpms.get_mut(0) {
                         *bpm = beat_pair
                     } else {
