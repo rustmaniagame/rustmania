@@ -3,8 +3,13 @@ use crate::{
     BeatPair, Fraction, Measure, Note, NoteData, NoteRow, NoteType,
 };
 use nom::{
-    bytes::complete::take_until, error::ErrorKind, multi::fold_many_m_n, number::complete::double,
-    sequence::preceded, Err, IResult,
+    bytes::complete::take_until,
+    character::complete::char,
+    error::ErrorKind,
+    multi::{fold_many0, fold_many_m_n},
+    number::complete::double,
+    sequence::{preceded, terminated},
+    Err, IResult,
 };
 
 fn _dwi_noterow(input: &str) -> IResult<&str, NoteRow> {
@@ -117,7 +122,7 @@ fn _dwi_noterow(input: &str) -> IResult<&str, NoteRow> {
                 },
             ],
         )),
-        _ => Err(Err::Failure((input, ErrorKind::Char))),
+        _ => Err(Err::Error((input, ErrorKind::Char))),
     }
 }
 
@@ -129,6 +134,27 @@ fn _dwi_measure_n(input: &str, n: usize) -> IResult<&str, Measure> {
         (acc, idx + 1)
     })(input)
     .map(|(x, (y, _))| (x, y))
+}
+
+fn _dwi_chord(input: &str) -> IResult<&str, NoteRow> {
+    terminated(
+        preceded(
+            char('<'),
+            fold_many0(_dwi_noterow, vec![], |mut acc, item| {
+                if !item.is_empty() {
+                    acc.push(item);
+                }
+                acc
+            }),
+        ),
+        char('>'),
+    )(input)
+    .map(|(input, output)| {
+        let mut collected: Vec<Note> = output.into_iter().flatten().collect();
+        collected.sort_by(|x, y| x.column.cmp(&y.column));
+        collected.dedup_by(|x, y| x.column == y.column);
+        (input, collected)
+    })
 }
 
 pub fn parse(input: &str) -> Result<NoteData, Err<(&str, ErrorKind)>> {
@@ -226,7 +252,7 @@ mod tests {
         );
     }
     #[test]
-    fn temp() {
+    fn parse_measure() {
         assert_eq!(
             Ok((
                 "\n98764321",
@@ -262,5 +288,62 @@ mod tests {
             )),
             _dwi_measure_n("10045080\n98764321", 8)
         );
+    }
+
+    #[test]
+    fn parse_chord() {
+        assert_eq!(Ok(("", vec![])), _dwi_chord("<>"));
+        let hand_example = Ok((
+            "",
+            vec![
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 0,
+                },
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 1,
+                },
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 3,
+                },
+            ],
+        ));
+        assert_eq!(hand_example, _dwi_chord("<16>"));
+        assert_eq!(hand_example, _dwi_chord("<61>"));
+        assert_eq!(hand_example, _dwi_chord("<34>"));
+        assert_eq!(hand_example, _dwi_chord("<B2>"));
+        assert_eq!(hand_example, _dwi_chord("<31>"));
+        assert_eq!(hand_example, _dwi_chord("<426>"));
+        let quad_example = Ok((
+            "",
+            vec![
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 0,
+                },
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 1,
+                },
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 2,
+                },
+                Note {
+                    note_type: NoteType::Tap,
+                    column: 3,
+                },
+            ],
+        ));
+        assert_eq!(quad_example, _dwi_chord("<BA>"));
+        assert_eq!(quad_example, _dwi_chord("<AB>"));
+        assert_eq!(quad_example, _dwi_chord("<91>"));
+        assert_eq!(quad_example, _dwi_chord("<816>"));
+        assert_eq!(quad_example, _dwi_chord("<6428>"));
+        assert_eq!(quad_example, _dwi_chord("<97A>"));
+        assert_eq!(quad_example, _dwi_chord("<B50A>"));
+        assert!(_dwi_chord("246").is_err());
     }
 }
