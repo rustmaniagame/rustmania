@@ -221,6 +221,9 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
             match tag {
                 "TITLE" => nd.meta.title = Some(value.to_owned()),
                 "ARTIST" => nd.meta.artist = Some(value.to_owned()),
+                "GENRE" => nd.meta.genre = Some(value.to_owned()),
+                "CDTITLE" => nd.meta.cd_title = Some(value.to_owned()),
+                "FILE" => nd.meta.music_path = Some(value.to_owned()),
                 "BPM" => {
                     let beat_pair = BeatPair::at_start(ws_trimmed(double)(value)?.1);
                     if let Some(bpm) = nd.meta.bpms.get_mut(0) {
@@ -270,6 +273,9 @@ mod tests {
         not part of a tag is discarded
 
         #SUBTITLE:bar2;#ARTIST:bar3;
+        #GENRE:bar4;
+        #CDTITLE:bar5;
+        #FILE:bar6.mp3;
         #BPM:123.4;
         #CHANGEBPM:23.4=56.7,256=128;
         #SINGLE:SMANIC:17:
@@ -286,13 +292,13 @@ mod tests {
                         title_translit: None,
                         subtitle_translit: None,
                         artist_translit: None,
-                        genre: None,
+                        genre: Some("bar4".to_owned()),
                         credit: None,
                         banner_path: None,
                         background_path: None,
                         lyrics_path: None,
-                        cd_title: None,
-                        music_path: None,
+                        cd_title: Some("bar5".to_owned()),
+                        music_path: Some("bar6.mp3".to_owned()),
                         sample_start: None,
                         sample_length: None,
                         bpms: vec![
