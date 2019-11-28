@@ -2,18 +2,18 @@ use crate::{
     parser_generic::{beat_pair, comma_separated, stepmania_tag, ws_trimmed},
     BeatPair, Fraction, Measure, Note, NoteData, NoteRow, NoteType,
 };
-use nom::branch::alt;
 use nom::{
+    branch::alt,
     bytes::complete::take_until,
-    character::complete::char,
+    character::complete::{char, multispace0},
     error::ErrorKind,
-    multi::{fold_many0, fold_many_m_n},
+    multi::{count, fold_many0, fold_many_m_n},
     number::complete::double,
     sequence::{preceded, terminated},
     Err, IResult,
 };
 
-fn _dwi_noterow(input: &str) -> IResult<&str, NoteRow> {
+fn dwi_noterow(input: &str) -> IResult<&str, NoteRow> {
     match input.chars().next() {
         //5 should not appear in normal dwi files, but it can be parsed by stepmania 5
         Some('0') | Some('5') => Ok((&input[1..], vec![])),
@@ -127,11 +127,11 @@ fn _dwi_noterow(input: &str) -> IResult<&str, NoteRow> {
     }
 }
 
-fn _dwi_measure_n(input: &str, n: usize) -> IResult<&str, Measure> {
+fn dwi_measure_n(input: &str, n: usize) -> IResult<&str, Measure> {
     fold_many_m_n(
         n,
         n,
-        alt((_dwi_noterow, _dwi_chord)),
+        alt((dwi_noterow, dwi_chord)),
         (vec![], 0),
         |(mut acc, idx), item| {
             if !item.is_empty() {
@@ -143,42 +143,53 @@ fn _dwi_measure_n(input: &str, n: usize) -> IResult<&str, Measure> {
     .map(|(x, (y, _))| (x, y))
 }
 
-fn _dwi_measure_8(input: &str) -> IResult<&str, Measure> {
-    _dwi_measure_n(input, 8)
+fn dwi_measure_8(input: &str) -> IResult<&str, Measure> {
+    dwi_measure_n(input, 8)
 }
 
-fn _dwi_measure_16(input: &str) -> IResult<&str, Measure> {
-    _dwi_measure_n(input, 16)
+fn dwi_measure_16(input: &str) -> IResult<&str, Measure> {
+    dwi_measure_n(input, 16)
 }
 
-fn _dwi_measure_24(input: &str) -> IResult<&str, Measure> {
-    _dwi_measure_n(input, 24)
+fn dwi_measure_24(input: &str) -> IResult<&str, Measure> {
+    dwi_measure_n(input, 24)
 }
 
-fn _dwi_measure_64(input: &str) -> IResult<&str, Measure> {
-    _dwi_measure_n(input, 64)
+fn dwi_measure_64(input: &str) -> IResult<&str, Measure> {
+    dwi_measure_n(input, 64)
 }
 
-fn _dwi_measure_192(input: &str) -> IResult<&str, Measure> {
-    _dwi_measure_n(input, 192)
+fn dwi_measure_192(input: &str) -> IResult<&str, Measure> {
+    dwi_measure_n(input, 192)
 }
 
-fn _dwi_measure(input: &str) -> IResult<&str, Measure> {
+fn dwi_measure(input: &str) -> IResult<&str, Measure> {
     match input.chars().next() {
-        Some('(') => terminated(_dwi_measure_16, char(')'))(&input[1..]),
-        Some('[') => terminated(_dwi_measure_24, char(']'))(&input[1..]),
-        Some('{') => terminated(_dwi_measure_64, char('}'))(&input[1..]),
-        Some('`') => terminated(_dwi_measure_192, char('\''))(&input[1..]),
-        Some(_) => _dwi_measure_8(input),
-        None => Err(Err::Error((input, ErrorKind::CrLf))),
+        Some('(') => terminated(dwi_measure_16, char(')'))(&input[1..]),
+        Some('[') => terminated(dwi_measure_24, char(']'))(&input[1..]),
+        Some('{') => terminated(dwi_measure_64, char('}'))(&input[1..]),
+        Some('`') => terminated(dwi_measure_192, char('\''))(&input[1..]),
+        Some(_) => dwi_measure_8(input),
+        None => Err(Err::Error((input, ErrorKind::Eof))),
     }
 }
 
-fn _dwi_chord(input: &str) -> IResult<&str, NoteRow> {
+fn dwi_chart(input: &str) -> IResult<&str, Vec<Measure>> {
+    fold_many0(
+        preceded(multispace0, dwi_measure),
+        vec![],
+        |mut acc, measure| {
+            acc.push(measure);
+            acc
+        },
+    )(input)
+}
+
+fn dwi_chord(input: &str) -> IResult<&str, NoteRow> {
     terminated(
         preceded(
             char('<'),
-            fold_many0(_dwi_noterow, vec![], |mut acc, item| {
+            fold_many0(dwi_noterow, vec![], |mut acc, item| {
                 if !item.is_empty() {
                     acc.push(item);
                 }
@@ -226,6 +237,16 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                         .bpms
                         .append(&mut ws_trimmed(comma_separated(beat_pair(double)))(value)?.1)
                 }
+                "SINGLE" => nd.charts.push(
+                    preceded(
+                        terminated(
+                            count(terminated(take_until(":"), char(':')), 2),
+                            multispace0,
+                        ),
+                        dwi_chart,
+                    )(value)?
+                    .1,
+                ),
                 _ => {}
             }
         }
@@ -250,7 +271,10 @@ mod tests {
 
         #SUBTITLE:bar2;#ARTIST:bar3;
         #BPM:123.4;
-        #CHANGEBPM:23.4=56.7,256=128;"
+        #CHANGEBPM:23.4=56.7,256=128;
+        #SINGLE:SMANIC:17:
+        00004008
+        (<42>000100060000000);"
             ),
             Ok((
                 "",
@@ -283,7 +307,59 @@ mod tests {
                         foreground_changes: None,
                         selectable: None,
                     },
-                    charts: vec![],
+                    charts: vec![vec![
+                        vec![
+                            (
+                                vec![Note {
+                                    note_type: NoteType::Tap,
+                                    column: 0
+                                }],
+                                Fraction::new(1, 2)
+                            ),
+                            (
+                                vec![Note {
+                                    note_type: NoteType::Tap,
+                                    column: 2
+                                }],
+                                Fraction::new(7, 8)
+                            )
+                        ],
+                        vec![
+                            (
+                                vec![
+                                    Note {
+                                        note_type: NoteType::Tap,
+                                        column: 0
+                                    },
+                                    Note {
+                                        note_type: NoteType::Tap,
+                                        column: 1
+                                    }
+                                ],
+                                Fraction::new(0, 1)
+                            ),
+                            (
+                                vec![
+                                    Note {
+                                        note_type: NoteType::Tap,
+                                        column: 0
+                                    },
+                                    Note {
+                                        note_type: NoteType::Tap,
+                                        column: 1
+                                    }
+                                ],
+                                Fraction::new(1, 4)
+                            ),
+                            (
+                                vec![Note {
+                                    note_type: NoteType::Tap,
+                                    column: 3
+                                }],
+                                Fraction::new(1, 2)
+                            )
+                        ]
+                    ]],
                 }
             ))
         );
@@ -333,7 +409,7 @@ mod tests {
                     ),
                 ]
             )),
-            _dwi_measure("100<49>5080\n")
+            dwi_measure("100<49>5080\n")
         );
         assert_eq!(
             Ok((
@@ -371,7 +447,7 @@ mod tests {
                     ),
                 ]
             )),
-            _dwi_measure("(0000000<94>005000B0)\n")
+            dwi_measure("(0000000<94>005000B0)\n")
         );
         assert_eq!(
             Ok((
@@ -384,7 +460,7 @@ mod tests {
                     Fraction::new(1, 24)
                 )]
             )),
-            _dwi_measure("[020000000000000000000000]\n")
+            dwi_measure("[020000000000000000000000]\n")
         );
         assert_eq!(
             Ok((
@@ -397,7 +473,7 @@ mod tests {
                     Fraction::new(1, 64)
                 )]
             )),
-            _dwi_measure("{0200000000000000000000000000000000000000000000000000000000000000}\n")
+            dwi_measure("{0200000000000000000000000000000000000000000000000000000000000000}\n")
         );
         assert_eq!(
             Ok((
@@ -410,7 +486,7 @@ mod tests {
                     Fraction::new(1, 192)
                 )]
             )),
-            _dwi_measure("`02000000000000000000000000000000000000000000000000000000000000000\
+            dwi_measure("`02000000000000000000000000000000000000000000000000000000000000000\
             00000000000000000000000000000000000000000000000000000000000000000000000000000000000000\
             00000000000000000000000000000000000000000\'\n")
         );
@@ -418,7 +494,7 @@ mod tests {
 
     #[test]
     fn parse_chord() {
-        assert_eq!(Ok(("", vec![])), _dwi_chord("<>"));
+        assert_eq!(Ok(("", vec![])), dwi_chord("<>"));
         let hand_example = Ok((
             "",
             vec![
@@ -436,12 +512,12 @@ mod tests {
                 },
             ],
         ));
-        assert_eq!(hand_example, _dwi_chord("<16>"));
-        assert_eq!(hand_example, _dwi_chord("<61>"));
-        assert_eq!(hand_example, _dwi_chord("<34>"));
-        assert_eq!(hand_example, _dwi_chord("<B2>"));
-        assert_eq!(hand_example, _dwi_chord("<31>"));
-        assert_eq!(hand_example, _dwi_chord("<426>"));
+        assert_eq!(hand_example, dwi_chord("<16>"));
+        assert_eq!(hand_example, dwi_chord("<61>"));
+        assert_eq!(hand_example, dwi_chord("<34>"));
+        assert_eq!(hand_example, dwi_chord("<B2>"));
+        assert_eq!(hand_example, dwi_chord("<31>"));
+        assert_eq!(hand_example, dwi_chord("<426>"));
         let quad_example = Ok((
             "",
             vec![
@@ -463,13 +539,13 @@ mod tests {
                 },
             ],
         ));
-        assert_eq!(quad_example, _dwi_chord("<BA>"));
-        assert_eq!(quad_example, _dwi_chord("<AB>"));
-        assert_eq!(quad_example, _dwi_chord("<91>"));
-        assert_eq!(quad_example, _dwi_chord("<816>"));
-        assert_eq!(quad_example, _dwi_chord("<6428>"));
-        assert_eq!(quad_example, _dwi_chord("<97A>"));
-        assert_eq!(quad_example, _dwi_chord("<B50A>"));
-        assert!(_dwi_chord("246").is_err());
+        assert_eq!(quad_example, dwi_chord("<BA>"));
+        assert_eq!(quad_example, dwi_chord("<AB>"));
+        assert_eq!(quad_example, dwi_chord("<91>"));
+        assert_eq!(quad_example, dwi_chord("<816>"));
+        assert_eq!(quad_example, dwi_chord("<6428>"));
+        assert_eq!(quad_example, dwi_chord("<97A>"));
+        assert_eq!(quad_example, dwi_chord("<B50A>"));
+        assert!(dwi_chord("246").is_err());
     }
 }
