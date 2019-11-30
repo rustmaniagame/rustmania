@@ -1,17 +1,31 @@
 use crate::{
     parser_generic::{beat_pair, comma_separated, stepmania_tag, ws_trimmed},
-    BeatPair, Fraction, Measure, Note, NoteData, NoteRow, NoteType,
+    BeatPair, DisplayBpm, Fraction, Measure, Note, NoteData, NoteRow, NoteType,
 };
 use nom::{
     branch::alt,
-    bytes::complete::take_until,
+    bytes::complete::{tag, take_until},
     character::complete::{char, multispace0},
+    combinator::map,
     error::ErrorKind,
     multi::{count, fold_many0, fold_many_m_n},
     number::complete::double,
-    sequence::{preceded, terminated},
+    sequence::{preceded, separated_pair, terminated},
     Err, IResult,
 };
+
+fn display_bpm_dwi(input: &str) -> IResult<&str, DisplayBpm> {
+    Ok(alt((
+        map(
+            //we accept either .. or . as a separator because you can have the first bpm as an integer
+            //and the first . gets read into the first parser as a result
+            separated_pair(double, ws_trimmed(alt((tag(".."), tag(".")))), double),
+            |(min, max)| DisplayBpm::Range(min, max),
+        ),
+        map(double, DisplayBpm::Static),
+    ))(input)
+    .unwrap_or(("", DisplayBpm::Random)))
+}
 
 fn dwi_noterow(input: &str) -> IResult<&str, NoteRow> {
     match input.chars().next() {
@@ -240,6 +254,7 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                         .bpms
                         .append(&mut ws_trimmed(comma_separated(beat_pair(double)))(value)?.1)
                 }
+                "DISPLAYBPM" => nd.meta.display_bpm = Some(ws_trimmed(display_bpm_dwi)(value)?.1),
                 "SINGLE" => nd.charts.push(
                     preceded(
                         terminated(
@@ -277,6 +292,7 @@ mod tests {
         #CDTITLE:bar5;
         #FILE:bar6.mp3;
         #BPM:123.4;
+        #DISPLAYBPM:100..200;
         #CHANGEBPM:23.4=56.7,256=128;
         #SINGLE:SMANIC:17:
         00004008
@@ -308,7 +324,7 @@ mod tests {
                         ],
                         stops: None,
                         offset: None,
-                        display_bpm: None,
+                        display_bpm: Some(DisplayBpm::Range(100., 200.)),
                         background_changes: None,
                         foreground_changes: None,
                         selectable: None,
