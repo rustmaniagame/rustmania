@@ -31,17 +31,20 @@ fn display_bpm(input: &str) -> IResult<&str, DisplayBpm> {
 }
 
 fn notetype(input: &str) -> IResult<&str, Option<NoteType>> {
-    alt((
-        map(char('0'), |_| None),
-        map(char('1'), |_| Some(NoteType::Tap)),
-        map(char('2'), |_| Some(NoteType::Hold)),
-        map(char('3'), |_| Some(NoteType::HoldEnd)),
-        map(char('4'), |_| Some(NoteType::Roll)),
-        map(char('M'), |_| Some(NoteType::Mine)),
-        map(char('L'), |_| Some(NoteType::Lift)),
-        map(char('F'), |_| Some(NoteType::Fake)),
-        map(none_of("\r\n,"), |_| None),
-    ))(input)
+    map(none_of("\r\n,"), into_sm_notetype)(input)
+}
+
+fn into_sm_notetype(sm_char: char) -> Option<NoteType> {
+    match sm_char {
+        '1' => Some(NoteType::Tap),
+        '2' => Some(NoteType::Hold),
+        '3' => Some(NoteType::HoldEnd),
+        '4' => Some(NoteType::Roll),
+        'M' => Some(NoteType::Mine),
+        'L' => Some(NoteType::Lift),
+        'F' => Some(NoteType::Fake),
+        _ => None,
+    }
 }
 
 fn noterow(input: &str) -> IResult<&str, NoteRow> {
