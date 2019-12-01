@@ -8,7 +8,7 @@ use nom::{
     character::complete::{char, multispace0},
     combinator::map,
     error::ErrorKind,
-    multi::{count, fold_many0, fold_many_m_n},
+    multi::{count, fold_many0, fold_many_m_n, many0},
     number::complete::double,
     sequence::{preceded, separated_pair, terminated},
     Err, IResult,
@@ -189,14 +189,7 @@ fn dwi_measure(input: &str) -> IResult<&str, Measure> {
 }
 
 fn dwi_chart(input: &str) -> IResult<&str, Vec<Measure>> {
-    fold_many0(
-        preceded(multispace0, dwi_measure),
-        vec![],
-        |mut acc, measure| {
-            acc.push(measure);
-            acc
-        },
-    )(input)
+    many0(preceded(multispace0, dwi_measure))(input)
 }
 
 fn dwi_chord(input: &str) -> IResult<&str, NoteRow> {
