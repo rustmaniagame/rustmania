@@ -27,15 +27,25 @@ fn display_bpm_dwi(input: &str) -> IResult<&str, DisplayBpm> {
     .unwrap_or(("", DisplayBpm::Random)))
 }
 
+//This does not yet handle hold ends
 fn dwi_noterow(input: &str) -> IResult<&str, NoteRow> {
-    map(map_opt(anychar, char_to_columns_list), |row| {
-        row.iter()
-            .map(|&column| Note {
-                note_type: NoteType::Tap,
-                column,
-            })
-            .collect()
-    })(input)
+    alt((
+        preceded(char('!'), dwi_noterow_type(NoteType::Hold)),
+        dwi_noterow_type(NoteType::Tap),
+    ))(input)
+}
+
+fn dwi_noterow_type<'a>(note: NoteType) -> impl Fn(&'a str) -> IResult<&'a str, NoteRow> {
+    move |input| {
+        map(map_opt(anychar, char_to_columns_list), |row| {
+            row.iter()
+                .map(|&column| Note {
+                    note_type: note,
+                    column,
+                })
+                .collect()
+        })(input)
+    }
 }
 
 fn char_to_columns_list(input: char) -> Option<Vec<usize>> {
@@ -384,13 +394,13 @@ mod tests {
                 "\n",
                 vec![(
                     vec![Note {
-                        note_type: NoteType::Tap,
+                        note_type: NoteType::Hold,
                         column: 1
                     },],
                     Fraction::new(1, 24)
                 )]
             )),
-            dwi_measure("[020000000000000000000000]\n")
+            dwi_measure("[0!20000000000000000000000]\n")
         );
         assert_eq!(
             Ok((
