@@ -15,10 +15,6 @@ use nom::{
 };
 use num_rational::Rational32;
 
-fn offset(input: &str) -> IResult<&str, f64> {
-    map(double, |value| -value)(input)
-}
-
 fn display_bpm(input: &str) -> IResult<&str, DisplayBpm> {
     alt((
         map(
@@ -126,7 +122,7 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                 "MUSIC" => nd.meta.music_path = Some(value.to_owned()),
                 "SAMPLESTART" => nd.meta.sample_start = Some(ws_trimmed(double)(value)?.1),
                 "SAMPLELENGTH" => nd.meta.sample_length = Some(ws_trimmed(double)(value)?.1),
-                "OFFSET" => nd.meta.offset = Some(ws_trimmed(offset)(value)?.1),
+                "OFFSET" => nd.meta.offset = Some(-ws_trimmed(double)(value)?.1),
                 "DISPLAYBPM" => nd.meta.display_bpm = Some(ws_trimmed(display_bpm)(value)?.1),
                 "BPMS" => nd.meta.bpms = ws_trimmed(comma_separated(beat_pair(double)))(value)?.1,
                 "STOPS" => {
@@ -149,12 +145,6 @@ mod tests {
     use super::*;
     use crate::{BeatPair, ChartMetadata};
     use nom::Err::Error;
-
-    #[test]
-    fn parse_offset() {
-        assert_eq!(offset("1.2  foo"), Ok(("  foo", -1.2)));
-        assert_eq!(offset("-3.4foo"), Ok(("foo", 3.4)));
-    }
 
     #[test]
     fn parse_display_bpm() {
