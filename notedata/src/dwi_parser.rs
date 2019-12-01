@@ -137,6 +137,7 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                 "GENRE" => nd.meta.genre = Some(value.to_owned()),
                 "CDTITLE" => nd.meta.cd_title = Some(value.to_owned()),
                 "FILE" => nd.meta.music_path = Some(value.to_owned()),
+                "GAP" => nd.meta.offset = Some(-ws_trimmed(double)(value)?.1 / 1000.0),
                 "BPM" => {
                     let beat_pair = BeatPair::at_start(ws_trimmed(double)(value)?.1);
                     if let Some(bpm) = nd.meta.bpms.get_mut(0) {
@@ -145,7 +146,7 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                         nd.meta.bpms = vec![beat_pair];
                     }
                 }
-                "CHANGEBPM" => {
+                "CHANGEBPM" | "BPMCHANGE" => {
                     if nd.meta.bpms.is_empty() {
                         nd.meta.bpms.push(BeatPair::from_pair(0.0, 120.0).unwrap())
                     }
@@ -153,6 +154,11 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                         .bpms
                         .append(&mut ws_trimmed(comma_separated(beat_pair(double)))(value)?.1)
                 }
+                "FREEZE" => {
+                    nd.meta.stops = Some(ws_trimmed(comma_separated(beat_pair(double)))(value)?.1)
+                }
+                "SAMPLESTART" => nd.meta.sample_start = Some(ws_trimmed(double)(value)?.1),
+                "SAMPLELENGTH" => nd.meta.sample_length = Some(ws_trimmed(double)(value)?.1),
                 "DISPLAYBPM" => nd.meta.display_bpm = Some(ws_trimmed(display_bpm_dwi)(value)?.1),
                 "SINGLE" => nd.charts.push(
                     preceded(
