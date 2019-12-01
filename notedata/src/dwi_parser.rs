@@ -28,116 +28,40 @@ fn display_bpm_dwi(input: &str) -> IResult<&str, DisplayBpm> {
 }
 
 fn dwi_noterow(input: &str) -> IResult<&str, NoteRow> {
-    match input.chars().next() {
+    if let Some(thing) = input.chars().next() {
+        char_to_columns_list(thing)
+            .ok_or(Err::Error((input, ErrorKind::Char)))
+            .map(|columns| {
+                (
+                    &input[1..],
+                    columns.iter()
+                        .map(|column| Note {
+                            note_type: NoteType::Tap,
+                            column: *column,
+                        })
+                        .collect(),
+                )
+            })
+    } else {
+        Err(Err::Error((input, ErrorKind::Char)))
+    }
+}
+
+fn char_to_columns_list(input: char) -> Option<Vec<usize>> {
+    match input {
         //5 should not appear in normal dwi files, but it can be parsed by stepmania 5
-        Some('0') | Some('5') => Ok((&input[1..], vec![])),
-        Some('4') => Ok((
-            &input[1..],
-            vec![Note {
-                note_type: NoteType::Tap,
-                column: 0,
-            }],
-        )),
-        Some('2') => Ok((
-            &input[1..],
-            vec![Note {
-                note_type: NoteType::Tap,
-                column: 1,
-            }],
-        )),
-        Some('8') => Ok((
-            &input[1..],
-            vec![Note {
-                note_type: NoteType::Tap,
-                column: 2,
-            }],
-        )),
-        Some('6') => Ok((
-            &input[1..],
-            vec![Note {
-                note_type: NoteType::Tap,
-                column: 3,
-            }],
-        )),
-        Some('1') => Ok((
-            &input[1..],
-            vec![
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 0,
-                },
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 1,
-                },
-            ],
-        )),
-        Some('7') => Ok((
-            &input[1..],
-            vec![
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 0,
-                },
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 2,
-                },
-            ],
-        )),
-        Some('B') => Ok((
-            &input[1..],
-            vec![
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 0,
-                },
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 3,
-                },
-            ],
-        )),
-        Some('A') => Ok((
-            &input[1..],
-            vec![
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 1,
-                },
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 2,
-                },
-            ],
-        )),
-        Some('3') => Ok((
-            &input[1..],
-            vec![
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 1,
-                },
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 3,
-                },
-            ],
-        )),
-        Some('9') => Ok((
-            &input[1..],
-            vec![
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 2,
-                },
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 3,
-                },
-            ],
-        )),
-        _ => Err(Err::Error((input, ErrorKind::Char))),
+        '0' | '5' => Some(vec![]),
+        '4' => Some(vec![0]),
+        '2' => Some(vec![1]),
+        '8' => Some(vec![2]),
+        '6' => Some(vec![3]),
+        '1' => Some(vec![0, 1]),
+        '7' => Some(vec![0, 2]),
+        'B' => Some(vec![0, 3]),
+        'A' => Some(vec![1, 2]),
+        '3' => Some(vec![1, 3]),
+        '9' => Some(vec![2, 3]),
+        _ => None,
     }
 }
 
