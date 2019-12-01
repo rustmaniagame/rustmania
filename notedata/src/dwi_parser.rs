@@ -5,8 +5,8 @@ use crate::{
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
-    character::complete::{char, multispace0},
-    combinator::map,
+    character::complete::{anychar, char, multispace0},
+    combinator::{map, map_opt},
     error::ErrorKind,
     multi::{count, fold_many0, fold_many_m_n, many0},
     number::complete::double,
@@ -28,23 +28,14 @@ fn display_bpm_dwi(input: &str) -> IResult<&str, DisplayBpm> {
 }
 
 fn dwi_noterow(input: &str) -> IResult<&str, NoteRow> {
-    if let Some(thing) = input.chars().next() {
-        char_to_columns_list(thing)
-            .ok_or(Err::Error((input, ErrorKind::Char)))
-            .map(|columns| {
-                (
-                    &input[1..],
-                    columns.iter()
-                        .map(|column| Note {
-                            note_type: NoteType::Tap,
-                            column: *column,
-                        })
-                        .collect(),
-                )
+    map(map_opt(anychar, char_to_columns_list), |row| {
+        row.iter()
+            .map(|&column| Note {
+                note_type: NoteType::Tap,
+                column,
             })
-    } else {
-        Err(Err::Error((input, ErrorKind::Char)))
-    }
+            .collect()
+    })(input)
 }
 
 fn char_to_columns_list(input: char) -> Option<Vec<usize>> {
