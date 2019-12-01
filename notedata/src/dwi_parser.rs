@@ -66,51 +66,32 @@ fn char_to_columns_list(input: char) -> Option<Vec<usize>> {
     }
 }
 
-fn dwi_measure_n(input: &str, n: usize) -> IResult<&str, Measure> {
-    fold_many_m_n(
-        n,
-        n,
-        alt((dwi_noterow, dwi_chord)),
-        (vec![], 0),
-        |(mut acc, idx), item| {
-            if !item.is_empty() {
-                acc.push((item, Fraction::new(idx, n as i32)));
-            }
-            (acc, idx + 1)
-        },
-    )(input)
-    .map(|(x, (y, _))| (x, y))
-}
-
-fn dwi_measure_8(input: &str) -> IResult<&str, Measure> {
-    dwi_measure_n(input, 8)
-}
-
-fn dwi_measure_16(input: &str) -> IResult<&str, Measure> {
-    dwi_measure_n(input, 16)
-}
-
-fn dwi_measure_24(input: &str) -> IResult<&str, Measure> {
-    dwi_measure_n(input, 24)
-}
-
-fn dwi_measure_64(input: &str) -> IResult<&str, Measure> {
-    dwi_measure_n(input, 64)
-}
-
-fn dwi_measure_192(input: &str) -> IResult<&str, Measure> {
-    dwi_measure_n(input, 192)
+fn dwi_measure_n<'a>(n: usize) -> impl Fn(&'a str) -> IResult<&'a str, Measure> {
+    move |input| {
+        fold_many_m_n(
+            n,
+            n,
+            alt((dwi_noterow, dwi_chord)),
+            (vec![], 0),
+            |(mut acc, idx), item| {
+                if !item.is_empty() {
+                    acc.push((item, Fraction::new(idx, n as i32)));
+                }
+                (acc, idx + 1)
+            },
+        )(input)
+        .map(|(x, (y, _))| (x, y))
+    }
 }
 
 fn dwi_measure(input: &str) -> IResult<&str, Measure> {
-    match input.chars().next() {
-        Some('(') => terminated(dwi_measure_16, char(')'))(&input[1..]),
-        Some('[') => terminated(dwi_measure_24, char(']'))(&input[1..]),
-        Some('{') => terminated(dwi_measure_64, char('}'))(&input[1..]),
-        Some('`') => terminated(dwi_measure_192, char('\''))(&input[1..]),
-        Some(_) => dwi_measure_8(input),
-        None => Err(Err::Error((input, ErrorKind::Eof))),
-    }
+    alt((
+        preceded(char('('), terminated(dwi_measure_n(16), char(')'))),
+        preceded(char('['), terminated(dwi_measure_n(24), char(']'))),
+        preceded(char('{'), terminated(dwi_measure_n(64), char('}'))),
+        preceded(char('`'), terminated(dwi_measure_n(192), char('\''))),
+        dwi_measure_n(8),
+    ))(input)
 }
 
 fn dwi_chart(input: &str) -> IResult<&str, Vec<Measure>> {
