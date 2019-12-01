@@ -137,7 +137,7 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                 "GENRE" => nd.meta.genre = Some(value.to_owned()),
                 "CDTITLE" => nd.meta.cd_title = Some(value.to_owned()),
                 "FILE" => nd.meta.music_path = Some(value.to_owned()),
-                "GAP" => nd.meta.offset = Some(-ws_trimmed(double)(value)?.1 / 1000.0),
+                "GAP" => nd.meta.offset = Some(ws_trimmed(double)(value)?.1 / 1000.0),
                 "BPM" => {
                     let beat_pair = BeatPair::at_start(ws_trimmed(double)(value)?.1);
                     if let Some(bpm) = nd.meta.bpms.get_mut(0) {
