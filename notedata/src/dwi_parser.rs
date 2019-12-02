@@ -224,8 +224,8 @@ mod tests {
                         sample_length: None,
                         bpms: vec![
                             BeatPair::from_pair(0.0, 123.4).unwrap(),
-                            BeatPair::from_pair(23.4, 56.7).unwrap(),
-                            BeatPair::from_pair(256.0, 128.0).unwrap()
+                            BeatPair::from_pair(23.4 / 4.0, 56.7).unwrap(),
+                            BeatPair::from_pair(256.0 / 4.0, 128.0).unwrap()
                         ],
                         stops: None,
                         offset: None,

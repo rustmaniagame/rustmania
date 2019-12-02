@@ -2,7 +2,7 @@ use crate::BeatPair;
 use nom::{
     bytes::complete::{is_not, take_until},
     character::complete::{char, multispace0},
-    combinator::map_opt,
+    combinator::{map, map_opt},
     multi::separated_nonempty_list,
     number::complete::double,
     sequence::{preceded, separated_pair, terminated},
@@ -22,7 +22,7 @@ where
 {
     move |input: &'a str| {
         map_opt(
-            separated_pair(double, ws_trimmed(char('=')), &parser),
+            separated_pair(map(double, |x| x / 4.0), ws_trimmed(char('=')), &parser),
             |(beat, value)| BeatPair::from_pair(beat, value),
         )(input)
     }
@@ -49,7 +49,7 @@ mod tests {
 
     #[test]
     fn parse_beat_pair() {
-        let parsed_beat_pair = BeatPair::from_pair(123.456, 654.321).unwrap();
+        let parsed_beat_pair = BeatPair::from_pair(123.456 / 4.0, 654.321).unwrap();
         assert_eq!(
             beat_pair(double)("123.456  = 654.321  foo"),
             Ok(("  foo", parsed_beat_pair.clone()))
