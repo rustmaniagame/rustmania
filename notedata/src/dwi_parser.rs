@@ -27,7 +27,6 @@ fn display_bpm_dwi(input: &str) -> IResult<&str, DisplayBpm> {
     .unwrap_or(("", DisplayBpm::Random)))
 }
 
-//This does not yet handle hold ends
 fn dwi_noterow(input: &str) -> IResult<&str, NoteRow> {
     alt((
         map(
