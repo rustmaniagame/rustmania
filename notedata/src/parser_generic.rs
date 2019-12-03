@@ -16,13 +16,13 @@ where
     move |input: &str| separated_nonempty_list(ws_trimmed(char(',')), &parser)(input)
 }
 
-pub fn beat_pair<'a, P, O>(parser: P) -> impl Fn(&'a str) -> IResult<&str, BeatPair<O>>
+pub fn beat_pair<'a, P, O>(parser: P, scale: f64) -> impl Fn(&'a str) -> IResult<&str, BeatPair<O>>
 where
     P: Fn(&'a str) -> IResult<&str, O>,
 {
     move |input: &'a str| {
         map_opt(
-            separated_pair(map(double, |x| x / 4.0), ws_trimmed(char('=')), &parser),
+            separated_pair(map(double, |x| x / scale), ws_trimmed(char('=')), &parser),
             |(beat, value)| BeatPair::from_pair(beat, value),
         )(input)
     }
@@ -51,11 +51,11 @@ mod tests {
     fn parse_beat_pair() {
         let parsed_beat_pair = BeatPair::from_pair(123.456 / 4.0, 654.321).unwrap();
         assert_eq!(
-            beat_pair(double)("123.456  = 654.321  foo"),
+            beat_pair(double, 4.0)("123.456  = 654.321  foo"),
             Ok(("  foo", parsed_beat_pair.clone()))
         );
         assert_eq!(
-            beat_pair(double)("123.456=654.321foo"),
+            beat_pair(double, 4.0)("123.456=654.321foo"),
             Ok(("foo", parsed_beat_pair))
         );
     }

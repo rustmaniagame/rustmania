@@ -30,7 +30,21 @@ fn display_bpm_dwi(input: &str) -> IResult<&str, DisplayBpm> {
 //This does not yet handle hold ends
 fn dwi_noterow(input: &str) -> IResult<&str, NoteRow> {
     alt((
-        preceded(char('!'), dwi_noterow_type(NoteType::Hold)),
+        map(
+            separated_pair(
+                dwi_noterow_type(NoteType::Tap),
+                char('!'),
+                dwi_noterow_type(NoteType::Hold),
+            ),
+            |(mut full, holds)| {
+                for hold in holds.iter().map(|note| note.column) {
+                    if let Some(note) = full.iter_mut().find(|note| note.column == hold) {
+                        note.note_type = NoteType::Hold
+                    }
+                }
+                full
+            },
+        ),
         dwi_noterow_type(NoteType::Tap),
     ))(input)
 }
@@ -152,10 +166,11 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                     }
                     nd.meta
                         .bpms
-                        .append(&mut ws_trimmed(comma_separated(beat_pair(double)))(value)?.1)
+                        .append(&mut ws_trimmed(comma_separated(beat_pair(double, 16.0)))(value)?.1)
                 }
                 "FREEZE" => {
-                    nd.meta.stops = Some(ws_trimmed(comma_separated(beat_pair(double)))(value)?.1)
+                    nd.meta.stops =
+                        Some(ws_trimmed(comma_separated(beat_pair(double, 16.0)))(value)?.1)
                 }
                 "SAMPLESTART" => nd.meta.sample_start = Some(ws_trimmed(double)(value)?.1),
                 "SAMPLELENGTH" => nd.meta.sample_length = Some(ws_trimmed(double)(value)?.1),
@@ -171,6 +186,25 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                     .1,
                 ),
                 _ => {}
+            }
+        }
+    }
+    let mut active_holds = [false; 4];
+    for chart in &mut nd.charts {
+        for measure in chart {
+            for (row, _time) in measure {
+                for note in row {
+                    if *active_holds.get(note.column).unwrap_or(&false) {
+                        if let NoteType::Tap = note.note_type {
+                            note.note_type = NoteType::HoldEnd;
+                            active_holds[note.column] = false;
+                        }
+                    } else if let NoteType::Hold = note.note_type {
+                        if let Some(hold) = active_holds.get_mut(note.column) {
+                            *hold = true;
+                        }
+                    }
+                }
             }
         }
     }
@@ -224,8 +258,8 @@ mod tests {
                         sample_length: None,
                         bpms: vec![
                             BeatPair::from_pair(0.0, 123.4).unwrap(),
-                            BeatPair::from_pair(23.4 / 4.0, 56.7).unwrap(),
-                            BeatPair::from_pair(256.0 / 4.0, 128.0).unwrap()
+                            BeatPair::from_pair(23.4 / 16.0, 56.7).unwrap(),
+                            BeatPair::from_pair(256.0 / 16.0, 128.0).unwrap()
                         ],
                         stops: None,
                         offset: None,
@@ -380,14 +414,20 @@ mod tests {
             Ok((
                 "\n",
                 vec![(
-                    vec![Note {
-                        note_type: NoteType::Hold,
-                        column: 1
-                    },],
+                    vec![
+                        Note {
+                            note_type: NoteType::Tap,
+                            column: 0
+                        },
+                        Note {
+                            note_type: NoteType::Hold,
+                            column: 1
+                        },
+                    ],
                     Fraction::new(1, 24)
-                )]
+                ),]
             )),
-            dwi_measure("[0!20000000000000000000000]\n")
+            dwi_measure("[01!20000000000000000000000]\n")
         );
         assert_eq!(
             Ok((

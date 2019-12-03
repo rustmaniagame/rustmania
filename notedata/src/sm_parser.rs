@@ -124,9 +124,12 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                 "SAMPLELENGTH" => nd.meta.sample_length = Some(ws_trimmed(double)(value)?.1),
                 "OFFSET" => nd.meta.offset = Some(-ws_trimmed(double)(value)?.1),
                 "DISPLAYBPM" => nd.meta.display_bpm = Some(ws_trimmed(display_bpm)(value)?.1),
-                "BPMS" => nd.meta.bpms = ws_trimmed(comma_separated(beat_pair(double)))(value)?.1,
+                "BPMS" => {
+                    nd.meta.bpms = ws_trimmed(comma_separated(beat_pair(double, 4.0)))(value)?.1
+                }
                 "STOPS" => {
-                    nd.meta.stops = Some(ws_trimmed(comma_separated(beat_pair(double)))(value)?.1)
+                    nd.meta.stops =
+                        Some(ws_trimmed(comma_separated(beat_pair(double, 4.0)))(value)?.1)
                 }
                 "NOTES" => nd.charts.push(chart(value)?.1),
                 _ => {}

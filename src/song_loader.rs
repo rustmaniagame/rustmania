@@ -29,6 +29,7 @@ where
         };
         match extension.to_str() {
             Some("sm") => notedata::NoteData::from_sm(sim).map_err(|_| LoadError::FailedParse),
+            Some("dwi") => notedata::NoteData::from_dwi(sim).map_err(|_| LoadError::FailedParse),
             Some("rm") => {
                 let mut n = vec![];
                 sim.read_to_end(&mut n)
