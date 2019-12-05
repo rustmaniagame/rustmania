@@ -150,13 +150,15 @@ where
             array_init::array_init(|_| TimingColumn::new());
         for (measure_index, measure) in data.iter().enumerate() {
             for (row, inner_time) in measure.iter() {
-                if let Some(bpm) = next_bpm {
+                while let Some(bpm) = next_bpm {
                     if measure_index as i32 > bpm.0.beat
                         || (measure_index as i32 == bpm.0.beat
                             && bpm.0.sub_beat <= inner_time.fract())
                     {
                         current_bpm = bpm;
                         next_bpm = bpms.next();
+                    } else {
+                        break;
                     }
                 }
                 let row_time = (current_bpm.1
