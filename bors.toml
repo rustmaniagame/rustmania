@@ -1,4 +1,13 @@
 status = [
-    "continuous-integration/travis-ci/push",
-    "continuous-integration/appveyor/branch"
+  "Rustfmt Check",
+  "Test nightly on ubuntu-latest",
+  "Test nightly on windows-latest",
+  "Test nightly on macOS-latest",
+  "Test beta on ubuntu-latest",
+  "Test beta on windows-latest",
+  "Test beta on macOS-latest",
+  "Test stable on ubuntu-latest",
+  "Test stable on windows-latest",
+  "Test stable on macOS-latest",
+  "Clippy Check",
 ]
