@@ -2,13 +2,13 @@
 
 <p align="center">
   <a href="https://github.com/rustmaniagame/rustmania/actions?query=workflow%3ACI" alt="CI">
-    <img src="https://github.com/rustmaniagame/rustmania/workflows/CI/badge.svg"/>
+    <img src="https://github.com/rustmaniagame/rustmania/workflows/CI/badge.svg" />
   </a>
   <a href="https://dependabot.com/" alt="Dependabot">
-    <img src="https://badgen.net/dependabot/rustmaniagame/rustmania/?icon=dependabot"/>
+    <img src="https://badgen.net/dependabot/rustmaniagame/rustmania/?icon=dependabot" />
   </a>
   <a href="https://github.com/rustmaniagame/rustmania/blob/master/LICENSE" alt="License">
-    <img src="https://badgen.net/badge/license/MIT/blue?style=rounded"/>
+    <img src="https://badgen.net/badge/license/MIT/blue" />
   </a>
 </p>
 
