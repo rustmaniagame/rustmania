@@ -98,6 +98,7 @@ mod callbacks {
     }
 }
 
+#[allow(clippy::too_many_lines)]
 fn main() {
     let mut rng = rand::thread_rng();
     let matches = App::new("Rustmania")
@@ -210,7 +211,7 @@ fn main() {
         vec![music_rate, 0.0, 12.0],
         vec![600],
         vec![
-            notedata.meta.title.expect("Needs a title").clone(),
+            notedata.meta.title.expect("Needs a title"),
             String::from("Results screen placeholder text"),
         ],
         vec![],
