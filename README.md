@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://github.com/rustmaniagame/rustmania/actions?query=workflow%3ACI" alt="CI">
-    <img src="https://github.com/rustmaniagame/rustmania/workflows/CI/badge.svg" />
+    <img src="https://img.shields.io/github/workflow/status/rustmaniagame/rustmania/CI?label=CI&logo=github" />
   </a>
   <a href="https://dependabot.com/" alt="Dependabot">
     <img src="https://badgen.net/dependabot/rustmaniagame/rustmania/?icon=dependabot" />
