@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Judgement",""]],"fn":[["value",""]],"struct":[["CalcInfo",""],["GameplayInfo",""],["TimingColumn",""],["TimingData",""]],"trait":[["LayoutInfo",""],["TimingInfo",""]]});

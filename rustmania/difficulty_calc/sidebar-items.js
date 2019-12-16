@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["rate_chart",""]]});
