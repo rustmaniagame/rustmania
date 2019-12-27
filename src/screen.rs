@@ -299,9 +299,6 @@ impl Screen {
 }
 
 impl Screen {
-    fn _update(&mut self, _ctx: &mut Context) -> Result<Message, GameError> {
-        Ok(Message::None)
-    }
     pub fn draw(&mut self, ctx: &mut Context) -> Result<Message, GameError> {
         graphics::clear(ctx, Color::new(0.0, 0.0, 0.0, 1.0));
         let time_delta = self.start_time_to_milliseconds();

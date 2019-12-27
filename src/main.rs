@@ -4,7 +4,8 @@
     clippy::cast_possible_wrap,
     clippy::cast_precision_loss,
     clippy::cast_sign_loss,
-    clippy::module_name_repetitions
+    clippy::module_name_repetitions,
+    clippy::must_use_candidate
 )]
 
 mod difficulty_calc;

@@ -1,4 +1,12 @@
 #![warn(clippy::pedantic)]
+#![allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_precision_loss,
+    clippy::cast_sign_loss,
+    clippy::module_name_repetitions,
+    clippy::must_use_candidate
+)]
 
 #[cfg(feature = "dx12")]
 use gfx_backend_dx12 as gfx_backend;
