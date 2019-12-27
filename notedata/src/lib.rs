@@ -12,6 +12,8 @@ mod sm_parser;
 
 mod parser_generic;
 
+mod sm_writer;
+
 pub use num_rational::Rational32 as Fraction;
 use serde_derive::{Deserialize, Serialize};
 use std::io;
@@ -124,6 +126,9 @@ impl NoteData {
         simfile.read_to_string(&mut chart_string)?;
 
         sm_parser::parse(&chart_string).map_err(|_| io::Error::from(io::ErrorKind::InvalidInput))
+    }
+    pub fn to_sm_string(&self) -> String {
+        sm_writer::write_sm(&self)
     }
     pub fn from_dwi<T>(mut simfile: T) -> Result<Self, io::Error>
     where
