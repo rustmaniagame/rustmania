@@ -333,9 +333,6 @@
 <span id="333">333</span>
 <span id="334">334</span>
 <span id="335">335</span>
-<span id="336">336</span>
-<span id="337">337</span>
-<span id="338">338</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">music</span>::<span class="ident">Music</span>,
@@ -638,9 +635,6 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Screen</span> {
-    <span class="kw">fn</span> <span class="ident">_update</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">_ctx</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Context</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Message</span>, <span class="ident">GameError</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">Message</span>::<span class="prelude-val">None</span>)
-    }
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">draw</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ctx</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Context</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Message</span>, <span class="ident">GameError</span><span class="op">&gt;</span> {
         <span class="ident">graphics</span>::<span class="ident">clear</span>(<span class="ident">ctx</span>, <span class="ident">Color</span>::<span class="ident">new</span>(<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>));
         <span class="kw">let</span> <span class="ident">time_delta</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">start_time_to_milliseconds</span>();
