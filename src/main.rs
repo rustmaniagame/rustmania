@@ -14,7 +14,6 @@ mod music;
 mod notefield;
 mod player_config;
 mod screen;
-mod song_loader;
 mod text;
 mod timingdata;
 
@@ -24,11 +23,14 @@ use crate::{
     screen::{
         ElementMap, ElementType, ResourceMap, ResourceType, Resources, ScreenBuilder, ScriptMap,
     },
+    timingdata::{CalcInfo, TimingData},
 };
+use bincode::deserialize;
 use clap::{crate_authors, crate_version, App, Arg};
 use ggez::{filesystem::mount, graphics::Rect, ContextBuilder};
 use log::{debug, info};
-use notedata::{Fraction, NoteType};
+use notedata::{Fraction, NoteData, NoteType};
+use parallel_folder_walk::{load_songs_folder, LoadError};
 use rand::seq::SliceRandom;
 use std::{
     cmp::Ordering,
@@ -77,6 +79,35 @@ fn sprite_finder(
         }
         _ => Rect::new(0.0, 0.0, 1.0, 1.0),
     }
+}
+
+pub fn load_song(sim: &PathBuf) -> Result<(f64, NoteData), LoadError> {
+    if let Some(extension) = sim.extension() {
+        let mut sim = match File::open(sim.clone()) {
+            Ok(file) => file,
+            Err(_) => return Err(LoadError::FailedParse),
+        };
+        match extension.to_str() {
+            Some("sm") => notedata::NoteData::from_sm(sim).map_err(|_| LoadError::FailedParse),
+            Some("dwi") => notedata::NoteData::from_dwi(sim).map_err(|_| LoadError::FailedParse),
+            Some("rm") => {
+                let mut n = vec![];
+                sim.read_to_end(&mut n)
+                    .expect("Failed to read to end of .rm file");
+                deserialize(&n).map_err(|_| LoadError::FailedParse)
+            }
+            _ => Err(LoadError::WrongExtension),
+        }
+    } else {
+        Err(LoadError::WrongExtension)
+    }
+    .map(|x| {
+        if let Some(timing) = TimingData::<CalcInfo>::from_notedata(&x, sprite_finder, 1.0).get(0) {
+            (difficulty_calc::rate_chart(&timing, 1.86), x)
+        } else {
+            (0.0, x)
+        }
+    })
 }
 
 mod callbacks {
@@ -136,7 +167,7 @@ fn main() {
 
     let (simfile_folder, difficulty, notedata) = {
         let start_time = Instant::now();
-        let notedata_list = song_loader::load_songs_folder(songs_folder);
+        let notedata_list = load_songs_folder(songs_folder, load_song);
         let duration = Instant::now() - start_time;
         info!("Found {} total songs", notedata_list.len());
         let mut notedata_list = notedata_list

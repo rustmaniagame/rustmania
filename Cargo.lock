@@ -1483,6 +1483,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "parallel-folder-walk"
+version = "0.1.0"
+dependencies = [
+ "rayon 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "parking_lot"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1919,8 +1926,8 @@ dependencies = [
  "minimp3 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "nom 5.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "notedata 0.1.0",
+ "parallel-folder-walk 0.1.0",
  "rand 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "rayon 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_yaml 0.8.11 (registry+https://github.com/rust-lang/crates.io-index)",

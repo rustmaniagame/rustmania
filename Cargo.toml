@@ -14,7 +14,6 @@ nom = "5.0.1"
 serde = "1.0.101"
 serde_derive = "1.0.101"
 toml = "0.5.5"
-rayon = "1.2.0"
 rand = "0.7.2"
 bincode = "1.2.0"
 serde_yaml = "0.8.11"
@@ -23,6 +22,7 @@ fern = "0.5"
 array-init = "0.1.0"
 graphics = { path = "graphics" }
 notedata = { path = "notedata" }
+parallel-folder-walk = {path = "parallel-folder-walk"}
 
 [dependencies.ggez]
 git = "https://github.com/ggez/ggez.git"
