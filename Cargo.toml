@@ -20,12 +20,10 @@ serde_yaml = "0.8.11"
 log = "0.4"
 fern = "0.5"
 array-init = "0.1.0"
+ggez = "0.5.1"
 graphics = { path = "graphics" }
 notedata = { path = "notedata" }
 parallel-folder-walk = {path = "parallel-folder-walk"}
-
-[dependencies.ggez]
-git = "https://github.com/ggez/ggez.git"
 
 [workspace]
 members = ["graphics", "notedata"]
