@@ -269,55 +269,19 @@ mod tests {
                     },
                     charts: vec![vec![
                         vec![
-                            (
-                                vec![Note {
-                                    note_type: NoteType::Tap,
-                                    column: 0
-                                }],
-                                Fraction::new(1, 2)
-                            ),
-                            (
-                                vec![Note {
-                                    note_type: NoteType::Tap,
-                                    column: 2
-                                }],
-                                Fraction::new(7, 8)
-                            )
+                            (vec![Note::new(NoteType::Tap, 0)], Fraction::new(1, 2)),
+                            (vec![Note::new(NoteType::Tap, 2)], Fraction::new(7, 8)),
                         ],
                         vec![
                             (
-                                vec![
-                                    Note {
-                                        note_type: NoteType::Tap,
-                                        column: 0
-                                    },
-                                    Note {
-                                        note_type: NoteType::Tap,
-                                        column: 1
-                                    }
-                                ],
+                                vec![Note::new(NoteType::Tap, 0), Note::new(NoteType::Tap, 1)],
                                 Fraction::new(0, 1)
                             ),
                             (
-                                vec![
-                                    Note {
-                                        note_type: NoteType::Tap,
-                                        column: 0
-                                    },
-                                    Note {
-                                        note_type: NoteType::Tap,
-                                        column: 1
-                                    }
-                                ],
+                                vec![Note::new(NoteType::Tap, 0), Note::new(NoteType::Tap, 1)],
                                 Fraction::new(1, 4)
                             ),
-                            (
-                                vec![Note {
-                                    note_type: NoteType::Tap,
-                                    column: 3
-                                }],
-                                Fraction::new(1, 2)
-                            )
+                            (vec![Note::new(NoteType::Tap, 3)], Fraction::new(1, 2))
                         ]
                     ]],
                 }
@@ -331,42 +295,18 @@ mod tests {
                 "\n",
                 vec![
                     (
-                        vec![
-                            Note {
-                                note_type: NoteType::Tap,
-                                column: 0
-                            },
-                            Note {
-                                note_type: NoteType::Tap,
-                                column: 1
-                            }
-                        ],
+                        vec![Note::new(NoteType::Tap, 0), Note::new(NoteType::Tap, 1)],
                         Fraction::new(0, 1)
                     ),
                     (
                         vec![
-                            Note {
-                                note_type: NoteType::Tap,
-                                column: 0
-                            },
-                            Note {
-                                note_type: NoteType::Tap,
-                                column: 2
-                            },
-                            Note {
-                                note_type: NoteType::Tap,
-                                column: 3
-                            }
+                            Note::new(NoteType::Tap, 0),
+                            Note::new(NoteType::Tap, 2),
+                            Note::new(NoteType::Tap, 3)
                         ],
                         Fraction::new(3, 8)
                     ),
-                    (
-                        vec![Note {
-                            note_type: NoteType::Tap,
-                            column: 2
-                        }],
-                        Fraction::new(3, 4)
-                    ),
+                    (vec![Note::new(NoteType::Tap, 2)], Fraction::new(3, 4)),
                 ]
             )),
             dwi_measure("100<49>5080\n")
@@ -377,32 +317,14 @@ mod tests {
                 vec![
                     (
                         vec![
-                            Note {
-                                note_type: NoteType::Tap,
-                                column: 0
-                            },
-                            Note {
-                                note_type: NoteType::Tap,
-                                column: 2
-                            },
-                            Note {
-                                note_type: NoteType::Tap,
-                                column: 3
-                            }
+                            Note::new(NoteType::Tap, 0),
+                            Note::new(NoteType::Tap, 2),
+                            Note::new(NoteType::Tap, 3)
                         ],
                         Fraction::new(7, 16)
                     ),
                     (
-                        vec![
-                            Note {
-                                note_type: NoteType::Tap,
-                                column: 0
-                            },
-                            Note {
-                                note_type: NoteType::Tap,
-                                column: 3
-                            }
-                        ],
+                        vec![Note::new(NoteType::Tap, 0), Note::new(NoteType::Tap, 3)],
                         Fraction::new(7, 8)
                     ),
                 ]
@@ -413,16 +335,7 @@ mod tests {
             Ok((
                 "\n",
                 vec![(
-                    vec![
-                        Note {
-                            note_type: NoteType::Tap,
-                            column: 0
-                        },
-                        Note {
-                            note_type: NoteType::Hold,
-                            column: 1
-                        },
-                    ],
+                    vec![Note::new(NoteType::Tap, 0), Note::new(NoteType::Hold, 1)],
                     Fraction::new(1, 24)
                 ),]
             )),
@@ -431,13 +344,7 @@ mod tests {
         assert_eq!(
             Ok((
                 "\n",
-                vec![(
-                    vec![Note {
-                        note_type: NoteType::Tap,
-                        column: 1
-                    },],
-                    Fraction::new(1, 64)
-                )]
+                vec![(vec![Note::new(NoteType::Tap, 1)], Fraction::new(1, 64))]
             )),
             dwi_measure("{0200000000000000000000000000000000000000000000000000000000000000}\n")
         );
@@ -445,10 +352,7 @@ mod tests {
             Ok((
                 "\n",
                 vec![(
-                    vec![Note {
-                        note_type: NoteType::Tap,
-                        column: 1
-                    },],
+                    vec![Note::new(NoteType::Tap, 1)],
                     Fraction::new(1, 192)
                 )]
             )),
@@ -464,18 +368,9 @@ mod tests {
         let hand_example = Ok((
             "",
             vec![
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 0,
-                },
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 1,
-                },
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 3,
-                },
+                Note::new(NoteType::Tap, 0),
+                Note::new(NoteType::Tap, 1),
+                Note::new(NoteType::Tap, 3),
             ],
         ));
         assert_eq!(hand_example, dwi_chord("<16>"));
@@ -487,22 +382,10 @@ mod tests {
         let quad_example = Ok((
             "",
             vec![
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 0,
-                },
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 1,
-                },
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 2,
-                },
-                Note {
-                    note_type: NoteType::Tap,
-                    column: 3,
-                },
+                Note::new(NoteType::Tap, 0),
+                Note::new(NoteType::Tap, 1),
+                Note::new(NoteType::Tap, 2),
+                Note::new(NoteType::Tap, 3),
             ],
         ));
         assert_eq!(quad_example, dwi_chord("<BA>"));
