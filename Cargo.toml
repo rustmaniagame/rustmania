@@ -6,7 +6,6 @@ version = "0.1.0"
 description = "A rhythm game in the vein of Stepmania and Etterna, currently in very early stages of development."
 
 [dependencies]
-clap = "2.33.0"
 cpal = "0.10.0"
 hound = "3.4.0"
 lewton = "0.9.1"
