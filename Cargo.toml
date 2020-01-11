@@ -3,6 +3,7 @@ authors = ["ixsetf"]
 edition = "2018"
 name = "rustmania"
 version = "0.1.0"
+description = "A rhythm game in the vein of Stepmania and Etterna, currently in very early stages of development."
 
 [dependencies]
 clap = "2.33.0"
@@ -21,6 +22,7 @@ log = "0.4"
 fern = "0.5"
 array-init = "0.1.0"
 ggez = "0.5.1"
+structopt = "0.3.7"
 graphics = { path = "graphics" }
 notedata = { path = "notedata" }
 parallel-folder-walk = {path = "parallel-folder-walk"}
