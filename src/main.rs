@@ -219,7 +219,7 @@ fn main() {
         .expect("Failed to build context");
 
     let default_note_skin =
-        NoteSkin::new(opt.noteskin.as_path(), context).expect("Could not open default noteskin");
+        NoteSkin::new(&opt.noteskin, context).expect("Could not open default noteskin");
 
     let p1_options = player_config::PlayerOptions::new(200, 125, 0.8, true, (-128.0, 383.0));
     let p2_options = player_config::PlayerOptions::new(600, 125, 1.1, false, (-128.0, 383.0));
