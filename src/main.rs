@@ -147,7 +147,7 @@ mod callbacks {
 #[structopt(name = "RustMania", author, about)]
 struct Opt {
     /// The path to your .sm file
-    #[structopt(parse(from_os_str = parse_simfile_path), short, long, default_value("Songs"))]
+    #[structopt(parse(from_os_str = parse_simfile_path), short, long, default_value(""))]
     simfile: PathBuf,
 
     /// The rate of the music
