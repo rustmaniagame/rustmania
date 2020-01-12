@@ -159,8 +159,8 @@ struct Opt {
     noteskin: PathBuf,
 
     /// The path to your lua theme file
-    #[structopt(parse(from_os_str = parse_theme_path), short, long, default_value("Default/theme.yml"))]
-    theme: PathBuf,
+    #[structopt(parse(from_os_str = parse_theme_path), short, long)]
+    theme: Option<PathBuf>,
 }
 
 #[allow(clippy::too_many_lines)]
@@ -247,10 +247,11 @@ fn main() {
         vec![],
     );
 
-    let gameplay_screen = {
-        // This currently is not getting the music rate so the theme will have incorrect behavior
-        // if the rate specified in the theme is different than the rate passed in through the CLI
-        if let Ok(mut theme) = File::open(opt.theme) {
+    let gameplay_screen = match opt.theme {
+        Some(value) => {
+            // This currently is not getting the music rate so the theme will have incorrect behavior
+            // if the rate specified in the theme is different than the rate passed in through the CLI
+            let mut theme = File::open(value).expect("Can not find theme file");
             let mut theme_string = vec![];
             theme
                 .read_to_end(&mut theme_string)
@@ -259,16 +260,15 @@ fn main() {
                 from_utf8(&theme_string).expect("Can not parse theme file as string"),
             )
             .expect("Can not parse theme file as YAML")
-        } else {
-            ScreenBuilder {
-                elements: vec![
-                    ElementType::NOTEFIELD(0, 0, 0),
-                    ElementType::NOTEFIELD(1, 0, 0),
-                    ElementType::MUSIC(0, 0),
-                    ElementType::TEXT(0, 1, 2),
-                ],
-            }
         }
+        None => ScreenBuilder {
+            elements: vec![
+                ElementType::NOTEFIELD(0, 0, 0),
+                ElementType::NOTEFIELD(1, 0, 0),
+                ElementType::MUSIC(0, 0),
+                ElementType::TEXT(0, 1, 2),
+            ],
+        },
     };
 
     let results_screen = ScreenBuilder {
