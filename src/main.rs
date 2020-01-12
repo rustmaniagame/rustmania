@@ -145,7 +145,7 @@ mod callbacks {
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "RustMania", author, about)]
-struct Opt {
+struct SongOptions {
     /// The path to your .sm file
     #[structopt(parse(from_os_str = parse_simfile_path), short, long, default_value(""))]
     simfile: PathBuf,
@@ -166,13 +166,13 @@ struct Opt {
 #[allow(clippy::too_many_lines)]
 fn main() {
     let mut rng = rand::thread_rng();
-    let opt = Opt::from_args();
+    let song_options = SongOptions::from_args();
 
     set_up_logging().expect("Failed to setup logging");
 
     let (simfile_folder, difficulty, notedata) = {
         let start_time = Instant::now();
-        let notedata_list = load_songs_folder(opt.simfile, load_song);
+        let notedata_list = load_songs_folder(song_options.simfile, load_song);
         let duration = Instant::now() - start_time;
         info!("Found {} total songs", notedata_list.len());
         let mut notedata_list = notedata_list
@@ -219,7 +219,7 @@ fn main() {
         .expect("Failed to build context");
 
     let default_note_skin =
-        NoteSkin::new(&opt.noteskin, context).expect("Could not open default noteskin");
+        NoteSkin::new(&song_options.noteskin, context).expect("Could not open default noteskin");
 
     let p1_options = player_config::PlayerOptions::new(200, 125, 0.8, true, (-128.0, 383.0));
     let p2_options = player_config::PlayerOptions::new(600, 125, 1.1, false, (-128.0, 383.0));
@@ -227,7 +227,7 @@ fn main() {
     let p1_layout = player_config::NoteLayout::new(&default_note_skin, 600, p1_options);
     let p2_layout = player_config::NoteLayout::new(&default_note_skin, 600, p2_options);
 
-    let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, opt.rate);
+    let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, song_options.rate);
 
     let resources = Resources::new(
         notes,
@@ -237,7 +237,7 @@ fn main() {
             notedata.meta.music_path.expect("No music path specified")
         ))],
         vec![p1_layout, p2_layout],
-        vec![opt.rate, 0.0, 12.0],
+        vec![song_options.rate, 0.0, 12.0],
         vec![600],
         vec![
             notedata.meta.title.expect("Needs a title"),
@@ -247,7 +247,7 @@ fn main() {
         vec![],
     );
 
-    let gameplay_screen = match opt.theme {
+    let gameplay_screen = match song_options.theme {
         Some(value) => {
             // This currently is not getting the music rate so the theme will have incorrect behavior
             // if the rate specified in the theme is different than the rate passed in through the CLI
