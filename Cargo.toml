@@ -19,7 +19,7 @@ bincode = "1.2.0"
 serde_yaml = "0.8.11"
 log = "0.4"
 fern = "0.5"
-array-init = "0.1.0"
+array-init = "0.1.1"
 ggez = "0.5.1"
 structopt = "0.3.7"
 graphics = { path = "graphics" }
