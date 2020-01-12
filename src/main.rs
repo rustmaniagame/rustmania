@@ -26,7 +26,6 @@ use crate::{
     timingdata::{CalcInfo, TimingData},
 };
 use bincode::deserialize;
-use clap::{crate_authors, crate_version, App, Arg};
 use ggez::{filesystem::mount, graphics::Rect, ContextBuilder};
 use log::{debug, info};
 use notedata::{Fraction, NoteData, NoteType};
@@ -34,14 +33,28 @@ use parallel_folder_walk::{load_songs_folder, LoadError};
 use rand::seq::SliceRandom;
 use std::{
     cmp::Ordering,
+    ffi::OsStr,
     fs::{File, OpenOptions},
     io::Read,
-    path::{Path, PathBuf},
+    path::PathBuf,
     str::from_utf8,
     time::Instant,
 };
+use structopt::StructOpt;
 
 const NOTEFIELD_SIZE: usize = 4;
+
+fn parse_noteskin_path(arg: &OsStr) -> PathBuf {
+    PathBuf::from("Noteskins").join(arg)
+}
+
+fn parse_simfile_path(arg: &OsStr) -> PathBuf {
+    PathBuf::from("Songs").join(arg)
+}
+
+fn parse_theme_path(arg: &OsStr) -> PathBuf {
+    PathBuf::from("Themes").join(arg)
+}
 
 fn set_up_logging() -> Result<(), fern::InitError> {
     fern::Dispatch::new()
@@ -130,44 +143,36 @@ mod callbacks {
     }
 }
 
+#[derive(Debug, StructOpt)]
+#[structopt(name = "RustMania", author, about)]
+struct SongOptions {
+    /// The path to your .sm file
+    #[structopt(parse(from_os_str = parse_simfile_path), short, long, default_value(""))]
+    simfile: PathBuf,
+
+    /// The rate of the music
+    #[structopt(default_value("1.0"), short, long)]
+    rate: f64,
+
+    /// The name of your NoteSkin folder
+    #[structopt(parse(from_os_str = parse_noteskin_path), short, long, default_value("Default"))]
+    noteskin: PathBuf,
+
+    /// The path to your lua theme file
+    #[structopt(parse(from_os_str = parse_theme_path), short, long)]
+    theme: Option<PathBuf>,
+}
+
 #[allow(clippy::too_many_lines)]
 fn main() {
     let mut rng = rand::thread_rng();
-    let matches = App::new("Rustmania")
-        .author(crate_authors!())
-        .version(crate_version!())
-        .about("A rhythm game in the vein of Stepmania and Etterna, currently in very early stages of development.")
-        .args(&[
-            Arg::with_name("SimFile")
-                .help("The path to your .sm file.")
-                .index(1)
-                .required(false),
-            Arg::with_name("Rate")
-                .help("The rate of the music.")
-                .index(2)
-                .required(false),
-            Arg::with_name("NoteSkin")
-                .help("The name of your NoteSkin folder.")
-                .index(3)
-                .required(false),
-            Arg::with_name("Theme")
-                .help("The path to your lua theme file.")
-                .index(4)
-                .required(false),
-        ])
-        .after_help("Licenced under MIT.")
-        .get_matches();
+    let song_options = SongOptions::from_args();
 
     set_up_logging().expect("Failed to setup logging");
 
-    let songs_folder = match matches.value_of("SimFile") {
-        Some(value) => format!("Songs/{}", value),
-        None => String::from("Songs"),
-    };
-
     let (simfile_folder, difficulty, notedata) = {
         let start_time = Instant::now();
-        let notedata_list = load_songs_folder(songs_folder, load_song);
+        let notedata_list = load_songs_folder(song_options.simfile, load_song);
         let duration = Instant::now() - start_time;
         info!("Found {} total songs", notedata_list.len());
         let mut notedata_list = notedata_list
@@ -204,14 +209,6 @@ fn main() {
     );
     println!("With difficulty: {}", difficulty);
 
-    let noteskin = matches.value_of("NoteSkin").unwrap_or("Default");
-
-    let music_rate = if let Some(Ok(rate)) = matches.value_of("Rate").map(str::parse) {
-        rate
-    } else {
-        1.0
-    };
-
     let (context, events_loop) = &mut ContextBuilder::new("rustmania", "ixsetf")
         .add_resource_path("")
         .window_setup(ggez::conf::WindowSetup {
@@ -221,8 +218,8 @@ fn main() {
         .build()
         .expect("Failed to build context");
 
-    let default_note_skin = NoteSkin::new(Path::new("Noteskins").join(noteskin).as_path(), context)
-        .expect("Could not open default noteskin");
+    let default_note_skin =
+        NoteSkin::new(&song_options.noteskin, context).expect("Could not open default noteskin");
 
     let p1_options = player_config::PlayerOptions::new(200, 125, 0.8, true, (-128.0, 383.0));
     let p2_options = player_config::PlayerOptions::new(600, 125, 1.1, false, (-128.0, 383.0));
@@ -230,7 +227,7 @@ fn main() {
     let p1_layout = player_config::NoteLayout::new(&default_note_skin, 600, p1_options);
     let p2_layout = player_config::NoteLayout::new(&default_note_skin, 600, p2_options);
 
-    let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, music_rate);
+    let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, song_options.rate);
 
     let resources = Resources::new(
         notes,
@@ -240,7 +237,7 @@ fn main() {
             notedata.meta.music_path.expect("No music path specified")
         ))],
         vec![p1_layout, p2_layout],
-        vec![music_rate, 0.0, 12.0],
+        vec![song_options.rate, 0.0, 12.0],
         vec![600],
         vec![
             notedata.meta.title.expect("Needs a title"),
@@ -250,12 +247,11 @@ fn main() {
         vec![],
     );
 
-    let gameplay_screen = match matches.value_of("Theme") {
+    let gameplay_screen = match song_options.theme {
         Some(value) => {
             // This currently is not getting the music rate so the theme will have incorrect behavior
             // if the rate specified in the theme is different than the rate passed in through the CLI
-            let mut theme =
-                File::open(format!("Themes/Default/{}", value)).expect("Can not find theme file");
+            let mut theme = File::open(value).expect("Can not find theme file");
             let mut theme_string = vec![];
             theme
                 .read_to_end(&mut theme_string)
