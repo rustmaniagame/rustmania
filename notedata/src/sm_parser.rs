@@ -1,6 +1,6 @@
 use crate::{
     parser_generic::{beat_pair, comma_separated, stepmania_tag, ws_trimmed},
-    Chart, DisplayBpm, Measure, Note, NoteData, NoteRow, NoteType,
+    Chart, Measure, Note, NoteData, NoteRow, NoteType,
 };
 use nom::{
     branch::alt,
@@ -10,21 +10,10 @@ use nom::{
     error::ErrorKind,
     multi::{count, fold_many0, fold_many1, many0, separated_nonempty_list},
     number::complete::double,
-    sequence::{preceded, separated_pair, terminated},
+    sequence::{preceded, terminated},
     Err, IResult,
 };
 use num_rational::Rational32;
-
-fn display_bpm(input: &str) -> IResult<&str, DisplayBpm> {
-    alt((
-        map(
-            separated_pair(double, ws_trimmed(char(':')), double),
-            |(min, max)| DisplayBpm::Range(min, max),
-        ),
-        map(double, DisplayBpm::Static),
-        map(char('*'), |_| DisplayBpm::Random),
-    ))(input)
-}
 
 fn notetype(input: &str) -> IResult<&str, Option<NoteType>> {
     map(none_of("\r\n,"), into_sm_notetype)(input)
@@ -113,17 +102,14 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                 "TITLETRANSLIT" => nd.meta.title_translit = Some(value.to_owned()),
                 "SUBTITLETRANSLIT" => nd.meta.subtitle_translit = Some(value.to_owned()),
                 "ARTISTTRANSLIT" => nd.meta.artist_translit = Some(value.to_owned()),
-                "GENRE" => nd.meta.genre = Some(value.to_owned()),
                 "CREDIT" => nd.meta.credit = Some(value.to_owned()),
                 "BANNER" => nd.meta.banner_path = Some(value.to_owned()),
                 "BACKGROUND" => nd.meta.background_path = Some(value.to_owned()),
-                "LYRICSPATH" => nd.meta.lyrics_path = Some(value.to_owned()),
                 "CDTITLE" => nd.meta.cd_title = Some(value.to_owned()),
                 "MUSIC" => nd.meta.music_path = Some(value.to_owned()),
                 "SAMPLESTART" => nd.meta.sample_start = Some(ws_trimmed(double)(value)?.1),
                 "SAMPLELENGTH" => nd.meta.sample_length = Some(ws_trimmed(double)(value)?.1),
                 "OFFSET" => nd.meta.offset = Some(-ws_trimmed(double)(value)?.1),
-                "DISPLAYBPM" => nd.meta.display_bpm = Some(ws_trimmed(display_bpm)(value)?.1),
                 "BPMS" => {
                     nd.meta.bpms = ws_trimmed(comma_separated(beat_pair(double, 4.0)))(value)?.1
                 }
@@ -132,7 +118,11 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                         Some(ws_trimmed(comma_separated(beat_pair(double, 4.0)))(value)?.1)
                 }
                 "NOTES" => nd.charts.push(chart(value)?.1),
-                _ => {}
+                _ => {
+                    nd.meta
+                        .custom
+                        .insert((tag.to_owned(), "sm".to_owned()), value.to_owned());
+                }
             }
         }
     }
@@ -148,16 +138,7 @@ mod tests {
     use super::*;
     use crate::{BeatPair, ChartMetadata};
     use nom::Err::Error;
-
-    #[test]
-    fn parse_display_bpm() {
-        assert_eq!(
-            display_bpm("1.2  :   3.4  foo"),
-            Ok(("  foo", DisplayBpm::Range(1.2, 3.4)))
-        );
-        assert_eq!(display_bpm("1.2foo"), Ok(("foo", DisplayBpm::Static(1.2))));
-        assert_eq!(display_bpm("*"), Ok(("", DisplayBpm::Random)));
-    }
+    use std::collections::HashMap;
 
     #[test]
     fn parse_notetype() {
@@ -240,6 +221,12 @@ mod tests {
 
     #[test]
     fn parse_notedata() {
+        let mut custom = HashMap::new();
+        custom.insert(
+            ("FOOBAR".to_owned(), "sm".to_owned()),
+            "  BAZQUX ".to_owned(),
+        );
+
         assert_eq!(
             notedata(
                 "content that is
@@ -249,10 +236,9 @@ mod tests {
         not part of a tag is discarded
 
         #SUBTITLE:bar2;#ARTIST:bar3;#TITLETRANSLIT:bar4;#SUBTITLETRANSLIT:bar5;
-        #ARTISTTRANSLIT:bar6;#GENRE:bar7;#CREDIT:bar8;#BANNER:bar9;
-        #BACKGROUND:bar10;#LYRICSPATH:bar11;#CDTITLE:bar12;#MUSIC:bar13;
-        #SAMPLESTART:  1.2 ;#SAMPLELENGTH: 3.4  ;#BPMS:  1.0=2 ;
-        #STOPS: 3.0=4  ;#OFFSET:  1 ;#DISPLAYBPM: *  ;#STOPS:
+        #ARTISTTRANSLIT:bar6;#CREDIT:bar8;#BANNER:bar9;#BACKGROUND:bar10;
+        #CDTITLE:bar12;#MUSIC:bar13;#SAMPLESTART:  1.2 ;#SAMPLELENGTH: 3.4  ;
+        #BPMS:  1.0=2 ;#STOPS: 3.0=4  ;#OFFSET:  1 ;# FOOBAR  :  BAZQUX ;#STOPS:
         ;
         #NOTES: ::::: \
             0000\n \
@@ -277,11 +263,9 @@ mod tests {
                         title_translit: Some("bar4".to_owned()),
                         subtitle_translit: Some("bar5".to_owned()),
                         artist_translit: Some("bar6".to_owned()),
-                        genre: Some("bar7".to_owned()),
                         credit: Some("bar8".to_owned()),
                         banner_path: Some("bar9".to_owned()),
                         background_path: Some("bar10".to_owned()),
-                        lyrics_path: Some("bar11".to_owned()),
                         cd_title: Some("bar12".to_owned()),
                         music_path: Some("bar13".to_owned()),
                         sample_start: Some(1.2),
@@ -289,10 +273,7 @@ mod tests {
                         bpms: vec![BeatPair::from_pair(1. / 4.0, 2.).unwrap()],
                         stops: Some(vec![BeatPair::from_pair(3. / 4.0, 4.).unwrap()]),
                         offset: Some(-1.),
-                        display_bpm: Some(DisplayBpm::Random),
-                        background_changes: None,
-                        foreground_changes: None,
-                        selectable: None,
+                        custom,
                     },
                     charts: vec![
                         vec![vec![(

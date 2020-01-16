@@ -1,10 +1,10 @@
 use crate::{
     parser_generic::{beat_pair, comma_separated, stepmania_tag, ws_trimmed},
-    BeatPair, DisplayBpm, Fraction, Measure, Note, NoteData, NoteRow, NoteType,
+    BeatPair, Fraction, Measure, Note, NoteData, NoteRow, NoteType,
 };
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take_until},
+    bytes::complete::take_until,
     character::complete::{anychar, char, multispace0},
     combinator::{map, map_opt},
     error::ErrorKind,
@@ -13,19 +13,6 @@ use nom::{
     sequence::{preceded, separated_pair, terminated},
     Err, IResult,
 };
-
-fn display_bpm_dwi(input: &str) -> IResult<&str, DisplayBpm> {
-    Ok(alt((
-        map(
-            //we accept either .. or . as a separator because you can have the first bpm as an integer
-            //and the first . gets read into the first parser as a result
-            separated_pair(double, ws_trimmed(alt((tag(".."), tag(".")))), double),
-            |(min, max)| DisplayBpm::Range(min, max),
-        ),
-        map(double, DisplayBpm::Static),
-    ))(input)
-    .unwrap_or(("", DisplayBpm::Random)))
-}
 
 fn dwi_noterow(input: &str) -> IResult<&str, NoteRow> {
     alt((
@@ -147,7 +134,6 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
             match tag {
                 "TITLE" => nd.meta.title = Some(value.to_owned()),
                 "ARTIST" => nd.meta.artist = Some(value.to_owned()),
-                "GENRE" => nd.meta.genre = Some(value.to_owned()),
                 "CDTITLE" => nd.meta.cd_title = Some(value.to_owned()),
                 "FILE" => nd.meta.music_path = Some(value.to_owned()),
                 "GAP" => nd.meta.offset = Some(ws_trimmed(double)(value)?.1 / 1000.0),
@@ -173,7 +159,6 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                 }
                 "SAMPLESTART" => nd.meta.sample_start = Some(ws_trimmed(double)(value)?.1),
                 "SAMPLELENGTH" => nd.meta.sample_length = Some(ws_trimmed(double)(value)?.1),
-                "DISPLAYBPM" => nd.meta.display_bpm = Some(ws_trimmed(display_bpm_dwi)(value)?.1),
                 "SINGLE" => nd.charts.push(
                     preceded(
                         terminated(
@@ -184,7 +169,11 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                     )(value)?
                     .1,
                 ),
-                _ => {}
+                _ => {
+                    nd.meta
+                        .custom
+                        .insert((tag.to_owned(), "dwi".to_owned()), value.to_owned());
+                }
             }
         }
     }
@@ -214,9 +203,16 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
 mod tests {
     use super::*;
     use crate::ChartMetadata;
+    use std::collections::HashMap;
 
     #[test]
     fn parse_notedata() {
+        let mut custom = HashMap::new();
+        custom.insert(
+            ("FOOBAR".to_owned(), "dwi".to_owned()),
+            "  BAZQUX ".to_owned(),
+        );
+
         assert_eq!(
             notedata(
                 "content that is
@@ -225,13 +221,12 @@ mod tests {
 
         not part of a tag is discarded
 
-        #SUBTITLE:bar2;#ARTIST:bar3;
-        #GENRE:bar4;
+        #ARTIST:bar3;
         #CDTITLE:bar5;
         #FILE:bar6.mp3;
         #BPM:123.4;
-        #DISPLAYBPM:100..200;
         #CHANGEBPM:23.4=56.7,256=128;
+        # FOOBAR  :  BAZQUX ;
         #SINGLE:SMANIC:17:
         00004008
         (<42>000100060000000);"
@@ -246,11 +241,9 @@ mod tests {
                         title_translit: None,
                         subtitle_translit: None,
                         artist_translit: None,
-                        genre: Some("bar4".to_owned()),
                         credit: None,
                         banner_path: None,
                         background_path: None,
-                        lyrics_path: None,
                         cd_title: Some("bar5".to_owned()),
                         music_path: Some("bar6.mp3".to_owned()),
                         sample_start: None,
@@ -262,10 +255,7 @@ mod tests {
                         ],
                         stops: None,
                         offset: None,
-                        display_bpm: Some(DisplayBpm::Range(100., 200.)),
-                        background_changes: None,
-                        foreground_changes: None,
-                        selectable: None,
+                        custom,
                     },
                     charts: vec![vec![
                         vec![

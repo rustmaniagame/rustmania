@@ -18,6 +18,7 @@ mod sm_writer;
 pub use num_rational::Rational32 as Fraction;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::io;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -68,11 +69,9 @@ pub struct ChartMetadata {
     pub title_translit: Option<String>,
     pub subtitle_translit: Option<String>,
     pub artist_translit: Option<String>,
-    pub genre: Option<String>,
     pub credit: Option<String>,
     pub banner_path: Option<String>,
     pub background_path: Option<String>,
-    pub lyrics_path: Option<String>,
     pub cd_title: Option<String>,
     pub music_path: Option<String>,
     pub offset: Option<f64>,
@@ -80,11 +79,7 @@ pub struct ChartMetadata {
     pub stops: Option<Vec<BeatPair<f64>>>,
     pub sample_start: Option<f64>,
     pub sample_length: Option<f64>,
-    pub display_bpm: Option<DisplayBpm>,
-    pub selectable: Option<String>,
-    //it is unclear how this is used in practice, may be better as Option<bool>
-    pub background_changes: Option<Vec<BeatPair<String>>>,
-    pub foreground_changes: Option<Vec<BeatPair<String>>>,
+    pub custom: HashMap<(String, String), String>,
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
