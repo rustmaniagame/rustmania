@@ -4,12 +4,11 @@ version = "0.1.0"
 authors = ["RGates94 <rgates275@gmail.com>"]
 edition = "2018"
 
+[features]
+default = ["use-serde"]
+use-serde = ["serde", "num-rational/serde"]
+
 [dependencies]
 nom = "5.0.1"
-serde = "1.0.101"
-serde_derive = "1.0.101"
-
-[dependencies.num-rational]
-version = "0.2"
-default-features = false
-features = ["std", "bigint-std", "serde"]
+serde = { version = "1.0.101", optional = true, features = ["derive"] }
+num-rational = { version = "0.2", default-features = false, features = ["std"] }

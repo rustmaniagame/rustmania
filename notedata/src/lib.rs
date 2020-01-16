@@ -16,17 +16,20 @@ mod parser_generic;
 mod sm_writer;
 
 pub use num_rational::Rational32 as Fraction;
-use serde_derive::{Deserialize, Serialize};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::io;
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct BeatPair<T> {
     pub beat: i32,
     pub sub_beat: Fraction,
     pub value: T,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum NoteType {
     Tap,
     Hold,
@@ -37,14 +40,16 @@ pub enum NoteType {
     HoldEnd,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum DisplayBpm {
     Range(f64, f64),
     Static(f64),
     Random,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct Note {
     pub note_type: NoteType,
     pub column: usize,
@@ -54,7 +59,8 @@ type NoteRow = Vec<Note>;
 pub type Measure = Vec<(NoteRow, Fraction)>;
 pub type Chart = Vec<Measure>;
 
-#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct ChartMetadata {
     pub title: Option<String>,
     pub subtitle: Option<String>,
@@ -81,7 +87,8 @@ pub struct ChartMetadata {
     pub foreground_changes: Option<Vec<BeatPair<String>>>,
 }
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct NoteData {
     pub charts: Vec<Chart>,
     pub meta: ChartMetadata,
