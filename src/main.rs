@@ -101,8 +101,12 @@ pub fn load_song(sim: &PathBuf) -> Result<(f64, NoteData), LoadError> {
             Err(_) => return Err(LoadError::FailedParse),
         };
         match extension.to_str() {
-            Some("sm") => notedata::NoteData::from_sm(sim).map_err(|_| LoadError::FailedParse),
-            Some("dwi") => notedata::NoteData::from_dwi(sim).map_err(|_| LoadError::FailedParse),
+            Some("sm") => {
+                notedata::NoteData::from_sm_reader(sim).map_err(|_| LoadError::FailedParse)
+            }
+            Some("dwi") => {
+                notedata::NoteData::from_dwi_reader(sim).map_err(|_| LoadError::FailedParse)
+            }
             Some("rm") => {
                 let mut n = vec![];
                 sim.read_to_end(&mut n)

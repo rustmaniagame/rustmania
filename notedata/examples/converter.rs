@@ -21,8 +21,12 @@ fn main() {
     let notedata = if let Some(extension) = file_path.extension() {
         let sim = File::open(file_path.as_path()).expect("");
         match extension.to_str() {
-            Some("sm") => notedata::NoteData::from_sm(sim).expect("Could not deserialize .sm"),
-            Some("dwi") => notedata::NoteData::from_dwi(sim).expect("Could note deseialize .dwi"),
+            Some("sm") => {
+                notedata::NoteData::from_sm_reader(sim).expect("Could not deserialize .sm")
+            }
+            Some("dwi") => {
+                notedata::NoteData::from_dwi_reader(sim).expect("Could note deseialize .dwi")
+            }
             _ => panic!("Unsupported extension"),
         }
     } else {
