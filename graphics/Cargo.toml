@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 arrayvec = "0.5.1"
-gfx-hal = "0.3.1"
+gfx-hal = "0.4.1"
 winit = "0.19.3"
 
 [features]
