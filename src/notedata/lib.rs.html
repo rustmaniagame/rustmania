@@ -148,6 +148,26 @@
 <span id="148">148</span>
 <span id="149">149</span>
 <span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">clippy</span>::<span class="ident">pedantic</span>)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(
@@ -246,6 +266,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">BeatPair</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">fn</span> <span class="ident">at_start</span>(<span class="ident">value</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">beat</span>: <span class="number">0</span>,
@@ -253,6 +274,8 @@
             <span class="ident">value</span>,
         }
     }
+
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">fn</span> <span class="ident">from_pair</span>(<span class="ident">beat</span>: <span class="ident">f64</span>, <span class="ident">value</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">ratio</span> <span class="op">=</span> <span class="ident">Fraction</span>::<span class="ident">approximate_float</span>(<span class="ident">beat</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Some</span>(<span class="self">Self</span> {
@@ -264,39 +287,56 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Note</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">note_type</span>: <span class="ident">NoteType</span>, <span class="ident">column</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">note_type</span>: <span class="ident">NoteType</span>, <span class="ident">column</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> { <span class="ident">note_type</span>, <span class="ident">column</span> }
     }
 }
 
+<span class="kw">impl</span> <span class="ident">ChartMetadata</span> {
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span>::<span class="ident">default</span>()
+    }
+}
+
 <span class="kw">impl</span> <span class="ident">NoteData</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">charts</span>: <span class="macro">vec</span><span class="macro">!</span>[],
-            <span class="ident">meta</span>: <span class="ident">ChartMetadata</span>::<span class="ident">default</span>(),
-        }
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span>::<span class="ident">default</span>()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_sm</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">simfile</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">io</span>::<span class="ident">Error</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">T</span>: <span class="ident">io</span>::<span class="ident">Read</span>,
-    {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">chart_string</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
-        <span class="ident">simfile</span>.<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">chart_string</span>)<span class="question-mark">?</span>;
-
-        <span class="ident">sm_parser</span>::<span class="ident">parse</span>(<span class="kw-2">&amp;</span><span class="ident">chart_string</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">from</span>(<span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">InvalidInput</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">charts</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">charts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Chart</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">charts</span> <span class="op">=</span> <span class="ident">charts</span>;
+        <span class="self">self</span>
     }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">meta</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="ident">ChartMetadata</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">meta</span> <span class="op">=</span> <span class="ident">meta</span>;
+        <span class="self">self</span>
+    }
+
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_sm_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
         <span class="ident">sm_writer</span>::<span class="ident">write_sm</span>(<span class="kw-2">&amp;</span><span class="self">self</span>)
     }
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_dwi</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">simfile</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">io</span>::<span class="ident">Error</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">T</span>: <span class="ident">io</span>::<span class="ident">Read</span>,
-    {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">chart_string</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
-        <span class="ident">simfile</span>.<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">chart_string</span>)<span class="question-mark">?</span>;
 
-        <span class="ident">dwi_parser</span>::<span class="ident">parse</span>(<span class="kw-2">&amp;</span><span class="ident">chart_string</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">from</span>(<span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">InvalidInput</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_sm_reader</span>(<span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="kw">impl</span> <span class="ident">io</span>::<span class="ident">Read</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sm_string</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
+        <span class="ident">reader</span>.<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">sm_string</span>)<span class="question-mark">?</span>;
+
+        <span class="ident">sm_parser</span>::<span class="ident">parse</span>(<span class="kw-2">&amp;</span><span class="ident">sm_string</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">from</span>(<span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">InvalidInput</span>))
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_sm_writer</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">writer</span>: <span class="kw">impl</span> <span class="ident">io</span>::<span class="ident">Write</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">to_sm_string</span>().<span class="ident">into_bytes</span>())
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_dwi_reader</span>(<span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="kw">impl</span> <span class="ident">io</span>::<span class="ident">Read</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dwi_string</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
+        <span class="ident">reader</span>.<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dwi_string</span>)<span class="question-mark">?</span>;
+
+        <span class="ident">dwi_parser</span>::<span class="ident">parse</span>(<span class="kw-2">&amp;</span><span class="ident">dwi_string</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">from</span>(<span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">InvalidInput</span>))
     }
 }
 </pre></div>

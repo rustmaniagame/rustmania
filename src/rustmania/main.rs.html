@@ -308,6 +308,10 @@
 <span id="308">308</span>
 <span id="309">309</span>
 <span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">clippy</span>::<span class="ident">pedantic</span>)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(
@@ -412,8 +416,12 @@
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">LoadError</span>::<span class="ident">FailedParse</span>),
         };
         <span class="kw">match</span> <span class="ident">extension</span>.<span class="ident">to_str</span>() {
-            <span class="prelude-val">Some</span>(<span class="string">&quot;sm&quot;</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">notedata</span>::<span class="ident">NoteData</span>::<span class="ident">from_sm</span>(<span class="ident">sim</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">LoadError</span>::<span class="ident">FailedParse</span>),
-            <span class="prelude-val">Some</span>(<span class="string">&quot;dwi&quot;</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">notedata</span>::<span class="ident">NoteData</span>::<span class="ident">from_dwi</span>(<span class="ident">sim</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">LoadError</span>::<span class="ident">FailedParse</span>),
+            <span class="prelude-val">Some</span>(<span class="string">&quot;sm&quot;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">notedata</span>::<span class="ident">NoteData</span>::<span class="ident">from_sm_reader</span>(<span class="ident">sim</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">LoadError</span>::<span class="ident">FailedParse</span>)
+            }
+            <span class="prelude-val">Some</span>(<span class="string">&quot;dwi&quot;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">notedata</span>::<span class="ident">NoteData</span>::<span class="ident">from_dwi_reader</span>(<span class="ident">sim</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">LoadError</span>::<span class="ident">FailedParse</span>)
+            }
             <span class="prelude-val">Some</span>(<span class="string">&quot;rm&quot;</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">n</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
                 <span class="ident">sim</span>.<span class="ident">read_to_end</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">n</span>)
