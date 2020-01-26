@@ -95,6 +95,7 @@ pub struct NoteData {
 }
 
 impl<T> BeatPair<T> {
+    #[must_use]
     fn at_start(value: T) -> Self {
         Self {
             beat: 0,
@@ -102,6 +103,8 @@ impl<T> BeatPair<T> {
             value,
         }
     }
+
+    #[must_use]
     fn from_pair(beat: f64, value: T) -> Option<Self> {
         let ratio = Fraction::approximate_float(beat)?;
         Some(Self {
@@ -113,38 +116,55 @@ impl<T> BeatPair<T> {
 }
 
 impl Note {
-    fn new(note_type: NoteType, column: usize) -> Self {
+    #[must_use]
+    pub fn new(note_type: NoteType, column: usize) -> Self {
         Self { note_type, column }
     }
 }
 
+impl ChartMetadata {
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
 impl NoteData {
-    fn new() -> Self {
-        Self {
-            charts: vec![],
-            meta: ChartMetadata::default(),
-        }
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
     }
 
-    pub fn from_sm<T>(mut simfile: T) -> Result<Self, io::Error>
-    where
-        T: io::Read,
-    {
-        let mut chart_string = String::new();
-        simfile.read_to_string(&mut chart_string)?;
-
-        sm_parser::parse(&chart_string).map_err(|_| io::Error::from(io::ErrorKind::InvalidInput))
+    pub fn charts(&mut self, charts: Vec<Chart>) -> &mut Self {
+        self.charts = charts;
+        self
     }
+
+    pub fn meta(&mut self, meta: ChartMetadata) -> &mut Self {
+        self.meta = meta;
+        self
+    }
+
+    #[must_use]
     pub fn to_sm_string(&self) -> String {
         sm_writer::write_sm(&self)
     }
-    pub fn from_dwi<T>(mut simfile: T) -> Result<Self, io::Error>
-    where
-        T: io::Read,
-    {
-        let mut chart_string = String::new();
-        simfile.read_to_string(&mut chart_string)?;
 
-        dwi_parser::parse(&chart_string).map_err(|_| io::Error::from(io::ErrorKind::InvalidInput))
+    pub fn from_sm_reader(mut reader: impl io::Read) -> io::Result<Self> {
+        let mut sm_string = String::new();
+        reader.read_to_string(&mut sm_string)?;
+
+        sm_parser::parse(&sm_string).map_err(|_| io::Error::from(io::ErrorKind::InvalidInput))
+    }
+
+    pub fn to_sm_writer(&self, mut writer: impl io::Write) -> io::Result<()> {
+        writer.write_all(&self.to_sm_string().into_bytes())
+    }
+
+    pub fn from_dwi_reader(mut reader: impl io::Read) -> io::Result<Self> {
+        let mut dwi_string = String::new();
+        reader.read_to_string(&mut dwi_string)?;
+
+        dwi_parser::parse(&dwi_string).map_err(|_| io::Error::from(io::ErrorKind::InvalidInput))
     }
 }
