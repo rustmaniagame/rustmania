@@ -85,7 +85,7 @@ impl NoteLayout {
         (delta as f32 * self.scroll_speed) as i64 + self.receptor_height
     }
     pub fn delta_to_offset(&self, delta: i64) -> f32 {
-        (delta as f32 * self.scroll_speed)
+        delta as f32 * self.scroll_speed
     }
     pub fn add_note(
         &self,
