@@ -54,6 +54,9 @@ pub use num_rational::Rational32 as Fraction;
 use serde::{Deserialize, Serialize};
 use std::io;
 
+mod error;
+pub use error::ParseError;
+
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct BeatPair<T> {
@@ -184,21 +187,19 @@ impl NoteData {
         sm_writer::write_sm(&self)
     }
 
-    pub fn from_sm_reader(mut reader: impl io::Read) -> io::Result<Self> {
+    pub fn from_sm_reader(mut reader: impl io::Read) -> Result<Self, ParseError> {
         let mut sm_string = String::new();
         reader.read_to_string(&mut sm_string)?;
-
-        sm_parser::parse(&sm_string).map_err(|_| io::Error::from(io::ErrorKind::InvalidInput))
+        Ok(sm_parser::parse(&sm_string)?)
     }
 
     pub fn to_sm_writer(&self, mut writer: impl io::Write) -> io::Result<()> {
         writer.write_all(&self.to_sm_string().into_bytes())
     }
 
-    pub fn from_dwi_reader(mut reader: impl io::Read) -> io::Result<Self> {
+    pub fn from_dwi_reader(mut reader: impl io::Read) -> Result<Self, ParseError> {
         let mut dwi_string = String::new();
         reader.read_to_string(&mut dwi_string)?;
-
-        dwi_parser::parse(&dwi_string).map_err(|_| io::Error::from(io::ErrorKind::InvalidInput))
+        Ok(dwi_parser::parse(&dwi_string)?)
     }
 }
