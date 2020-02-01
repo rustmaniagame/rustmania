@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["DisplayBpm",""],["NoteType",""]],"struct":[["BeatPair",""],["ChartMetadata",""],["Note",""],["NoteData",""]],"type":[["Chart",""],["Fraction","Alias for a `Ratio` of 32-bit-sized integers."],["Measure",""]]});
+initSidebarItems({"enum":[["DisplayBpm",""],["NoteType",""],["ParseError",""]],"struct":[["BeatPair",""],["ChartMetadata",""],["Note",""],["NoteData",""]],"type":[["Chart",""],["Fraction","Alias for a `Ratio` of 32-bit-sized integers."],["Measure",""]]});
