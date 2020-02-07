@@ -78,7 +78,7 @@ pub fn send_songs<U>(
 {
     read_dir(songs_folder)
         .expect("Failed to open folder")
-        .collect::<Vec<_>>()
+        .par_bridge()
         .into_par_iter()
         .for_each_with(sender, |s, x| {
             if let Ok(entry) = x {
