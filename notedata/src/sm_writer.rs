@@ -1,4 +1,7 @@
-use crate::{BeatPair, DisplayBpm, Fraction, Measure, Note, NoteData, NoteRow, NoteType};
+use crate::{
+    lib::{String, ToString},
+    BeatPair, DisplayBpm, Fraction, Measure, Note, NoteData, NoteRow, NoteType,
+};
 
 pub fn write_sm(data: &NoteData) -> String {
     let mut output = String::new();

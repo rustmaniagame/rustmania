@@ -1,3 +1,4 @@
+#![cfg_attr(not(feature = "std"), no_std)]
 #![warn(
     clippy::cast_lossless,
     clippy::checked_conversions,
@@ -42,19 +43,48 @@
     clippy::used_underscore_binding
 )]
 
-mod dwi_parser;
-mod sm_parser;
+#[cfg(not(feature = "std"))]
+#[macro_use]
+extern crate alloc;
 
-mod parser_generic;
+mod lib {
+    #[cfg(not(feature = "std"))]
+    pub use alloc::{
+        borrow::ToOwned,
+        fmt,
+        string::{String, ToString},
+        vec::Vec,
+    };
+    #[cfg(not(feature = "std"))]
+    pub trait Error: fmt::Debug + fmt::Display {
+        fn source(&self) -> Option<&(dyn Error + 'static)> {
+            None
+        }
+    }
 
-mod sm_writer;
+    #[cfg(feature = "std")]
+    pub use std::{
+        borrow::ToOwned,
+        error::Error,
+        fmt, io,
+        string::{String, ToString},
+        vec::Vec,
+    };
+}
+
+#[cfg(feature = "std")]
+use lib::io;
+use lib::{String, Vec};
 
 pub use num_rational::Rational32 as Fraction;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::io;
 
+mod dwi_parser;
 mod error;
+mod parser_generic;
+mod sm_parser;
+mod sm_writer;
 pub use error::ParseError;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -182,21 +212,32 @@ impl NoteData {
         self
     }
 
-    #[must_use]
-    pub fn to_sm_string(&self) -> String {
-        sm_writer::write_sm(&self)
+    pub fn from_sm_string(string: &str) -> Result<Self, ParseError> {
+        Ok(sm_parser::parse(&string)?)
     }
 
+    #[cfg(feature = "std")]
     pub fn from_sm_reader(mut reader: impl io::Read) -> Result<Self, ParseError> {
         let mut sm_string = String::new();
         reader.read_to_string(&mut sm_string)?;
         Ok(sm_parser::parse(&sm_string)?)
     }
 
+    #[must_use]
+    pub fn to_sm_string(&self) -> String {
+        sm_writer::write_sm(&self)
+    }
+
+    #[cfg(feature = "std")]
     pub fn to_sm_writer(&self, mut writer: impl io::Write) -> io::Result<()> {
         writer.write_all(&self.to_sm_string().into_bytes())
     }
 
+    pub fn from_dwi_string(string: &str) -> Result<Self, ParseError> {
+        Ok(dwi_parser::parse(&string)?)
+    }
+
+    #[cfg(feature = "std")]
     pub fn from_dwi_reader(mut reader: impl io::Read) -> Result<Self, ParseError> {
         let mut dwi_string = String::new();
         reader.read_to_string(&mut dwi_string)?;
