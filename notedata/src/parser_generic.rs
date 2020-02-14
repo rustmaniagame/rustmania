@@ -1,4 +1,4 @@
-use crate::BeatPair;
+use crate::{lib::Vec, BeatPair};
 use nom::{
     bytes::complete::{is_not, take_until},
     character::complete::{char, multispace0},
