@@ -57,7 +57,7 @@ jobs:
 
       - name: Install libasound2-dev and libudev-dev
         if: startsWith(matrix.os, 'ubuntu')
-        run: sudo apt-get install libasound2-dev libudev-dev
+        run: sudo apt-get update && sudo apt-get install libasound2-dev libudev-dev
 
       - name: Build
         uses: actions-rs/cargo@v1
@@ -89,7 +89,7 @@ jobs:
           override: true
 
       - name: Install libasound2-dev and libudev-dev
-        run: sudo apt-get install libasound2-dev libudev-dev
+        run: sudo apt-get update && sudo apt-get install libasound2-dev libudev-dev
 
       - name: Clippy
         uses: actions-rs/clippy-check@v1
@@ -115,7 +115,7 @@ jobs:
           override: true
 
       - name: Install libasound2-dev and libudev-dev
-        run: sudo apt-get install libasound2-dev libudev-dev
+        run: sudo apt-get update && sudo apt-get install libasound2-dev libudev-dev
 
       - name: Docs
         uses: actions-rs/cargo@v1
