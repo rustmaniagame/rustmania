@@ -10,5 +10,5 @@ use-serde = ["serde", "num-rational/serde"]
 
 [dependencies]
 nom = "5.1.0"
-serde = { version = "1.0.101", optional = true, features = ["derive"] }
+serde = { version = "1.0.104", optional = true, features = ["derive"] }
 num-rational = { version = "0.2", default-features = false, features = ["std"] }
