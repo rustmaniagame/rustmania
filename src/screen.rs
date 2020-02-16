@@ -48,7 +48,7 @@ pub enum ResourceType {
     _Layout,
     _Float,
     _Integer,
-    _String,
+    String,
     Replay,
     _Multiple,
 }
@@ -72,6 +72,8 @@ pub struct ScriptMap {
     pub resource_type: ResourceType,
     pub resource_index: usize,
     pub script_index: usize,
+    pub destination_type: ResourceType,
+    pub destination_index: usize,
 }
 
 #[derive(Copy, Clone)]
@@ -186,7 +188,7 @@ impl Resources {
             ResourceType::_Layout => Resource::_Layout(Box::new(self.layouts[index].clone())),
             ResourceType::_Float => Resource::_Float(self.floats[index]),
             ResourceType::_Integer => Resource::Integer(self.integers[index]),
-            ResourceType::_String => Resource::String(self.strings[index].clone()),
+            ResourceType::String => Resource::String(self.strings[index].clone()),
             ResourceType::Replay => Resource::Replay(self.replays[index].clone()),
             ResourceType::_Multiple => Resource::_Multiple(self.multiples[index].clone()),
         }
@@ -271,17 +273,17 @@ impl Screen {
                     resource_type,
                     resource_index,
                     script_index,
+                    destination_type: _destination_type,
+                    destination_index,
                 }) => {
                     if let Some(resource) = callbacks[*script_index](Some(
                         resources.get(*resource_index, *resource_type),
                     )) {
-                        resources.push(resource);
+                        resources.set(*destination_index, resource);
                     }
                 }
             }
-        } /*
-
-          }*/
+        }
     }
     fn start_time_to_milliseconds(&self) -> Option<i64> {
         match self.start_time {

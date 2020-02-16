@@ -332,6 +332,8 @@ fn main() {
                         resource_type: ResourceType::Replay,
                         resource_index: 0,
                         script_index: 0,
+                        destination_type: ResourceType::String,
+                        destination_index: 0
                     }),
                 ],
             ),
