@@ -42,7 +42,7 @@ pub enum Resource {
     _Multiple(Vec<Resource>),
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Deserialize, Serialize)]
 pub enum ResourceType {
     _Notes,
     _Path,
@@ -68,7 +68,7 @@ pub struct Resources {
     multiples: Vec<Vec<Resource>>,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Deserialize, Serialize)]
 pub struct ScriptMap {
     pub resource_type: ResourceType,
     pub resource_index: usize,
@@ -77,13 +77,13 @@ pub struct ScriptMap {
     pub destination_index: usize,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Deserialize, Serialize)]
 pub struct ElementMap {
     pub resource_index: usize,
     pub element_index: usize,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Deserialize, Serialize)]
 pub enum ResourceMap {
     Script(ScriptMap),
     Element(ElementMap),
@@ -94,6 +94,7 @@ pub type ResourceMaps = Vec<ResourceMap>;
 #[derive(Deserialize, Serialize)]
 pub struct ScreenBuilder {
     pub elements: Vec<ElementType>,
+    pub on_finish: ResourceMaps,
 }
 
 pub struct Screen {
@@ -243,13 +244,13 @@ impl Resources {
 }
 
 impl ScreenBuilder {
-    pub fn build(&self, resources: &Resources, scripts: ResourceMaps) -> Screen {
+    pub fn build(&self, resources: &Resources) -> Screen {
         let element_list = self
             .elements
             .iter()
             .map(|element| element.build(resources))
             .collect();
-        Screen::new(element_list, scripts)
+        Screen::new(element_list, self.on_finish.clone())
     }
 }
 
