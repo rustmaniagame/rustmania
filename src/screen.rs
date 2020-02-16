@@ -9,7 +9,7 @@ use ggez::{
     graphics::{self, Color},
     Context, GameError,
 };
-use notedata::NoteData;
+use notedata::ChartMetadata;
 use serde_derive::{Deserialize, Serialize};
 use std::{
     path::PathBuf,
@@ -108,7 +108,13 @@ pub enum Message {
 }
 
 pub struct Globals {
-    pub cache: Vec<(PathBuf, (f64, NoteData))>,
+    pub cache: Vec<CacheEntry>,
+}
+
+pub struct CacheEntry {
+    pub path: PathBuf,
+    pub difficulty: f64,
+    pub data: ChartMetadata,
 }
 
 fn to_milliseconds(dur: Duration) -> i64 {

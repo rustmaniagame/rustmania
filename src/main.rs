@@ -55,7 +55,8 @@ use crate::{
     gamestate::GameState,
     player_config::NoteSkin,
     screen::{
-        ElementMap, ElementType, Globals, ResourceMap, ResourceType, Resources, ScreenBuilder, ScriptMap,
+        CacheEntry, ElementMap, ElementType, Globals, ResourceMap, ResourceType, Resources,
+        ScreenBuilder, ScriptMap,
     },
     timingdata::{CalcInfo, TimingData},
 };
@@ -189,17 +190,9 @@ mod callbacks {
                 Err(_) => return None,
             };
             Some(Resource::String(
-                globals
-                    .cache
-                    .get(index)
-                    .map_or_else(String::new, |notedata| {
-                        (notedata.1)
-                            .1
-                            .meta
-                            .title
-                            .clone()
-                            .unwrap_or_else(String::new)
-                    })
+                globals.cache.get(index).map_or_else(String::new, |entry| {
+                    entry.data.title.clone().unwrap_or_else(String::new)
+                }),
             ))
         } else {
             None
@@ -265,7 +258,19 @@ fn main() {
                 .to_str()
                 .expect("failed to parse path"),
         );
-        (simfile_folder, difficulty, notedata, notedata_list)
+        (
+            simfile_folder,
+            difficulty,
+            notedata,
+            notedata_list
+                .into_iter()
+                .map(|(path, (difficulty, data))| CacheEntry {
+                    path,
+                    difficulty,
+                    data: data.meta,
+                })
+                .collect::<Vec<_>>(),
+        )
     };
     println!(
         "Selected Song is: {}",
