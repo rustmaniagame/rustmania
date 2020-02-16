@@ -55,7 +55,7 @@ use crate::{
     gamestate::GameState,
     player_config::NoteSkin,
     screen::{
-        ElementMap, ElementType, ResourceMap, ResourceType, Resources, ScreenBuilder, ScriptMap,
+        ElementMap, ElementType, Globals, ResourceMap, ResourceType, Resources, ScreenBuilder, ScriptMap,
     },
     timingdata::{CalcInfo, TimingData},
 };
@@ -162,10 +162,11 @@ pub fn load_song(sim: &PathBuf) -> Result<(f64, NoteData), LoadError> {
 }
 
 mod callbacks {
-    use crate::screen::Resource;
+    use crate::screen::{Globals, Resource};
     use crate::timingdata::TimingColumn;
+    use nom::lib::std::convert::TryFrom;
 
-    pub fn map_to_string(resource: Option<Resource>) -> Option<Resource> {
+    pub fn map_to_string(resource: Option<Resource>, _globals: &Globals) -> Option<Resource> {
         resource.map(|resource| match resource {
             Resource::Replay(replay) => Resource::String(
                 (replay
@@ -178,6 +179,31 @@ mod callbacks {
             ),
             _ => Resource::String("".to_owned()),
         })
+    }
+
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn song_title(resource: Option<Resource>, globals: &Globals) -> Option<Resource> {
+        if let Some(Resource::Integer(index)) = resource {
+            let index = match usize::try_from(index) {
+                Ok(number) => number,
+                Err(_) => return None,
+            };
+            Some(Resource::String(
+                globals
+                    .cache
+                    .get(index)
+                    .map_or_else(String::new, |notedata| {
+                        (notedata.1)
+                            .1
+                            .meta
+                            .title
+                            .clone()
+                            .unwrap_or_else(String::new)
+                    })
+            ))
+        } else {
+            None
+        }
     }
 }
 
@@ -208,7 +234,7 @@ fn main() {
 
     set_up_logging().expect("Failed to setup logging");
 
-    let (simfile_folder, difficulty, notedata) = {
+    let (simfile_folder, difficulty, notedata, notedata_list) = {
         let start_time = Instant::now();
         let notedata_list = load_songs_folder(song_options.simfile, load_song);
         let duration = Instant::now() - start_time;
@@ -239,7 +265,7 @@ fn main() {
                 .to_str()
                 .expect("failed to parse path"),
         );
-        (simfile_folder, difficulty, notedata)
+        (simfile_folder, difficulty, notedata, notedata_list)
     };
     println!(
         "Selected Song is: {}",
@@ -333,14 +359,17 @@ fn main() {
                         resource_index: 0,
                         script_index: 0,
                         destination_type: ResourceType::String,
-                        destination_index: 0
+                        destination_index: 0,
                     }),
                 ],
             ),
             (results_screen, vec![]),
         ],
         resources,
-        vec![callbacks::map_to_string],
+        vec![callbacks::map_to_string, callbacks::song_title],
+        Globals {
+            cache: notedata_list,
+        },
     );
     if let Err(e) = ggez::event::run(context, events_loop, &mut gamestate) {
         debug!("Error: {}", e);

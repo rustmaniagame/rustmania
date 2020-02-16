@@ -9,6 +9,7 @@ use ggez::{
     graphics::{self, Color},
     Context, GameError,
 };
+use notedata::NoteData;
 use serde_derive::{Deserialize, Serialize};
 use std::{
     path::PathBuf,
@@ -53,7 +54,7 @@ pub enum ResourceType {
     _Multiple,
 }
 
-pub type ResourceCallback = fn(Option<Resource>) -> Option<Resource>;
+pub type ResourceCallback = fn(Option<Resource>, &Globals) -> Option<Resource>;
 
 #[derive(Clone)]
 pub struct Resources {
@@ -104,6 +105,10 @@ pub struct Screen {
 pub enum Message {
     None,
     Finish,
+}
+
+pub struct Globals {
+    pub cache: Vec<(PathBuf, (f64, NoteData))>,
 }
 
 fn to_milliseconds(dur: Duration) -> i64 {
@@ -256,7 +261,12 @@ impl Screen {
         }
         Ok(())
     }
-    pub fn finish(&mut self, resources: &mut Resources, callbacks: &[ResourceCallback]) {
+    pub fn finish(
+        &mut self,
+        resources: &mut Resources,
+        callbacks: &[ResourceCallback],
+        globals: &Globals,
+    ) {
         for map in &self.resource_maps {
             match map {
                 ResourceMap::Element(ElementMap {
@@ -276,9 +286,10 @@ impl Screen {
                     destination_type: _destination_type,
                     destination_index,
                 }) => {
-                    if let Some(resource) = callbacks[*script_index](Some(
-                        resources.get(*resource_index, *resource_type),
-                    )) {
+                    if let Some(resource) = callbacks[*script_index](
+                        Some(resources.get(*resource_index, *resource_type)),
+                        globals,
+                    ) {
                         resources.set(*destination_index, resource);
                     }
                 }
