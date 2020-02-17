@@ -91,16 +91,21 @@ pub enum ResourceMap {
 
 pub type ResourceMaps = Vec<ResourceMap>;
 
+#[derive(Clone, Deserialize, Serialize)]
+pub struct ScriptList {
+    pub scripts: Vec<ResourceMaps>,
+}
+
 #[derive(Deserialize, Serialize)]
 pub struct ScreenBuilder {
     pub elements: Vec<ElementType>,
-    pub on_finish: ResourceMaps,
+    pub on_finish: usize,
 }
 
 pub struct Screen {
     start_time: Option<Instant>,
     elements: Vec<Box<dyn Element>>,
-    resource_maps: ResourceMaps,
+    resource_maps: usize,
 }
 
 pub enum Message {
@@ -250,16 +255,16 @@ impl ScreenBuilder {
             .iter()
             .map(|element| element.build(resources))
             .collect();
-        Screen::new(element_list, self.on_finish.clone())
+        Screen::new(element_list, self.on_finish)
     }
 }
 
 impl Screen {
-    pub fn new(elements: Vec<Box<dyn Element>>, scripts: ResourceMaps) -> Self {
+    pub fn new(elements: Vec<Box<dyn Element>>, resource_maps: usize) -> Self {
         Self {
             start_time: Some(Instant::now() + Duration::from_secs(3)),
             elements,
-            resource_maps: scripts,
+            resource_maps,
         }
     }
     pub fn start(&mut self) -> Result<(), GameError> {
@@ -273,31 +278,34 @@ impl Screen {
         resources: &mut Resources,
         callbacks: &[ResourceCallback],
         globals: &Globals,
+        scripts: &ScriptList,
     ) {
-        for map in &self.resource_maps {
-            match map {
-                ResourceMap::Element(ElementMap {
-                    resource_index,
-                    element_index,
-                }) => {
-                    if let Some(resource) = self.elements[*element_index].finish() {
-                        if resources.set(*resource_index, resource.clone()).is_none() {
-                            resources.push(resource)
+        if let Some(script) = scripts.scripts.get(self.resource_maps) {
+            for map in script {
+                match map {
+                    ResourceMap::Element(ElementMap {
+                        resource_index,
+                        element_index,
+                    }) => {
+                        if let Some(resource) = self.elements[*element_index].finish() {
+                            if resources.set(*resource_index, resource.clone()).is_none() {
+                                resources.push(resource)
+                            }
                         }
                     }
-                }
-                ResourceMap::Script(ScriptMap {
-                    resource_type,
-                    resource_index,
-                    script_index,
-                    destination_type: _destination_type,
-                    destination_index,
-                }) => {
-                    if let Some(resource) = callbacks[*script_index](
-                        Some(resources.get(*resource_index, *resource_type)),
-                        globals,
-                    ) {
-                        resources.set(*destination_index, resource);
+                    ResourceMap::Script(ScriptMap {
+                        resource_type,
+                        resource_index,
+                        script_index,
+                        destination_type: _destination_type,
+                        destination_index,
+                    }) => {
+                        if let Some(resource) = callbacks[*script_index](
+                            Some(resources.get(*resource_index, *resource_type)),
+                            globals,
+                        ) {
+                            resources.set(*destination_index, resource);
+                        }
                     }
                 }
             }

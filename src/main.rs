@@ -51,6 +51,7 @@ mod screen;
 mod text;
 mod timingdata;
 
+use crate::screen::ScriptList;
 use crate::{
     gamestate::GameState,
     player_config::NoteSkin,
@@ -337,25 +338,29 @@ fn main() {
                 ElementType::MUSIC(0, 0),
                 ElementType::TEXT(0, 1, 2),
             ],
-            on_finish: vec![
-                ResourceMap::Element(ElementMap {
-                    element_index: 0,
-                    resource_index: 0,
-                }),
-                ResourceMap::Script(ScriptMap {
-                    resource_type: ResourceType::Replay,
-                    resource_index: 0,
-                    script_index: 0,
-                    destination_type: ResourceType::String,
-                    destination_index: 0,
-                }),
-            ],
+            on_finish: 0,
         },
     };
 
+    let scripts = ScriptList {
+        scripts: vec![vec![
+            ResourceMap::Element(ElementMap {
+                element_index: 0,
+                resource_index: 0,
+            }),
+            ResourceMap::Script(ScriptMap {
+                resource_type: ResourceType::Replay,
+                resource_index: 0,
+                script_index: 0,
+                destination_type: ResourceType::String,
+                destination_index: 0,
+            }),
+        ]],
+    };
+
     let results_screen = ScreenBuilder {
-        elements: vec![ElementType::TEXT(2, 1, 2)],
-        on_finish: vec![],
+        elements: vec![ElementType::TEXT(0, 1, 2)],
+        on_finish: 2,
     };
 
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
@@ -365,14 +370,13 @@ fn main() {
     }
 
     let mut gamestate = GameState::new(
-        vec![
-            gameplay_screen,results_screen,
-        ],
+        vec![gameplay_screen, results_screen],
         resources,
         vec![callbacks::map_to_string, callbacks::song_title],
         Globals {
             cache: notedata_list,
         },
+        scripts,
     );
     if let Err(e) = ggez::event::run(context, events_loop, &mut gamestate) {
         debug!("Error: {}", e);

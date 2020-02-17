@@ -1,5 +1,5 @@
 use crate::screen::{
-    Globals, Message, ResourceCallback, Resources, Screen, ScreenBuilder,
+    Globals, Message, ResourceCallback, Resources, Screen, ScreenBuilder, ScriptList,
 };
 use ggez::{
     event::{EventHandler, KeyCode, KeyMods},
@@ -13,6 +13,7 @@ pub struct GameState {
     resources: Resources,
     callbacks: Vec<ResourceCallback>,
     globals: Globals,
+    scripts: ScriptList,
 }
 
 impl GameState {
@@ -24,6 +25,7 @@ impl GameState {
             resources: Resources::_new(),
             callbacks: vec![],
             globals: Globals { cache: vec![] },
+            scripts: ScriptList { scripts: vec![] },
         }
     }
     pub fn new(
@@ -31,6 +33,7 @@ impl GameState {
         resources: Resources,
         callbacks: Vec<ResourceCallback>,
         globals: Globals,
+        scripts: ScriptList,
     ) -> Self {
         Self {
             scene_stack,
@@ -39,6 +42,7 @@ impl GameState {
             resources,
             callbacks,
             globals,
+            scripts,
         }
     }
 }
@@ -53,7 +57,12 @@ impl EventHandler for GameState {
                 Message::None => {}
                 Message::Finish => {
                     self.screen_index += 1;
-                    screen.finish(&mut self.resources, &self.callbacks, &self.globals);
+                    screen.finish(
+                        &mut self.resources,
+                        &self.callbacks,
+                        &self.globals,
+                        &self.scripts,
+                    );
                     self.current_screen = None;
                 }
             };
