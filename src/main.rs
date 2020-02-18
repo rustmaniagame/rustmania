@@ -69,6 +69,7 @@ use parallel_folder_walk::{load_songs_folder, LoadError};
 use rand::seq::SliceRandom;
 use std::{
     cmp::Ordering,
+    collections::HashMap,
     ffi::OsStr,
     fs::{File, OpenOptions},
     io::Read,
@@ -198,6 +199,12 @@ mod callbacks {
         } else {
             None
         }
+    }
+
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn print_resource(resource: Option<Resource>, _globals: &Globals) -> Option<Resource> {
+        println!("{:?}", resource);
+        None
     }
 }
 
@@ -339,28 +346,39 @@ fn main() {
                 ElementType::TEXT(0, 1, 2),
             ],
             on_finish: 0,
+            on_keypress: HashMap::new(),
         },
     };
 
     let scripts = ScriptList {
-        scripts: vec![vec![
-            ResourceMap::Element(ElementMap {
-                element_index: 0,
-                resource_index: 0,
-            }),
-            ResourceMap::Script(ScriptMap {
+        scripts: vec![
+            vec![
+                ResourceMap::Element(ElementMap {
+                    element_index: 0,
+                    resource_index: 0,
+                }),
+                ResourceMap::Script(ScriptMap {
+                    resource_type: ResourceType::Replay,
+                    resource_index: 0,
+                    script_index: 0,
+                    destination_type: ResourceType::String,
+                    destination_index: 0,
+                }),
+            ],
+            vec![ResourceMap::Script(ScriptMap {
                 resource_type: ResourceType::Replay,
                 resource_index: 0,
-                script_index: 0,
-                destination_type: ResourceType::String,
+                script_index: 2,
+                destination_type: ResourceType::_Integer,
                 destination_index: 0,
-            }),
-        ]],
+            })],
+        ],
     };
 
     let results_screen = ScreenBuilder {
         elements: vec![ElementType::TEXT(0, 1, 2)],
         on_finish: 2,
+        on_keypress: vec![(1, 1)].into_iter().collect::<HashMap<_, _>>(),
     };
 
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
@@ -372,7 +390,11 @@ fn main() {
     let mut gamestate = GameState::new(
         vec![gameplay_screen, results_screen],
         resources,
-        vec![callbacks::map_to_string, callbacks::song_title],
+        vec![
+            callbacks::map_to_string,
+            callbacks::song_title,
+            callbacks::print_resource,
+        ],
         Globals {
             cache: notedata_list,
         },

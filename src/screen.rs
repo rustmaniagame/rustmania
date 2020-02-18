@@ -12,6 +12,7 @@ use ggez::{
 use notedata::ChartMetadata;
 use serde_derive::{Deserialize, Serialize};
 use std::{
+    collections::HashMap,
     path::PathBuf,
     time::{Duration, Instant},
 };
@@ -30,7 +31,7 @@ pub enum ElementType {
     TEXT(usize, usize, usize),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Resource {
     _Notes(TimingData<GameplayInfo>),
     _Path(PathBuf),
@@ -42,7 +43,7 @@ pub enum Resource {
     _Multiple(Vec<Resource>),
 }
 
-#[derive(Copy, Clone, Deserialize, Serialize)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 pub enum ResourceType {
     _Notes,
     _Path,
@@ -68,7 +69,7 @@ pub struct Resources {
     multiples: Vec<Vec<Resource>>,
 }
 
-#[derive(Copy, Clone, Deserialize, Serialize)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 pub struct ScriptMap {
     pub resource_type: ResourceType,
     pub resource_index: usize,
@@ -77,13 +78,13 @@ pub struct ScriptMap {
     pub destination_index: usize,
 }
 
-#[derive(Copy, Clone, Deserialize, Serialize)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 pub struct ElementMap {
     pub resource_index: usize,
     pub element_index: usize,
 }
 
-#[derive(Copy, Clone, Deserialize, Serialize)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 pub enum ResourceMap {
     Script(ScriptMap),
     Element(ElementMap),
@@ -100,12 +101,14 @@ pub struct ScriptList {
 pub struct ScreenBuilder {
     pub elements: Vec<ElementType>,
     pub on_finish: usize,
+    pub on_keypress: HashMap<u32, usize>,
 }
 
 pub struct Screen {
     start_time: Option<Instant>,
     elements: Vec<Box<dyn Element>>,
-    resource_maps: usize,
+    on_finish: usize,
+    on_keypress: HashMap<u32, usize>,
 }
 
 pub enum Message {
@@ -255,16 +258,29 @@ impl ScreenBuilder {
             .iter()
             .map(|element| element.build(resources))
             .collect();
-        Screen::new(element_list, self.on_finish)
+        Screen::new(element_list, self.on_finish, self.on_keypress.clone())
+    }
+}
+
+// Temporary workaround for ggez's reexported KeyCode not implementing serde traits
+fn keycode_number(code: KeyCode) -> u32 {
+    match code {
+        KeyCode::Return => 1,
+        _ => 0,
     }
 }
 
 impl Screen {
-    pub fn new(elements: Vec<Box<dyn Element>>, resource_maps: usize) -> Self {
+    pub fn new(
+        elements: Vec<Box<dyn Element>>,
+        on_finish: usize,
+        on_keypress: HashMap<u32, usize>,
+    ) -> Self {
         Self {
             start_time: Some(Instant::now() + Duration::from_secs(3)),
             elements,
-            resource_maps,
+            on_finish,
+            on_keypress,
         }
     }
     pub fn start(&mut self) -> Result<(), GameError> {
@@ -280,7 +296,7 @@ impl Screen {
         globals: &Globals,
         scripts: &ScriptList,
     ) {
-        if let Some(script) = scripts.scripts.get(self.resource_maps) {
+        if let Some(script) = scripts.scripts.get(self.on_finish) {
             for map in script {
                 match map {
                     ResourceMap::Element(ElementMap {
@@ -341,13 +357,43 @@ impl Screen {
     }
     pub fn key_down_event(
         &mut self,
-        _ctx: &mut Context,
         keycode: KeyCode,
-        _keymod: KeyMods,
-        repeat: bool,
+        resources: &mut Resources,
+        callbacks: &[ResourceCallback],
+        globals: &Globals,
+        scripts: &ScriptList,
     ) {
-        if repeat {
-            return;
+        if let Some(cool) = self.on_keypress.get(&keycode_number(keycode)) {
+            if let Some(script) = scripts.scripts.get(*cool) {
+                for map in script {
+                    match map {
+                        ResourceMap::Element(ElementMap {
+                            resource_index,
+                            element_index,
+                        }) => {
+                            if let Some(resource) = self.elements[*element_index].finish() {
+                                if resources.set(*resource_index, resource.clone()).is_none() {
+                                    resources.push(resource)
+                                }
+                            }
+                        }
+                        ResourceMap::Script(ScriptMap {
+                            resource_type,
+                            resource_index,
+                            script_index,
+                            destination_type: _destination_type,
+                            destination_index,
+                        }) => {
+                            if let Some(resource) = callbacks[*script_index](
+                                Some(resources.get(*resource_index, *resource_type)),
+                                globals,
+                            ) {
+                                resources.set(*destination_index, resource);
+                            }
+                        }
+                    }
+                }
+            }
         }
         let time_delta = self.start_time_to_milliseconds();
         for element in &mut self.elements {

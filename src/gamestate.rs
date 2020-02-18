@@ -79,13 +79,21 @@ impl EventHandler for GameState {
     }
     fn key_down_event(
         &mut self,
-        ctx: &mut Context,
+        _ctx: &mut Context,
         keycode: KeyCode,
-        keymod: KeyMods,
+        _keymod: KeyMods,
         repeat: bool,
     ) {
         if let Some(ref mut screen) = self.current_screen {
-            screen.key_down_event(ctx, keycode, keymod, repeat)
+            if !repeat {
+                screen.key_down_event(
+                    keycode,
+                    &mut self.resources,
+                    &self.callbacks,
+                    &self.globals,
+                    &self.scripts,
+                )
+            }
         };
     }
     fn key_up_event(&mut self, ctx: &mut Context, keycode: KeyCode, keymod: KeyMods) {
