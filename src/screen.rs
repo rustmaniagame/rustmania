@@ -49,7 +49,7 @@ pub enum ResourceType {
     _Path,
     _Layout,
     _Float,
-    _Integer,
+    Integer,
     String,
     Replay,
     _Multiple,
@@ -207,7 +207,7 @@ impl Resources {
             ResourceType::_Path => Resource::_Path(self.paths[index].clone()),
             ResourceType::_Layout => Resource::_Layout(Box::new(self.layouts[index].clone())),
             ResourceType::_Float => Resource::_Float(self.floats[index]),
-            ResourceType::_Integer => Resource::Integer(self.integers[index]),
+            ResourceType::Integer => Resource::Integer(self.integers[index]),
             ResourceType::String => Resource::String(self.strings[index].clone()),
             ResourceType::Replay => Resource::Replay(self.replays[index].clone()),
             ResourceType::_Multiple => Resource::_Multiple(self.multiples[index].clone()),
@@ -266,6 +266,8 @@ impl ScreenBuilder {
 fn keycode_number(code: KeyCode) -> u32 {
     match code {
         KeyCode::Return => 1,
+        KeyCode::Left => 2,
+        KeyCode::Right => 3,
         _ => 0,
     }
 }

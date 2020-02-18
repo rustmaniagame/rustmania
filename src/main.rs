@@ -206,6 +206,26 @@ mod callbacks {
         println!("{:?}", resource);
         None
     }
+
+    pub fn add_one(resource: Option<Resource>, _globals: &Globals) -> Option<Resource> {
+        resource.map(|x| {
+            if let Resource::Integer(x) = x {
+                Resource::Integer(x + 1)
+            } else {
+                x
+            }
+        })
+    }
+
+    pub fn subtract_one(resource: Option<Resource>, _globals: &Globals) -> Option<Resource> {
+        resource.map(|x| {
+            if let Resource::Integer(x) = x {
+                Resource::Integer(x - 1)
+            } else {
+                x
+            }
+        })
+    }
 }
 
 #[derive(Debug, StructOpt)]
@@ -315,7 +335,7 @@ fn main() {
         ))],
         vec![p1_layout, p2_layout],
         vec![song_options.rate, 0.0, 12.0],
-        vec![600],
+        vec![600, 0, 0],
         vec![
             notedata.meta.title.expect("Needs a title"),
             String::from("Results screen placeholder text"),
@@ -323,6 +343,16 @@ fn main() {
         vec![],
         vec![],
     );
+
+    let song_select_screen = ScreenBuilder {
+        elements: vec![
+            ElementType::TEXT(0, 0, 0),
+            ElementType::TEXT(0, 0, 0),
+            ElementType::TEXT(0, 0, 0),
+        ],
+        on_finish: 999,
+        on_keypress: vec![(2, 2), (3, 3)].into_iter().collect(),
+    };
 
     let gameplay_screen = match song_options.theme {
         Some(value) => {
@@ -350,6 +380,12 @@ fn main() {
         },
     };
 
+    let results_screen = ScreenBuilder {
+        elements: vec![ElementType::TEXT(0, 1, 2)],
+        on_finish: 2,
+        on_keypress: vec![(1, 1)].into_iter().collect::<HashMap<_, _>>(),
+    };
+
     let scripts = ScriptList {
         scripts: vec![
             vec![
@@ -369,16 +405,56 @@ fn main() {
                 resource_type: ResourceType::Replay,
                 resource_index: 0,
                 script_index: 2,
-                destination_type: ResourceType::_Integer,
+                destination_type: ResourceType::Integer,
                 destination_index: 0,
             })],
+            vec![
+                ResourceMap::Script(ScriptMap {
+                    resource_type: ResourceType::Integer,
+                    resource_index: 1,
+                    script_index: 4,
+                    destination_type: ResourceType::Integer,
+                    destination_index: 1,
+                }),
+                ResourceMap::Script(ScriptMap {
+                    resource_type: ResourceType::Integer,
+                    resource_index: 1,
+                    script_index: 1,
+                    destination_type: ResourceType::String,
+                    destination_index: 1,
+                }),
+                ResourceMap::Script(ScriptMap {
+                    resource_type: ResourceType::String,
+                    resource_index: 1,
+                    script_index: 2,
+                    destination_type: ResourceType::Integer,
+                    destination_index: 0,
+                }),
+            ],
+            vec![
+                ResourceMap::Script(ScriptMap {
+                    resource_type: ResourceType::Integer,
+                    resource_index: 1,
+                    script_index: 3,
+                    destination_type: ResourceType::Integer,
+                    destination_index: 1,
+                }),
+                ResourceMap::Script(ScriptMap {
+                    resource_type: ResourceType::Integer,
+                    resource_index: 1,
+                    script_index: 1,
+                    destination_type: ResourceType::String,
+                    destination_index: 1,
+                }),
+                ResourceMap::Script(ScriptMap {
+                    resource_type: ResourceType::String,
+                    resource_index: 1,
+                    script_index: 2,
+                    destination_type: ResourceType::Integer,
+                    destination_index: 0,
+                }),
+            ],
         ],
-    };
-
-    let results_screen = ScreenBuilder {
-        elements: vec![ElementType::TEXT(0, 1, 2)],
-        on_finish: 2,
-        on_keypress: vec![(1, 1)].into_iter().collect::<HashMap<_, _>>(),
     };
 
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
@@ -388,12 +464,14 @@ fn main() {
     }
 
     let mut gamestate = GameState::new(
-        vec![gameplay_screen, results_screen],
+        vec![song_select_screen, gameplay_screen, results_screen],
         resources,
         vec![
             callbacks::map_to_string,
             callbacks::song_title,
             callbacks::print_resource,
+            callbacks::add_one,
+            callbacks::subtract_one,
         ],
         Globals {
             cache: notedata_list,
