@@ -53,6 +53,21 @@ impl EventHandler for GameState {
     }
     fn draw(&mut self, ctx: &mut Context) -> Result<(), GameError> {
         if let Some(ref mut screen) = self.current_screen {
+            match screen.current_message {
+                Message::None => {}
+                Message::Finish => {
+                    self.screen_index += 1;
+                    screen.finish(
+                        &mut self.resources,
+                        &self.callbacks,
+                        &self.globals,
+                        &self.scripts,
+                    );
+                    self.current_screen = None;
+                }
+            };
+        }
+        if let Some(ref mut screen) = self.current_screen {
             match screen.draw(ctx)? {
                 Message::None => {}
                 Message::Finish => {

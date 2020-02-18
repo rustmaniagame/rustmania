@@ -51,7 +51,7 @@ mod screen;
 mod text;
 mod timingdata;
 
-use crate::screen::ScriptList;
+use crate::screen::{Message, ScriptList};
 use crate::{
     gamestate::GameState,
     player_config::NoteSkin,
@@ -351,7 +351,7 @@ fn main() {
             ElementType::TEXT(0, 0, 0),
         ],
         on_finish: 999,
-        on_keypress: vec![(2, 2), (3, 3)].into_iter().collect(),
+        on_keypress: vec![(1, 4), (2, 2), (3, 3)].into_iter().collect(),
     };
 
     let gameplay_screen = match song_options.theme {
@@ -454,6 +454,7 @@ fn main() {
                     destination_index: 0,
                 }),
             ],
+            vec![ResourceMap::Message(Message::Finish)],
         ],
     };
 

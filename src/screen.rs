@@ -88,6 +88,7 @@ pub struct ElementMap {
 pub enum ResourceMap {
     Script(ScriptMap),
     Element(ElementMap),
+    Message(Message),
 }
 
 pub type ResourceMaps = Vec<ResourceMap>;
@@ -109,8 +110,10 @@ pub struct Screen {
     elements: Vec<Box<dyn Element>>,
     on_finish: usize,
     on_keypress: HashMap<u32, usize>,
+    pub current_message: Message,
 }
 
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 pub enum Message {
     None,
     Finish,
@@ -283,6 +286,7 @@ impl Screen {
             elements,
             on_finish,
             on_keypress,
+            current_message: Message::None,
         }
     }
     fn run_script(
@@ -290,14 +294,14 @@ impl Screen {
         resources: &mut Resources,
         callbacks: &[ResourceCallback],
         globals: &Globals,
-        script: &ResourceMaps,
+        script: &[ResourceMap],
     ) {
         for map in script {
             match map {
                 ResourceMap::Element(ElementMap {
-                                         resource_index,
-                                         element_index,
-                                     }) => {
+                    resource_index,
+                    element_index,
+                }) => {
                     if let Some(resource) = self.elements[*element_index].finish() {
                         if resources.set(*resource_index, resource.clone()).is_none() {
                             resources.push(resource)
@@ -305,18 +309,21 @@ impl Screen {
                     }
                 }
                 ResourceMap::Script(ScriptMap {
-                                        resource_type,
-                                        resource_index,
-                                        script_index,
-                                        destination_type: _destination_type,
-                                        destination_index,
-                                    }) => {
+                    resource_type,
+                    resource_index,
+                    script_index,
+                    destination_type: _destination_type,
+                    destination_index,
+                }) => {
                     if let Some(resource) = callbacks[*script_index](
                         Some(resources.get(*resource_index, *resource_type)),
                         globals,
                     ) {
                         resources.set(*destination_index, resource);
                     }
+                }
+                ResourceMap::Message(message) => {
+                    self.current_message = *message;
                 }
             }
         }
@@ -335,7 +342,7 @@ impl Screen {
         scripts: &ScriptList,
     ) {
         if let Some(script) = scripts.scripts.get(self.on_finish) {
-            self.run_script(resources,callbacks,globals,script);
+            self.run_script(resources, callbacks, globals, script);
         }
     }
     fn start_time_to_milliseconds(&self) -> Option<i64> {
@@ -376,7 +383,7 @@ impl Screen {
     ) {
         if let Some(cool) = self.on_keypress.get(&keycode_number(keycode)) {
             if let Some(script) = scripts.scripts.get(*cool) {
-                self.run_script(resources,callbacks,globals,script);
+                self.run_script(resources, callbacks, globals, script);
             }
         }
         let time_delta = self.start_time_to_milliseconds();
