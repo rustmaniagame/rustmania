@@ -285,6 +285,42 @@ impl Screen {
             on_keypress,
         }
     }
+    fn run_script(
+        &mut self,
+        resources: &mut Resources,
+        callbacks: &[ResourceCallback],
+        globals: &Globals,
+        script: &ResourceMaps,
+    ) {
+        for map in script {
+            match map {
+                ResourceMap::Element(ElementMap {
+                                         resource_index,
+                                         element_index,
+                                     }) => {
+                    if let Some(resource) = self.elements[*element_index].finish() {
+                        if resources.set(*resource_index, resource.clone()).is_none() {
+                            resources.push(resource)
+                        }
+                    }
+                }
+                ResourceMap::Script(ScriptMap {
+                                        resource_type,
+                                        resource_index,
+                                        script_index,
+                                        destination_type: _destination_type,
+                                        destination_index,
+                                    }) => {
+                    if let Some(resource) = callbacks[*script_index](
+                        Some(resources.get(*resource_index, *resource_type)),
+                        globals,
+                    ) {
+                        resources.set(*destination_index, resource);
+                    }
+                }
+            }
+        }
+    }
     pub fn start(&mut self) -> Result<(), GameError> {
         for element in &mut self.elements {
             element.start(self.start_time)?;
@@ -299,34 +335,7 @@ impl Screen {
         scripts: &ScriptList,
     ) {
         if let Some(script) = scripts.scripts.get(self.on_finish) {
-            for map in script {
-                match map {
-                    ResourceMap::Element(ElementMap {
-                        resource_index,
-                        element_index,
-                    }) => {
-                        if let Some(resource) = self.elements[*element_index].finish() {
-                            if resources.set(*resource_index, resource.clone()).is_none() {
-                                resources.push(resource)
-                            }
-                        }
-                    }
-                    ResourceMap::Script(ScriptMap {
-                        resource_type,
-                        resource_index,
-                        script_index,
-                        destination_type: _destination_type,
-                        destination_index,
-                    }) => {
-                        if let Some(resource) = callbacks[*script_index](
-                            Some(resources.get(*resource_index, *resource_type)),
-                            globals,
-                        ) {
-                            resources.set(*destination_index, resource);
-                        }
-                    }
-                }
-            }
+            self.run_script(resources,callbacks,globals,script);
         }
     }
     fn start_time_to_milliseconds(&self) -> Option<i64> {
@@ -367,34 +376,7 @@ impl Screen {
     ) {
         if let Some(cool) = self.on_keypress.get(&keycode_number(keycode)) {
             if let Some(script) = scripts.scripts.get(*cool) {
-                for map in script {
-                    match map {
-                        ResourceMap::Element(ElementMap {
-                            resource_index,
-                            element_index,
-                        }) => {
-                            if let Some(resource) = self.elements[*element_index].finish() {
-                                if resources.set(*resource_index, resource.clone()).is_none() {
-                                    resources.push(resource)
-                                }
-                            }
-                        }
-                        ResourceMap::Script(ScriptMap {
-                            resource_type,
-                            resource_index,
-                            script_index,
-                            destination_type: _destination_type,
-                            destination_index,
-                        }) => {
-                            if let Some(resource) = callbacks[*script_index](
-                                Some(resources.get(*resource_index, *resource_type)),
-                                globals,
-                            ) {
-                                resources.set(*destination_index, resource);
-                            }
-                        }
-                    }
-                }
+                self.run_script(resources,callbacks,globals,script);
             }
         }
         let time_delta = self.start_time_to_milliseconds();
