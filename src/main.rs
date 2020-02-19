@@ -170,7 +170,7 @@ mod callbacks {
         screen::{Globals, Resource},
         timingdata::TimingColumn,
     };
-    use std::{convert::TryFrom, fs::File, io::Read};
+    use std::{convert::TryFrom, path::PathBuf};
 
     pub fn map_to_string(resource: Option<Resource>, _globals: &Globals) -> Option<Resource> {
         resource.map(|resource| match resource {
@@ -244,17 +244,48 @@ mod callbacks {
 
     pub fn song_from_path(resource: Option<Resource>, globals: &Globals) -> Option<Resource> {
         if let Some(Resource::_Path(path)) = resource {
-            let mut out = String::new();
-            File::open(path).ok()?.read_to_string(&mut out).ok()?;
             Some(Resource::_Notes(
                 super::timingdata::TimingData::from_notedata(
-                    &load_song(&(out.into())).ok()?.1,
+                    &load_song(&path).ok().map(|(_, data)| data)?,
                     super::sprite_finder,
                     globals.song_options.rate,
                 )
                 .get(0)?
                 .clone(),
             ))
+        } else {
+            None
+        }
+    }
+
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn music_path(resource: Option<Resource>, globals: &Globals) -> Option<Resource> {
+        if let Some(Resource::Integer(index)) = resource {
+            let index = usize::try_from(index).ok()?;
+            Some(Resource::_Path(globals.cache.get(index).map_or_else(
+                PathBuf::new,
+                |entry| {
+                    entry
+                        .data
+                        .music_path
+                        .clone()
+                        .map_or_else(PathBuf::new, |x| {
+                            PathBuf::from(format!(
+                                "{}/{}",
+                                String::from(
+                                    entry
+                                        .path
+                                        .parent()
+                                        .expect("No parent folder for selected file")
+                                        .as_os_str()
+                                        .to_str()
+                                        .expect("failed to parse path")
+                                ),
+                                x
+                            ))
+                        })
+                },
+            )))
         } else {
             None
         }
@@ -497,6 +528,13 @@ fn main() {
                 ResourceMap::Script(ScriptMap {
                     resource_type: ResourceType::Integer,
                     resource_index: 1,
+                    script_index: 7,
+                    destination_type: ResourceType::Path,
+                    destination_index: 0,
+                }),
+                ResourceMap::Script(ScriptMap {
+                    resource_type: ResourceType::Integer,
+                    resource_index: 1,
                     script_index: 5,
                     destination_type: ResourceType::Path,
                     destination_index: 1,
@@ -530,6 +568,7 @@ fn main() {
             callbacks::subtract_one,
             callbacks::song_path,
             callbacks::song_from_path,
+            callbacks::music_path,
         ],
         Globals {
             cache: notedata_list,
