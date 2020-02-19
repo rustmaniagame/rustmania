@@ -3,6 +3,7 @@ use crate::{
     notefield::Notefield,
     player_config::NoteLayout,
     timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData},
+    SongOptions,
 };
 use ggez::{
     event::{KeyCode, KeyMods},
@@ -45,8 +46,8 @@ pub enum Resource {
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 pub enum ResourceType {
-    _Notes,
-    _Path,
+    Notes,
+    Path,
     _Layout,
     _Float,
     Integer,
@@ -121,6 +122,7 @@ pub enum Message {
 
 pub struct Globals {
     pub cache: Vec<CacheEntry>,
+    pub song_options: SongOptions,
 }
 
 pub struct CacheEntry {
@@ -206,8 +208,8 @@ impl Resources {
     }
     pub fn get(&self, index: usize, resource_type: ResourceType) -> Resource {
         match resource_type {
-            ResourceType::_Notes => Resource::_Notes(self.notes[index].clone()),
-            ResourceType::_Path => Resource::_Path(self.paths[index].clone()),
+            ResourceType::Notes => Resource::_Notes(self.notes[index].clone()),
+            ResourceType::Path => Resource::_Path(self.paths[index].clone()),
             ResourceType::_Layout => Resource::_Layout(Box::new(self.layouts[index].clone())),
             ResourceType::_Float => Resource::_Float(self.floats[index]),
             ResourceType::Integer => Resource::Integer(self.integers[index]),

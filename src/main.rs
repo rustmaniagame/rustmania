@@ -165,9 +165,12 @@ pub fn load_song(sim: &PathBuf) -> Result<(f64, NoteData), LoadError> {
 }
 
 mod callbacks {
-    use crate::screen::{Globals, Resource};
-    use crate::timingdata::TimingColumn;
-    use nom::lib::std::convert::TryFrom;
+    use crate::{
+        load_song,
+        screen::{Globals, Resource},
+        timingdata::TimingColumn,
+    };
+    use std::{convert::TryFrom, io::Read, fs::File};
 
     pub fn map_to_string(resource: Option<Resource>, _globals: &Globals) -> Option<Resource> {
         resource.map(|resource| match resource {
@@ -226,11 +229,41 @@ mod callbacks {
             }
         })
     }
+
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn song_path(resource: Option<Resource>, globals: &Globals) -> Option<Resource> {
+        if let Some(Resource::Integer(index)) = resource {
+            globals
+                .cache
+                .get(usize::try_from(index).ok()?)
+                .map(|entry| Resource::_Path(entry.path.clone()))
+        } else {
+            None
+        }
+    }
+
+    pub fn song_from_path(resource: Option<Resource>, globals: &Globals) -> Option<Resource> {
+        if let Some(Resource::_Path(path)) = resource {
+            let mut out = String::new();
+            File::open(path).ok()?.read_to_string(&mut out).ok()?;
+            Some(Resource::_Notes(
+                super::timingdata::TimingData::from_notedata(
+                    &load_song(&(out.into())).ok()?.1,
+                    super::sprite_finder,
+                    globals.song_options.rate,
+                )
+                .get(0)?
+                .clone(),
+            ))
+        } else {
+            None
+        }
+    }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Clone, Debug, Default, StructOpt)]
 #[structopt(name = "RustMania", author, about)]
-struct SongOptions {
+pub struct SongOptions {
     /// The path to your .sm file
     #[structopt(parse(from_os_str = parse_simfile_path), short, long, default_value(""))]
     simfile: PathBuf,
@@ -257,7 +290,7 @@ fn main() {
 
     let (simfile_folder, difficulty, notedata, notedata_list) = {
         let start_time = Instant::now();
-        let notedata_list = load_songs_folder(song_options.simfile, load_song);
+        let notedata_list = load_songs_folder(song_options.simfile.clone(), load_song);
         let duration = Instant::now() - start_time;
         info!("Found {} total songs", notedata_list.len());
         let mut notedata_list = notedata_list
@@ -332,7 +365,7 @@ fn main() {
             "{}/{}",
             simfile_folder,
             notedata.meta.music_path.expect("No music path specified")
-        ))],
+        )),PathBuf::new()],
         vec![p1_layout, p2_layout],
         vec![song_options.rate, 0.0, 12.0],
         vec![600, 0, 0],
@@ -354,7 +387,7 @@ fn main() {
         on_keypress: vec![(1, 4), (2, 2), (3, 3)].into_iter().collect(),
     };
 
-    let gameplay_screen = match song_options.theme {
+    let gameplay_screen = match song_options.theme.clone() {
         Some(value) => {
             // This currently is not getting the music rate so the theme will have incorrect behavior
             // if the rate specified in the theme is different than the rate passed in through the CLI
@@ -421,11 +454,11 @@ fn main() {
                     resource_index: 1,
                     script_index: 1,
                     destination_type: ResourceType::String,
-                    destination_index: 1,
+                    destination_index: 0,
                 }),
                 ResourceMap::Script(ScriptMap {
                     resource_type: ResourceType::String,
-                    resource_index: 1,
+                    resource_index: 0,
                     script_index: 2,
                     destination_type: ResourceType::Integer,
                     destination_index: 0,
@@ -444,17 +477,33 @@ fn main() {
                     resource_index: 1,
                     script_index: 1,
                     destination_type: ResourceType::String,
-                    destination_index: 1,
+                    destination_index: 0,
                 }),
                 ResourceMap::Script(ScriptMap {
                     resource_type: ResourceType::String,
-                    resource_index: 1,
+                    resource_index: 0,
                     script_index: 2,
                     destination_type: ResourceType::Integer,
                     destination_index: 0,
                 }),
             ],
-            vec![ResourceMap::Message(Message::Finish)],
+            vec![
+                ResourceMap::Script(ScriptMap {
+                    resource_type: ResourceType::Integer,
+                    resource_index: 1,
+                    script_index: 5,
+                    destination_type: ResourceType::Path,
+                    destination_index: 1,
+                }),
+                ResourceMap::Script(ScriptMap {
+                    resource_type: ResourceType::Path,
+                    resource_index: 1,
+                    script_index: 6,
+                    destination_type: ResourceType::Notes,
+                    destination_index: 0,
+                }),
+                ResourceMap::Message(Message::Finish),
+            ],
         ],
     };
 
@@ -473,9 +522,12 @@ fn main() {
             callbacks::print_resource,
             callbacks::add_one,
             callbacks::subtract_one,
+            callbacks::song_path,
+            callbacks::song_from_path,
         ],
         Globals {
             cache: notedata_list,
+            song_options,
         },
         scripts,
     );

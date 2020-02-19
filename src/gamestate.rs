@@ -1,5 +1,6 @@
-use crate::screen::{
-    Globals, Message, ResourceCallback, Resources, Screen, ScreenBuilder, ScriptList,
+use crate::{
+    screen::{Globals, Message, ResourceCallback, Resources, Screen, ScreenBuilder, ScriptList},
+    SongOptions,
 };
 use ggez::{
     event::{EventHandler, KeyCode, KeyMods},
@@ -24,7 +25,10 @@ impl GameState {
             screen_index: 0,
             resources: Resources::_new(),
             callbacks: vec![],
-            globals: Globals { cache: vec![] },
+            globals: Globals {
+                cache: vec![],
+                song_options: SongOptions::default(),
+            },
             scripts: ScriptList { scripts: vec![] },
         }
     }
