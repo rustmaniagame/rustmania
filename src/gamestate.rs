@@ -6,6 +6,7 @@ use ggez::{
     event::{EventHandler, KeyCode, KeyMods},
     Context, GameError,
 };
+use std::convert::TryFrom;
 
 pub struct GameState {
     scene_stack: Vec<ScreenBuilder>,
@@ -59,8 +60,8 @@ impl EventHandler for GameState {
         if let Some(ref mut screen) = self.current_screen {
             match screen.current_message {
                 Message::None => {}
-                Message::Finish => {
-                    self.screen_index += 1;
+                Message::Finish(destination) => {
+                    self.screen_index = usize::try_from(destination).unwrap_or(usize::max_value());
                     screen.finish(
                         &mut self.resources,
                         &self.callbacks,
@@ -74,8 +75,8 @@ impl EventHandler for GameState {
         if let Some(ref mut screen) = self.current_screen {
             match screen.draw(ctx)? {
                 Message::None => {}
-                Message::Finish => {
-                    self.screen_index += 1;
+                Message::Finish(destination) => {
+                    self.screen_index = usize::try_from(destination).unwrap_or(usize::max_value());
                     screen.finish(
                         &mut self.resources,
                         &self.callbacks,

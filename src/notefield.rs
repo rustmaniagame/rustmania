@@ -205,7 +205,7 @@ impl Element for Notefield {
                 * 100.0
         );
         Ok(if completed {
-            Message::Finish
+            Message::Finish(2)
         } else {
             Message::None
         })

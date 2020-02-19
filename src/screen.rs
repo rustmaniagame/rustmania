@@ -117,7 +117,7 @@ pub struct Screen {
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 pub enum Message {
     None,
-    Finish,
+    Finish(i64),
 }
 
 pub struct Globals {
@@ -369,7 +369,7 @@ impl Screen {
         for element in &mut self.elements {
             match element.run(ctx, time_delta)? {
                 Message::None => {}
-                Message::Finish => return Ok(Message::Finish),
+                Message::Finish(val) => return Ok(Message::Finish(val)),
             }
         }
         graphics::present(ctx)?;

@@ -437,13 +437,16 @@ fn main() {
                     destination_index: 0,
                 }),
             ],
-            vec![ResourceMap::Script(ScriptMap {
-                resource_type: ResourceType::Replay,
-                resource_index: 0,
-                script_index: 2,
-                destination_type: ResourceType::Integer,
-                destination_index: 0,
-            })],
+            vec![
+                ResourceMap::Script(ScriptMap {
+                    resource_type: ResourceType::Replay,
+                    resource_index: 0,
+                    script_index: 2,
+                    destination_type: ResourceType::Integer,
+                    destination_index: 0,
+                }),
+                ResourceMap::Message(Message::Finish(0)),
+            ],
             vec![
                 ResourceMap::Script(ScriptMap {
                     resource_type: ResourceType::Integer,
@@ -505,7 +508,7 @@ fn main() {
                     destination_type: ResourceType::Notes,
                     destination_index: 0,
                 }),
-                ResourceMap::Message(Message::Finish),
+                ResourceMap::Message(Message::Finish(1)),
             ],
         ],
     };
