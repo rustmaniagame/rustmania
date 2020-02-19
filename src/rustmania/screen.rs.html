@@ -520,7 +520,7 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Deserialize</span>, <span class="ident">Serialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Message</span> {
     <span class="prelude-val">None</span>,
-    <span class="ident">Finish</span>,
+    <span class="ident">Finish</span>(<span class="ident">i64</span>),
 }
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Globals</span> {
@@ -772,7 +772,7 @@
         <span class="kw">for</span> <span class="ident">element</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">elements</span> {
             <span class="kw">match</span> <span class="ident">element</span>.<span class="ident">run</span>(<span class="ident">ctx</span>, <span class="ident">time_delta</span>)<span class="question-mark">?</span> {
                 <span class="ident">Message</span>::<span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {}
-                <span class="ident">Message</span>::<span class="ident">Finish</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">Message</span>::<span class="ident">Finish</span>),
+                <span class="ident">Message</span>::<span class="ident">Finish</span>(<span class="ident">val</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">Message</span>::<span class="ident">Finish</span>(<span class="ident">val</span>)),
             }
         }
         <span class="ident">graphics</span>::<span class="ident">present</span>(<span class="ident">ctx</span>)<span class="question-mark">?</span>;

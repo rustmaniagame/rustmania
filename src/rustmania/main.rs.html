@@ -540,6 +540,9 @@
 <span id="540">540</span>
 <span id="541">541</span>
 <span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#![<span class="ident">warn</span>(
     <span class="ident">clippy</span>::<span class="ident">cast_lossless</span>,
@@ -980,13 +983,16 @@
                     <span class="ident">destination_index</span>: <span class="number">0</span>,
                 }),
             ],
-            <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">ResourceMap</span>::<span class="ident">Script</span>(<span class="ident">ScriptMap</span> {
-                <span class="ident">resource_type</span>: <span class="ident">ResourceType</span>::<span class="ident">Replay</span>,
-                <span class="ident">resource_index</span>: <span class="number">0</span>,
-                <span class="ident">script_index</span>: <span class="number">2</span>,
-                <span class="ident">destination_type</span>: <span class="ident">ResourceType</span>::<span class="ident">Integer</span>,
-                <span class="ident">destination_index</span>: <span class="number">0</span>,
-            })],
+            <span class="macro">vec</span><span class="macro">!</span>[
+                <span class="ident">ResourceMap</span>::<span class="ident">Script</span>(<span class="ident">ScriptMap</span> {
+                    <span class="ident">resource_type</span>: <span class="ident">ResourceType</span>::<span class="ident">Replay</span>,
+                    <span class="ident">resource_index</span>: <span class="number">0</span>,
+                    <span class="ident">script_index</span>: <span class="number">2</span>,
+                    <span class="ident">destination_type</span>: <span class="ident">ResourceType</span>::<span class="ident">Integer</span>,
+                    <span class="ident">destination_index</span>: <span class="number">0</span>,
+                }),
+                <span class="ident">ResourceMap</span>::<span class="ident">Message</span>(<span class="ident">Message</span>::<span class="ident">Finish</span>(<span class="number">0</span>)),
+            ],
             <span class="macro">vec</span><span class="macro">!</span>[
                 <span class="ident">ResourceMap</span>::<span class="ident">Script</span>(<span class="ident">ScriptMap</span> {
                     <span class="ident">resource_type</span>: <span class="ident">ResourceType</span>::<span class="ident">Integer</span>,
@@ -1048,7 +1054,7 @@
                     <span class="ident">destination_type</span>: <span class="ident">ResourceType</span>::<span class="ident">Notes</span>,
                     <span class="ident">destination_index</span>: <span class="number">0</span>,
                 }),
-                <span class="ident">ResourceMap</span>::<span class="ident">Message</span>(<span class="ident">Message</span>::<span class="ident">Finish</span>),
+                <span class="ident">ResourceMap</span>::<span class="ident">Message</span>(<span class="ident">Message</span>::<span class="ident">Finish</span>(<span class="number">1</span>)),
             ],
         ],
     };
