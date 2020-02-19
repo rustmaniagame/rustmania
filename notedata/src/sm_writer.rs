@@ -1,4 +1,4 @@
-use crate::{BeatPair, DisplayBpm, Fraction, Measure, Note, NoteData, NoteRow, NoteType};
+use crate::{BeatPair, Fraction, Measure, Note, NoteData, NoteRow, NoteType};
 
 pub fn write_sm(data: &NoteData) -> String {
     let mut output = String::new();
@@ -13,11 +13,9 @@ pub fn write_sm(data: &NoteData) -> String {
     string_tag("TITLETRANSLIT", &data.meta.title_translit);
     string_tag("SUBTITLETRANSLIT", &data.meta.subtitle_translit);
     string_tag("ARTISTTRANSLIT", &data.meta.artist_translit);
-    string_tag("GENRE", &data.meta.genre);
     string_tag("CREDIT", &data.meta.credit);
     string_tag("BANNER", &data.meta.banner_path);
     string_tag("BACKGROUND", &data.meta.background_path);
-    string_tag("LYRICSPATH", &data.meta.lyrics_path);
     string_tag("CDTITLE", &data.meta.cd_title);
     string_tag("MUSIC", &data.meta.music_path);
     let mut number_tag = |tag_name: &str, from_location: &Option<f64>| {
@@ -28,19 +26,14 @@ pub fn write_sm(data: &NoteData) -> String {
     number_tag("SAMPLESTART", &data.meta.sample_start);
     number_tag("SAMPLELENGTH", &data.meta.sample_length);
     number_tag("OFFSET", &data.meta.offset.map(|x| -x));
-    if let Some(tag) = &data.meta.display_bpm {
-        output.push_str(&write_tag(
-            "DISPLAYBPM",
-            &match tag {
-                DisplayBpm::Static(value) => value.to_string(),
-                DisplayBpm::Range(lower, upper) => format!("{}:{}", lower, upper),
-                DisplayBpm::Random => "*".to_string(),
-            },
-        ))
-    }
     output.push_str(&write_tag("BPMS", &float_pair_tag(&data.meta.bpms)));
     if let Some(tag) = &data.meta.stops {
         output.push_str(&write_tag("STOPS", &float_pair_tag(tag)));
+    }
+    for (key, value) in &data.meta.custom {
+        if key.1 == "sm" {
+            output.push_str(&write_tag(&key.0, value))
+        }
     }
     for chart in &data.charts {
         output.push_str(&write_tag("NOTES", &chart_string(&chart)))
