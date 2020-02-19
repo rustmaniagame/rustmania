@@ -170,7 +170,7 @@ mod callbacks {
         screen::{Globals, Resource},
         timingdata::TimingColumn,
     };
-    use std::{convert::TryFrom, io::Read, fs::File};
+    use std::{convert::TryFrom, fs::File, io::Read};
 
     pub fn map_to_string(resource: Option<Resource>, _globals: &Globals) -> Option<Resource> {
         resource.map(|resource| match resource {
@@ -361,11 +361,14 @@ fn main() {
 
     let resources = Resources::new(
         notes,
-        vec![PathBuf::from(format!(
-            "{}/{}",
-            simfile_folder,
-            notedata.meta.music_path.expect("No music path specified")
-        )),PathBuf::new()],
+        vec![
+            PathBuf::from(format!(
+                "{}/{}",
+                simfile_folder,
+                notedata.meta.music_path.expect("No music path specified")
+            )),
+            PathBuf::new(),
+        ],
         vec![p1_layout, p2_layout],
         vec![song_options.rate, 0.0, 12.0],
         vec![600, 0, 0],
