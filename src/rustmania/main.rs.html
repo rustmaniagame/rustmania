@@ -582,6 +582,10 @@
 <span id="582">582</span>
 <span id="583">583</span>
 <span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#![<span class="ident">warn</span>(
     <span class="ident">clippy</span>::<span class="ident">cast_lossless</span>,
@@ -990,7 +994,7 @@
         <span class="macro">vec</span><span class="macro">!</span>[<span class="number">600</span>, <span class="number">0</span>, <span class="number">0</span>],
         <span class="macro">vec</span><span class="macro">!</span>[
             <span class="ident">notedata</span>.<span class="ident">meta</span>.<span class="ident">title</span>.<span class="ident">expect</span>(<span class="string">&quot;Needs a title&quot;</span>),
-            <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;Results screen placeholder text&quot;</span>),
+            <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;Editor placeholder text&quot;</span>),
         ],
         <span class="macro">vec</span><span class="macro">!</span>[],
         <span class="macro">vec</span><span class="macro">!</span>[],
@@ -1003,7 +1007,7 @@
             <span class="ident">ElementType</span>::<span class="ident">TEXT</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>),
         ],
         <span class="ident">on_finish</span>: <span class="number">999</span>,
-        <span class="ident">on_keypress</span>: <span class="macro">vec</span><span class="macro">!</span>[(<span class="number">1</span>, <span class="number">4</span>), (<span class="number">2</span>, <span class="number">2</span>), (<span class="number">3</span>, <span class="number">3</span>)].<span class="ident">into_iter</span>().<span class="ident">collect</span>(),
+        <span class="ident">on_keypress</span>: <span class="macro">vec</span><span class="macro">!</span>[(<span class="number">1</span>, <span class="number">4</span>), (<span class="number">2</span>, <span class="number">2</span>), (<span class="number">3</span>, <span class="number">3</span>), (<span class="number">5</span>, <span class="number">5</span>)].<span class="ident">into_iter</span>().<span class="ident">collect</span>(),
     };
 
     <span class="kw">let</span> <span class="ident">gameplay_screen</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">song_options</span>.<span class="ident">theme</span>.<span class="ident">clone</span>() {
@@ -1020,6 +1024,7 @@
             )
             .<span class="ident">expect</span>(<span class="string">&quot;Can not parse theme file as YAML&quot;</span>)
         }
+        <span class="comment">//music doesn&#39;t stop when you exit the gameplay screen</span>
         <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ScreenBuilder</span> {
             <span class="ident">elements</span>: <span class="macro">vec</span><span class="macro">!</span>[
                 <span class="ident">ElementType</span>::<span class="ident">NOTEFIELD</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>),
@@ -1028,7 +1033,7 @@
                 <span class="ident">ElementType</span>::<span class="ident">TEXT</span>(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>),
             ],
             <span class="ident">on_finish</span>: <span class="number">0</span>,
-            <span class="ident">on_keypress</span>: <span class="ident">HashMap</span>::<span class="ident">new</span>(),
+            <span class="ident">on_keypress</span>: <span class="macro">vec</span><span class="macro">!</span>[(<span class="number">4</span>, <span class="number">1</span>)].<span class="ident">into_iter</span>().<span class="ident">collect</span>(),
         },
     };
 
@@ -1036,6 +1041,12 @@
         <span class="ident">elements</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">ElementType</span>::<span class="ident">TEXT</span>(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>)],
         <span class="ident">on_finish</span>: <span class="number">2</span>,
         <span class="ident">on_keypress</span>: <span class="macro">vec</span><span class="macro">!</span>[(<span class="number">1</span>, <span class="number">1</span>)].<span class="ident">into_iter</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
+    };
+
+    <span class="kw">let</span> <span class="ident">editor_screen</span> <span class="op">=</span> <span class="ident">ScreenBuilder</span> {
+        <span class="ident">elements</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">ElementType</span>::<span class="ident">TEXT</span>(<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>)],
+        <span class="ident">on_finish</span>: <span class="number">0</span>,
+        <span class="ident">on_keypress</span>: <span class="macro">vec</span><span class="macro">!</span>[(<span class="number">4</span>, <span class="number">1</span>), (<span class="number">5</span>, <span class="number">1</span>)].<span class="ident">into_iter</span>().<span class="ident">collect</span>(),
     };
 
     <span class="kw">let</span> <span class="ident">scripts</span> <span class="op">=</span> <span class="ident">ScriptList</span> {
@@ -1053,16 +1064,7 @@
                     <span class="ident">destination_index</span>: <span class="number">0</span>,
                 }),
             ],
-            <span class="macro">vec</span><span class="macro">!</span>[
-                <span class="ident">ResourceMap</span>::<span class="ident">Script</span>(<span class="ident">ScriptMap</span> {
-                    <span class="ident">resource_type</span>: <span class="ident">ResourceType</span>::<span class="ident">Replay</span>,
-                    <span class="ident">resource_index</span>: <span class="number">0</span>,
-                    <span class="ident">script_index</span>: <span class="number">2</span>,
-                    <span class="ident">destination_type</span>: <span class="ident">ResourceType</span>::<span class="ident">Integer</span>,
-                    <span class="ident">destination_index</span>: <span class="number">0</span>,
-                }),
-                <span class="ident">ResourceMap</span>::<span class="ident">Message</span>(<span class="ident">Message</span>::<span class="ident">Finish</span>(<span class="number">0</span>)),
-            ],
+            <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">ResourceMap</span>::<span class="ident">Message</span>(<span class="ident">Message</span>::<span class="ident">Finish</span>(<span class="number">0</span>))],
             <span class="macro">vec</span><span class="macro">!</span>[
                 <span class="ident">ResourceMap</span>::<span class="ident">Script</span>(<span class="ident">ScriptMap</span> {
                     <span class="ident">resource_type</span>: <span class="ident">ResourceType</span>::<span class="ident">Integer</span>,
@@ -1133,6 +1135,7 @@
                 }),
                 <span class="ident">ResourceMap</span>::<span class="ident">Message</span>(<span class="ident">Message</span>::<span class="ident">Finish</span>(<span class="number">1</span>)),
             ],
+            <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">ResourceMap</span>::<span class="ident">Message</span>(<span class="ident">Message</span>::<span class="ident">Finish</span>(<span class="number">3</span>))],
         ],
     };
 
@@ -1143,7 +1146,12 @@
     }
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">gamestate</span> <span class="op">=</span> <span class="ident">GameState</span>::<span class="ident">new</span>(
-        <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">song_select_screen</span>, <span class="ident">gameplay_screen</span>, <span class="ident">results_screen</span>],
+        <span class="macro">vec</span><span class="macro">!</span>[
+            <span class="ident">song_select_screen</span>,
+            <span class="ident">gameplay_screen</span>,
+            <span class="ident">results_screen</span>,
+            <span class="ident">editor_screen</span>,
+        ],
         <span class="ident">resources</span>,
         <span class="macro">vec</span><span class="macro">!</span>[
             <span class="ident">callbacks</span>::<span class="ident">map_to_string</span>,
