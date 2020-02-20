@@ -405,7 +405,7 @@ fn main() {
         vec![600, 0, 0],
         vec![
             notedata.meta.title.expect("Needs a title"),
-            String::from("Results screen placeholder text"),
+            String::from("Editor placeholder text"),
         ],
         vec![],
         vec![],
@@ -418,7 +418,7 @@ fn main() {
             ElementType::TEXT(0, 0, 0),
         ],
         on_finish: 999,
-        on_keypress: vec![(1, 4), (2, 2), (3, 3)].into_iter().collect(),
+        on_keypress: vec![(1, 4), (2, 2), (3, 3), (5, 5)].into_iter().collect(),
     };
 
     let gameplay_screen = match song_options.theme.clone() {
@@ -435,6 +435,7 @@ fn main() {
             )
             .expect("Can not parse theme file as YAML")
         }
+        //music doesn't stop when you exit the gameplay screen
         None => ScreenBuilder {
             elements: vec![
                 ElementType::NOTEFIELD(0, 0, 0),
@@ -443,7 +444,7 @@ fn main() {
                 ElementType::TEXT(0, 1, 2),
             ],
             on_finish: 0,
-            on_keypress: HashMap::new(),
+            on_keypress: vec![(4, 1)].into_iter().collect(),
         },
     };
 
@@ -451,6 +452,12 @@ fn main() {
         elements: vec![ElementType::TEXT(0, 1, 2)],
         on_finish: 2,
         on_keypress: vec![(1, 1)].into_iter().collect::<HashMap<_, _>>(),
+    };
+
+    let editor_screen = ScreenBuilder {
+        elements: vec![ElementType::TEXT(1, 1, 1)],
+        on_finish: 0,
+        on_keypress: vec![(4, 1), (5, 1)].into_iter().collect(),
     };
 
     let scripts = ScriptList {
@@ -468,16 +475,7 @@ fn main() {
                     destination_index: 0,
                 }),
             ],
-            vec![
-                ResourceMap::Script(ScriptMap {
-                    resource_type: ResourceType::Replay,
-                    resource_index: 0,
-                    script_index: 2,
-                    destination_type: ResourceType::Integer,
-                    destination_index: 0,
-                }),
-                ResourceMap::Message(Message::Finish(0)),
-            ],
+            vec![ResourceMap::Message(Message::Finish(0))],
             vec![
                 ResourceMap::Script(ScriptMap {
                     resource_type: ResourceType::Integer,
@@ -548,6 +546,7 @@ fn main() {
                 }),
                 ResourceMap::Message(Message::Finish(1)),
             ],
+            vec![ResourceMap::Message(Message::Finish(3))],
         ],
     };
 
@@ -558,7 +557,12 @@ fn main() {
     }
 
     let mut gamestate = GameState::new(
-        vec![song_select_screen, gameplay_screen, results_screen],
+        vec![
+            song_select_screen,
+            gameplay_screen,
+            results_screen,
+            editor_screen,
+        ],
         resources,
         vec![
             callbacks::map_to_string,

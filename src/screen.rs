@@ -273,6 +273,8 @@ fn keycode_number(code: KeyCode) -> u32 {
         KeyCode::Return => 1,
         KeyCode::Left => 2,
         KeyCode::Right => 3,
+        KeyCode::Escape => 4,
+        KeyCode::Grave => 5,
         _ => 0,
     }
 }
