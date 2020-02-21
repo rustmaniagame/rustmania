@@ -7,6 +7,7 @@ use std::{
     self,
     fs::File,
     path::{Path, PathBuf},
+    sync::mpsc::{channel, Receiver, Sender},
     thread,
     time::{Duration, Instant},
 };
@@ -16,17 +17,22 @@ const CORRECTION_DEGREE: f64 = 0.00002;
 pub struct Music {
     rate: f64,
     path: PathBuf,
+    sender: Option<Sender<bool>>,
 }
 
 impl Music {
     pub fn new(rate: f64, path: PathBuf) -> Self {
-        Self { rate, path }
+        Self {
+            rate,
+            path,
+            sender: None,
+        }
     }
 }
 
 //Known issue: playback only operates correctly on two channel audio
 //single channel audio needs to be accounted for
-fn play_file<T>(start_time: Instant, rate: f64, path: T)
+fn play_file<T>(start_time: Instant, rate: f64, path: T, recv: Receiver<bool>)
 where
     T: AsRef<Path>,
 {
@@ -99,6 +105,9 @@ where
                         / f32::from(i16::max_value());
                 }
             }
+            if recv.try_recv().is_ok() {
+                panic!("Intentional panic");
+            }
         }
     });
 }
@@ -164,11 +173,16 @@ impl Element for Music {
         if let Some(time) = time {
             let rate = self.rate;
             let path = self.path.clone();
-            thread::spawn(move || play_file(time, rate, path));
+            let (send, recv) = channel();
+            self.sender = Some(send);
+            thread::spawn(move || play_file(time, rate, path, recv));
         }
         Ok(Message::None)
     }
     fn finish(&mut self) -> Option<Resource> {
+        if let Some(sender) = &self.sender {
+            sender.send(true).expect("fuck");
+        }
         None
     }
     fn handle_event(&mut self, _keycode: KeyCode, _time: Option<i64>, _key_down: bool) {}

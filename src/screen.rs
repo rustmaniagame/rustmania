@@ -354,6 +354,9 @@ impl Screen {
         if let Some(script) = scripts.scripts.get(self.on_finish) {
             self.run_script(resources, callbacks, globals, script);
         }
+        for element in &mut self.elements {
+            element.finish();
+        }
     }
     fn start_time_to_milliseconds(&self) -> Option<i64> {
         match self.start_time {
