@@ -51,14 +51,11 @@ mod screen;
 mod text;
 mod timingdata;
 
-use crate::screen::{Message, ScriptList};
+use crate::screen::Theme;
 use crate::{
     gamestate::GameState,
     player_config::NoteSkin,
-    screen::{
-        CacheEntry, ElementMap, ElementType, Globals, ResourceMap, ResourceType, Resources,
-        ScreenBuilder, ScriptMap,
-    },
+    screen::{CacheEntry, Globals, Resources},
     timingdata::{CalcInfo, TimingData},
 };
 use bincode::deserialize;
@@ -69,12 +66,10 @@ use parallel_folder_walk::{load_songs_folder, LoadError};
 use rand::seq::SliceRandom;
 use std::{
     cmp::Ordering,
-    collections::HashMap,
     ffi::OsStr,
     fs::{File, OpenOptions},
     io::Read,
     path::PathBuf,
-    str::from_utf8,
     time::Instant,
 };
 use structopt::StructOpt;
@@ -319,6 +314,17 @@ fn main() {
 
     set_up_logging().expect("Failed to setup logging");
 
+    let theme: Theme = serde_yaml::from_reader(
+        File::open(
+            song_options
+                .theme
+                .clone()
+                .unwrap_or_else(|| PathBuf::from("Themes/Default/theme.yml")),
+        )
+        .expect("Could not open theme file"),
+    )
+    .expect("Could not parse theme file as YAML");
+
     let (simfile_folder, difficulty, notedata, notedata_list) = {
         let start_time = Instant::now();
         let notedata_list = load_songs_folder(song_options.simfile.clone(), load_song);
@@ -411,145 +417,6 @@ fn main() {
         vec![],
     );
 
-    let song_select_screen = ScreenBuilder {
-        elements: vec![
-            ElementType::TEXT(0, 0, 0),
-            ElementType::TEXT(0, 0, 0),
-            ElementType::TEXT(0, 0, 0),
-        ],
-        on_finish: 999,
-        on_keypress: vec![(1, 4), (2, 2), (3, 3), (5, 5)].into_iter().collect(),
-    };
-
-    let gameplay_screen = match song_options.theme.clone() {
-        Some(value) => {
-            // This currently is not getting the music rate so the theme will have incorrect behavior
-            // if the rate specified in the theme is different than the rate passed in through the CLI
-            let mut theme = File::open(value).expect("Can not find theme file");
-            let mut theme_string = vec![];
-            theme
-                .read_to_end(&mut theme_string)
-                .expect("Could not read theme file completely");
-            serde_yaml::from_str(
-                from_utf8(&theme_string).expect("Can not parse theme file as string"),
-            )
-            .expect("Can not parse theme file as YAML")
-        }
-        //music doesn't stop when you exit the gameplay screen
-        None => ScreenBuilder {
-            elements: vec![
-                ElementType::NOTEFIELD(0, 0, 0),
-                ElementType::NOTEFIELD(1, 0, 0),
-                ElementType::MUSIC(0, 0),
-                ElementType::TEXT(0, 1, 2),
-            ],
-            on_finish: 0,
-            on_keypress: vec![(4, 1)].into_iter().collect(),
-        },
-    };
-
-    let results_screen = ScreenBuilder {
-        elements: vec![ElementType::TEXT(0, 1, 2)],
-        on_finish: 2,
-        on_keypress: vec![(1, 1)].into_iter().collect::<HashMap<_, _>>(),
-    };
-
-    let editor_screen = ScreenBuilder {
-        elements: vec![ElementType::TEXT(1, 1, 1)],
-        on_finish: 0,
-        on_keypress: vec![(4, 1), (5, 1)].into_iter().collect(),
-    };
-
-    let scripts = ScriptList {
-        scripts: vec![
-            vec![
-                ResourceMap::Element(ElementMap {
-                    element_index: 0,
-                    resource_index: 0,
-                }),
-                ResourceMap::Script(ScriptMap {
-                    resource_type: ResourceType::Replay,
-                    resource_index: 0,
-                    script_index: 0,
-                    destination_type: ResourceType::String,
-                    destination_index: 0,
-                }),
-            ],
-            vec![ResourceMap::Message(Message::Finish(0))],
-            vec![
-                ResourceMap::Script(ScriptMap {
-                    resource_type: ResourceType::Integer,
-                    resource_index: 1,
-                    script_index: 4,
-                    destination_type: ResourceType::Integer,
-                    destination_index: 1,
-                }),
-                ResourceMap::Script(ScriptMap {
-                    resource_type: ResourceType::Integer,
-                    resource_index: 1,
-                    script_index: 1,
-                    destination_type: ResourceType::String,
-                    destination_index: 0,
-                }),
-                ResourceMap::Script(ScriptMap {
-                    resource_type: ResourceType::String,
-                    resource_index: 0,
-                    script_index: 2,
-                    destination_type: ResourceType::Integer,
-                    destination_index: 0,
-                }),
-            ],
-            vec![
-                ResourceMap::Script(ScriptMap {
-                    resource_type: ResourceType::Integer,
-                    resource_index: 1,
-                    script_index: 3,
-                    destination_type: ResourceType::Integer,
-                    destination_index: 1,
-                }),
-                ResourceMap::Script(ScriptMap {
-                    resource_type: ResourceType::Integer,
-                    resource_index: 1,
-                    script_index: 1,
-                    destination_type: ResourceType::String,
-                    destination_index: 0,
-                }),
-                ResourceMap::Script(ScriptMap {
-                    resource_type: ResourceType::String,
-                    resource_index: 0,
-                    script_index: 2,
-                    destination_type: ResourceType::Integer,
-                    destination_index: 0,
-                }),
-            ],
-            vec![
-                ResourceMap::Script(ScriptMap {
-                    resource_type: ResourceType::Integer,
-                    resource_index: 1,
-                    script_index: 7,
-                    destination_type: ResourceType::Path,
-                    destination_index: 0,
-                }),
-                ResourceMap::Script(ScriptMap {
-                    resource_type: ResourceType::Integer,
-                    resource_index: 1,
-                    script_index: 5,
-                    destination_type: ResourceType::Path,
-                    destination_index: 1,
-                }),
-                ResourceMap::Script(ScriptMap {
-                    resource_type: ResourceType::Path,
-                    resource_index: 1,
-                    script_index: 6,
-                    destination_type: ResourceType::Notes,
-                    destination_index: 0,
-                }),
-                ResourceMap::Message(Message::Finish(1)),
-            ],
-            vec![ResourceMap::Message(Message::Finish(3))],
-        ],
-    };
-
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
         let mut path = PathBuf::from(manifest_dir);
         path.push("resources");
@@ -557,12 +424,7 @@ fn main() {
     }
 
     let mut gamestate = GameState::new(
-        vec![
-            song_select_screen,
-            gameplay_screen,
-            results_screen,
-            editor_screen,
-        ],
+        theme.scene_stack,
         resources,
         vec![
             callbacks::map_to_string,
@@ -578,7 +440,7 @@ fn main() {
             cache: notedata_list,
             song_options,
         },
-        scripts,
+        theme.scripts,
     );
     if let Err(e) = ggez::event::run(context, events_loop, &mut gamestate) {
         debug!("Error: {}", e);

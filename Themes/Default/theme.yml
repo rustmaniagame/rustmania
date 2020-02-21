@@ -1,17 +1,128 @@
 ---
-elements:
-  - NOTEFIELD:
-      - 0
-      - 0
-      - 0
-  - NOTEFIELD:
-      - 1
-      - 0
-      - 0
-  - MUSIC:
-      - 0
-      - 0
-  - TEXT:
-      - 0
-      - 1
-      - 2
+scene_stack:
+  - elements:
+      - TEXT:
+          - 0
+          - 0
+          - 0
+      - TEXT:
+          - 0
+          - 0
+          - 0
+      - TEXT:
+          - 0
+          - 0
+          - 0
+    on_finish: 999
+    on_keypress:
+      5: 5
+      1: 4
+      3: 3
+      2: 2
+  - elements:
+      - NOTEFIELD:
+          - 0
+          - 0
+          - 0
+      - NOTEFIELD:
+          - 1
+          - 0
+          - 0
+      - MUSIC:
+          - 0
+          - 0
+      - TEXT:
+          - 0
+          - 1
+          - 2
+    on_finish: 0
+    on_keypress:
+      4: 1
+  - elements:
+      - TEXT:
+          - 0
+          - 1
+          - 2
+    on_finish: 2
+    on_keypress:
+      1: 1
+  - elements:
+      - TEXT:
+          - 1
+          - 1
+          - 1
+    on_finish: 0
+    on_keypress:
+      4: 1
+      5: 1
+scripts:
+  scripts:
+    - - Element:
+          resource_index: 0
+          element_index: 0
+      - Script:
+          resource_type: Replay
+          resource_index: 0
+          script_index: 0
+          destination_type: String
+          destination_index: 0
+    - - Message:
+          Finish: 0
+    - - Script:
+          resource_type: Integer
+          resource_index: 1
+          script_index: 4
+          destination_type: Integer
+          destination_index: 1
+      - Script:
+          resource_type: Integer
+          resource_index: 1
+          script_index: 1
+          destination_type: String
+          destination_index: 0
+      - Script:
+          resource_type: String
+          resource_index: 0
+          script_index: 2
+          destination_type: Integer
+          destination_index: 0
+    - - Script:
+          resource_type: Integer
+          resource_index: 1
+          script_index: 3
+          destination_type: Integer
+          destination_index: 1
+      - Script:
+          resource_type: Integer
+          resource_index: 1
+          script_index: 1
+          destination_type: String
+          destination_index: 0
+      - Script:
+          resource_type: String
+          resource_index: 0
+          script_index: 2
+          destination_type: Integer
+          destination_index: 0
+    - - Script:
+          resource_type: Integer
+          resource_index: 1
+          script_index: 7
+          destination_type: Path
+          destination_index: 0
+      - Script:
+          resource_type: Integer
+          resource_index: 1
+          script_index: 5
+          destination_type: Path
+          destination_index: 1
+      - Script:
+          resource_type: Path
+          resource_index: 1
+          script_index: 6
+          destination_type: Notes
+          destination_index: 0
+      - Message:
+          Finish: 1
+    - - Message:
+          Finish: 3

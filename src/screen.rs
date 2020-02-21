@@ -25,7 +25,7 @@ pub trait Element: Send {
     fn handle_event(&mut self, key: KeyCode, time: Option<i64>, key_down: bool);
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Eq, PartialEq, Ord, PartialOrd, Deserialize, Serialize)]
 pub enum ElementType {
     MUSIC(usize, usize),
     NOTEFIELD(usize, usize, usize),
@@ -86,6 +86,12 @@ pub struct ElementMap {
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+pub enum Message {
+    None,
+    Finish(i64),
+}
+
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 pub enum ResourceMap {
     Script(ScriptMap),
     Element(ElementMap),
@@ -114,10 +120,10 @@ pub struct Screen {
     pub current_message: Message,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
-pub enum Message {
-    None,
-    Finish(i64),
+pub struct CacheEntry {
+    pub path: PathBuf,
+    pub difficulty: f64,
+    pub data: ChartMetadata,
 }
 
 pub struct Globals {
@@ -125,10 +131,10 @@ pub struct Globals {
     pub song_options: SongOptions,
 }
 
-pub struct CacheEntry {
-    pub path: PathBuf,
-    pub difficulty: f64,
-    pub data: ChartMetadata,
+#[derive(Deserialize, Serialize)]
+pub struct Theme {
+    pub scene_stack: Vec<ScreenBuilder>,
+    pub scripts: ScriptList,
 }
 
 fn to_milliseconds(dur: Duration) -> i64 {
