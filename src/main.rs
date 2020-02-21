@@ -64,7 +64,6 @@ use ggez::{filesystem::mount, graphics::Rect, ContextBuilder};
 use log::{debug, info};
 use notedata::{Fraction, NoteData, NoteType};
 use parallel_folder_walk::{load_songs_folder, LoadError};
-use rand::seq::SliceRandom;
 use std::{
     cmp::Ordering,
     ffi::OsStr,
@@ -182,9 +181,7 @@ pub struct SongOptions {
 
 #[allow(clippy::too_many_lines)]
 fn main() {
-    let mut rng = rand::thread_rng();
     let song_options = SongOptions::from_args();
-
     set_up_logging().expect("Failed to setup logging");
 
     let theme: Theme = serde_yaml::from_reader(
@@ -198,7 +195,7 @@ fn main() {
     )
     .expect("Could not parse theme file as YAML");
 
-    let (simfile_folder, difficulty, notedata, notedata_list) = {
+    let notedata_list = {
         let start_time = Instant::now();
         let notedata_list = load_songs_folder(song_options.simfile.clone(), load_song);
         let duration = Instant::now() - start_time;
@@ -217,37 +214,15 @@ fn main() {
         notedata_list
             .iter()
             .for_each(|x| info!("{:?}, {}", (x.1).1.meta.title, (x.1).0));
-        let (simfile_path, (difficulty, notedata)) = notedata_list
-            .choose(&mut rng)
-            .expect("Failed to select chart from cache")
-            .clone();
-        let simfile_folder = String::from(
-            simfile_path
-                .parent()
-                .expect("No parent folder for selected file")
-                .as_os_str()
-                .to_str()
-                .expect("failed to parse path"),
-        );
-        (
-            simfile_folder,
-            difficulty,
-            notedata,
-            notedata_list
-                .into_iter()
-                .map(|(path, (difficulty, data))| CacheEntry {
-                    path,
-                    difficulty,
-                    data: data.meta,
-                })
-                .collect::<Vec<_>>(),
-        )
+        notedata_list
+            .into_iter()
+            .map(|(path, (difficulty, data))| CacheEntry {
+                path,
+                difficulty,
+                data: data.meta,
+            })
+            .collect::<Vec<_>>()
     };
-    println!(
-        "Selected Song is: {}",
-        notedata.meta.title.clone().unwrap_or_default()
-    );
-    println!("With difficulty: {}", difficulty);
 
     let (context, events_loop) = &mut ContextBuilder::new("rustmania", "ixsetf")
         .add_resource_path("")
@@ -267,25 +242,13 @@ fn main() {
     let p1_layout = player_config::NoteLayout::new(&default_note_skin, 600, p1_options);
     let p2_layout = player_config::NoteLayout::new(&default_note_skin, 600, p2_options);
 
-    let notes = timingdata::TimingData::from_notedata(&notedata, sprite_finder, song_options.rate);
-
     let resources = Resources::new(
-        notes,
-        vec![
-            PathBuf::from(format!(
-                "{}/{}",
-                simfile_folder,
-                notedata.meta.music_path.expect("No music path specified")
-            )),
-            PathBuf::new(),
-        ],
+        vec![TimingData::new()],
+        vec![PathBuf::new(); 2],
         vec![p1_layout, p2_layout],
         vec![song_options.rate, 0.0, 12.0],
         vec![600, 0, 0],
-        vec![
-            notedata.meta.title.expect("Needs a title"),
-            String::from("Editor placeholder text"),
-        ],
+        vec![String::new(), String::from("Editor placeholder text")],
         vec![],
         vec![],
     );
