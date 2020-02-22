@@ -5,14 +5,6 @@ scene_stack:
           - 0
           - 0
           - 0
-      - TEXT:
-          - 0
-          - 0
-          - 0
-      - TEXT:
-          - 0
-          - 0
-          - 0
     on_finish: 999
     on_keypress:
       5: 5
@@ -80,12 +72,11 @@ scripts:
           script_index: 1
           destination_type: String
           destination_index: 0
-      - Script:
+      - Method:
+          element: 0
+          method: 0
+          resource: 0
           resource_type: String
-          resource_index: 0
-          script_index: 2
-          destination_type: Integer
-          destination_index: 0
     - - Script:
           resource_type: Integer
           resource_index: 1
@@ -98,12 +89,11 @@ scripts:
           script_index: 1
           destination_type: String
           destination_index: 0
-      - Script:
+      - Method:
+          element: 0
+          method: 0
+          resource: 0
           resource_type: String
-          resource_index: 0
-          script_index: 2
-          destination_type: Integer
-          destination_index: 0
     - - Script:
           resource_type: Integer
           resource_index: 1

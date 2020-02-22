@@ -23,6 +23,9 @@ pub trait Element: Send {
     fn start(&mut self, time: Option<Instant>) -> Result<Message, GameError>;
     fn finish(&mut self) -> Option<Resource>;
     fn handle_event(&mut self, key: KeyCode, time: Option<i64>, key_down: bool);
+    fn methods(&mut self, _resource: Option<Resource>, _index: usize) -> Option<Resource> {
+        None
+    }
 }
 
 #[derive(Eq, PartialEq, Ord, PartialOrd, Deserialize, Serialize)]
@@ -92,10 +95,19 @@ pub enum Message {
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+pub struct MethodMap {
+    pub element: usize,
+    pub method: usize,
+    pub resource: usize,
+    pub resource_type: ResourceType,
+}
+
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 pub enum ResourceMap {
     Script(ScriptMap),
     Element(ElementMap),
     Message(Message),
+    Method(MethodMap),
 }
 
 pub type ResourceMaps = Vec<ResourceMap>;
@@ -334,6 +346,14 @@ impl Screen {
                 }
                 ResourceMap::Message(message) => {
                     self.current_message = *message;
+                }
+                ResourceMap::Method(map) => {
+                    if let Some(elem) = self.elements.get_mut(map.element) {
+                        elem.methods(
+                            Some(resources.get(map.resource, map.resource_type)),
+                            map.method,
+                        );
+                    }
                 }
             }
         }

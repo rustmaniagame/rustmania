@@ -8,7 +8,7 @@ use std::time::Instant;
 
 pub struct TextBox {
     image: graphics::Text,
-    _contents: String,
+    contents: String,
     position: [f32; 2],
     _size: u32,
 }
@@ -17,7 +17,7 @@ impl TextBox {
     pub fn new(contents: String, position: [f32; 2], size: u32) -> Self {
         Self {
             image: graphics::Text::new(contents.clone()),
-            _contents: contents,
+            contents,
             position,
             _size: size,
         }
@@ -36,4 +36,32 @@ impl Element for TextBox {
         None
     }
     fn handle_event(&mut self, _key: KeyCode, _time: Option<i64>, _key_down: bool) {}
+    fn methods(&mut self, resource: Option<Resource>, index: usize) -> Option<Resource> {
+        match index {
+            0 => {
+                if let Some(Resource::String(contents)) = resource {
+                    self.contents = contents;
+                    self.image = graphics::Text::new(self.contents.clone());
+                }
+                None
+            }
+            1 => {
+                if let Some(Resource::Integer(x)) = resource {
+                    self.position[0] = x as f32;
+                } else if let Some(Resource::_Float(x)) = resource {
+                    self.position[0] = x as f32;
+                }
+                None
+            }
+            2 => {
+                if let Some(Resource::Integer(y)) = resource {
+                    self.position[1] = y as f32;
+                } else if let Some(Resource::_Float(y)) = resource {
+                    self.position[1] = y as f32;
+                }
+                None
+            }
+            _ => None,
+        }
+    }
 }
