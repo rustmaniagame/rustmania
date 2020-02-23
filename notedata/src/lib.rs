@@ -50,6 +50,7 @@ mod parser_generic;
 mod sm_writer;
 
 pub use num_rational::Rational32 as Fraction;
+use ordered_float::NotNan;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::io;
@@ -58,7 +59,7 @@ mod error;
 pub use error::ParseError;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct BeatPair<T> {
     pub beat: i32,
     pub sub_beat: Fraction,
@@ -66,7 +67,7 @@ pub struct BeatPair<T> {
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum NoteType {
     Tap,
     Hold,
@@ -78,15 +79,15 @@ pub enum NoteType {
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum DisplayBpm {
-    Range(f64, f64),
-    Static(f64),
+    Range(NotNan<f64>, NotNan<f64>),
+    Static(NotNan<f64>),
     Random,
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Note {
     pub note_type: NoteType,
     pub column: usize,
@@ -97,7 +98,7 @@ pub type Measure = Vec<(NoteRow, Fraction)>;
 pub type Chart = Vec<Measure>;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Default, PartialEq, Clone)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
 pub struct ChartMetadata {
     pub title: Option<String>,
     pub subtitle: Option<String>,
@@ -112,11 +113,11 @@ pub struct ChartMetadata {
     pub lyrics_path: Option<String>,
     pub cd_title: Option<String>,
     pub music_path: Option<String>,
-    pub offset: Option<f64>,
-    pub bpms: Vec<BeatPair<f64>>,
-    pub stops: Option<Vec<BeatPair<f64>>>,
-    pub sample_start: Option<f64>,
-    pub sample_length: Option<f64>,
+    pub offset: Option<NotNan<f64>>,
+    pub bpms: Vec<BeatPair<NotNan<f64>>>,
+    pub stops: Option<Vec<BeatPair<NotNan<f64>>>>,
+    pub sample_start: Option<NotNan<f64>>,
+    pub sample_length: Option<NotNan<f64>>,
     pub display_bpm: Option<DisplayBpm>,
     pub selectable: Option<String>,
     //it is unclear how this is used in practice, may be better as Option<bool>

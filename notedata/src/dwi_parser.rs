@@ -1,5 +1,5 @@
 use crate::{
-    parser_generic::{beat_pair, comma_separated, stepmania_tag, ws_trimmed},
+    parser_generic::{beat_pair, comma_separated, notnan_double, stepmania_tag, ws_trimmed},
     BeatPair, DisplayBpm, Fraction, Measure, Note, NoteData, NoteRow, NoteType,
 };
 use nom::{
@@ -9,20 +9,24 @@ use nom::{
     combinator::{map, map_opt},
     error::ErrorKind,
     multi::{count, fold_many0, fold_many_m_n, many0},
-    number::complete::double,
     sequence::{preceded, separated_pair, terminated},
     Err, IResult,
 };
+use ordered_float::NotNan;
 
 fn display_bpm_dwi(input: &str) -> IResult<&str, DisplayBpm> {
     Ok(alt((
         map(
             //we accept either .. or . as a separator because you can have the first bpm as an integer
             //and the first . gets read into the first parser as a result
-            separated_pair(double, ws_trimmed(alt((tag(".."), tag(".")))), double),
+            separated_pair(
+                notnan_double,
+                ws_trimmed(alt((tag(".."), tag(".")))),
+                notnan_double,
+            ),
             |(min, max)| DisplayBpm::Range(min, max),
         ),
-        map(double, DisplayBpm::Static),
+        map(notnan_double, DisplayBpm::Static),
     ))(input)
     .unwrap_or(("", DisplayBpm::Random)))
 }
@@ -150,9 +154,9 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                 "GENRE" => nd.meta.genre = Some(value.to_owned()),
                 "CDTITLE" => nd.meta.cd_title = Some(value.to_owned()),
                 "FILE" => nd.meta.music_path = Some(value.to_owned()),
-                "GAP" => nd.meta.offset = Some(ws_trimmed(double)(value)?.1 / 1000.0),
+                "GAP" => nd.meta.offset = Some(ws_trimmed(notnan_double)(value)?.1 / 1000.0),
                 "BPM" => {
-                    let beat_pair = BeatPair::at_start(ws_trimmed(double)(value)?.1);
+                    let beat_pair = BeatPair::at_start(ws_trimmed(notnan_double)(value)?.1);
                     if let Some(bpm) = nd.meta.bpms.get_mut(0) {
                         *bpm = beat_pair
                     } else {
@@ -161,18 +165,22 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                 }
                 "CHANGEBPM" | "BPMCHANGE" => {
                     if nd.meta.bpms.is_empty() {
-                        nd.meta.bpms.push(BeatPair::from_pair(0.0, 120.0).unwrap())
+                        nd.meta.bpms.push(BeatPair {
+                            beat: 0,
+                            sub_beat: Fraction::new(0, 1),
+                            value: NotNan::new(120.0).unwrap(),
+                        })
                     }
-                    nd.meta
-                        .bpms
-                        .append(&mut ws_trimmed(comma_separated(beat_pair(double, 16.0)))(value)?.1)
+                    nd.meta.bpms.append(
+                        &mut ws_trimmed(comma_separated(beat_pair(notnan_double, 16.0)))(value)?.1,
+                    )
                 }
                 "FREEZE" => {
                     nd.meta.stops =
-                        Some(ws_trimmed(comma_separated(beat_pair(double, 16.0)))(value)?.1)
+                        Some(ws_trimmed(comma_separated(beat_pair(notnan_double, 16.0)))(value)?.1)
                 }
-                "SAMPLESTART" => nd.meta.sample_start = Some(ws_trimmed(double)(value)?.1),
-                "SAMPLELENGTH" => nd.meta.sample_length = Some(ws_trimmed(double)(value)?.1),
+                "SAMPLESTART" => nd.meta.sample_start = Some(ws_trimmed(notnan_double)(value)?.1),
+                "SAMPLELENGTH" => nd.meta.sample_length = Some(ws_trimmed(notnan_double)(value)?.1),
                 "DISPLAYBPM" => nd.meta.display_bpm = Some(ws_trimmed(display_bpm_dwi)(value)?.1),
                 "SINGLE" => nd.charts.push(
                     preceded(
@@ -256,13 +264,16 @@ mod tests {
                         sample_start: None,
                         sample_length: None,
                         bpms: vec![
-                            BeatPair::from_pair(0.0, 123.4).unwrap(),
-                            BeatPair::from_pair(23.4 / 16.0, 56.7).unwrap(),
-                            BeatPair::from_pair(256.0 / 16.0, 128.0).unwrap()
+                            BeatPair::from_pair(0.0, NotNan::new(123.4).unwrap()).unwrap(),
+                            BeatPair::from_pair(23.4 / 16.0, NotNan::new(56.7).unwrap()).unwrap(),
+                            BeatPair::from_pair(256.0 / 16.0, NotNan::new(128.0).unwrap()).unwrap()
                         ],
                         stops: None,
                         offset: None,
-                        display_bpm: Some(DisplayBpm::Range(100., 200.)),
+                        display_bpm: Some(DisplayBpm::Range(
+                            NotNan::new(100.).unwrap(),
+                            NotNan::new(200.).unwrap()
+                        )),
                         background_changes: None,
                         foreground_changes: None,
                         selectable: None,
