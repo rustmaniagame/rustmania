@@ -377,10 +377,10 @@
     <span class="kw">where</span>
         <span class="ident">U</span>: <span class="ident">Fn</span>(<span class="ident">usize</span>, <span class="ident">f64</span>, <span class="ident">Fraction</span>, <span class="ident">NoteType</span>, <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">graphics</span>::<span class="ident">Rect</span>,
     {
-        <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">offset</span>.<span class="ident">unwrap_or</span>(<span class="number">0.0</span>) <span class="op">*</span> <span class="number">1000.0</span>;
+        <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">offset</span>.<span class="ident">unwrap_or_default</span>() <span class="op">*</span> <span class="number">1000.0</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bpms</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">bpms</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">beat_pair</span><span class="op">|</span> (<span class="ident">beat_pair</span>, <span class="number">0.0</span>)).<span class="ident">collect</span>();
         <span class="kw">match</span> <span class="ident">bpms</span>.<span class="ident">get_mut</span>(<span class="number">0</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">bpm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">bpm</span>.<span class="number">1</span> <span class="op">=</span> <span class="ident">offset</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">bpm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">bpm</span>.<span class="number">1</span> <span class="op">=</span> <span class="ident">offset</span>.<span class="ident">into_inner</span>(),
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="self">Self</span>::<span class="ident">new</span>(),
         };
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">1</span>..<span class="ident">bpms</span>.<span class="ident">len</span>() {
@@ -388,7 +388,7 @@
                 <span class="op">+</span> ((<span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">bpms</span>[<span class="ident">i</span>].<span class="number">0</span>.<span class="ident">beat</span> <span class="op">-</span> <span class="ident">bpms</span>[<span class="ident">i</span> <span class="op">-</span> <span class="number">1</span>].<span class="number">0</span>.<span class="ident">beat</span>)
                     <span class="op">+</span> <span class="ident">value</span>(<span class="ident">bpms</span>[<span class="ident">i</span>].<span class="number">0</span>.<span class="ident">sub_beat</span> <span class="op">-</span> <span class="ident">bpms</span>[<span class="ident">i</span> <span class="op">-</span> <span class="number">1</span>].<span class="number">0</span>.<span class="ident">sub_beat</span>))
                     <span class="op">*</span> <span class="number">240_000.0</span>
-                    <span class="op">/</span> <span class="ident">bpms</span>[<span class="ident">i</span> <span class="op">-</span> <span class="number">1</span>].<span class="number">0</span>.<span class="ident">value</span>);
+                    <span class="op">/</span> <span class="ident">bpms</span>[<span class="ident">i</span> <span class="op">-</span> <span class="number">1</span>].<span class="number">0</span>.<span class="ident">value</span>.<span class="ident">into_inner</span>());
         }
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bpms</span> <span class="op">=</span> <span class="ident">bpms</span>.<span class="ident">into_iter</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_bpm</span> <span class="op">=</span> <span class="ident">bpms</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>();
@@ -412,7 +412,7 @@
                     <span class="op">+</span> <span class="number">240_000.0</span>
                         <span class="op">*</span> ((<span class="ident">measure_index</span> <span class="op">-</span> <span class="ident">current_bpm</span>.<span class="number">0</span>.<span class="ident">beat</span> <span class="kw">as</span> <span class="ident">usize</span>) <span class="kw">as</span> <span class="ident">f64</span>
                             <span class="op">+</span> <span class="ident">value</span>(<span class="ident">inner_time</span> <span class="op">-</span> <span class="ident">current_bpm</span>.<span class="number">0</span>.<span class="ident">sub_beat</span>))
-                        <span class="op">/</span> <span class="ident">current_bpm</span>.<span class="number">0</span>.<span class="ident">value</span>)
+                        <span class="op">/</span> <span class="ident">current_bpm</span>.<span class="number">0</span>.<span class="ident">value</span>.<span class="ident">into_inner</span>())
                     <span class="op">/</span> <span class="ident">rate</span>;
                 <span class="kw">for</span> <span class="ident">note</span> <span class="kw">in</span> <span class="ident">row</span>.<span class="ident">iter</span>() {
                     <span class="kw">let</span> <span class="ident">sprite</span> <span class="op">=</span>

@@ -397,9 +397,20 @@
 <span id="397">397</span>
 <span id="398">398</span>
 <span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">parser_generic</span>::{<span class="ident">beat_pair</span>, <span class="ident">comma_separated</span>, <span class="ident">stepmania_tag</span>, <span class="ident">ws_trimmed</span>},
+    <span class="ident">parser_generic</span>::{<span class="ident">beat_pair</span>, <span class="ident">comma_separated</span>, <span class="ident">notnan_double</span>, <span class="ident">stepmania_tag</span>, <span class="ident">ws_trimmed</span>},
     <span class="ident">BeatPair</span>, <span class="ident">DisplayBpm</span>, <span class="ident">Fraction</span>, <span class="ident">Measure</span>, <span class="ident">Note</span>, <span class="ident">NoteData</span>, <span class="ident">NoteRow</span>, <span class="ident">NoteType</span>,
 };
 <span class="kw">use</span> <span class="ident">nom</span>::{
@@ -409,20 +420,24 @@
     <span class="ident">combinator</span>::{<span class="ident">map</span>, <span class="ident">map_opt</span>},
     <span class="ident">error</span>::<span class="ident">ErrorKind</span>,
     <span class="ident">multi</span>::{<span class="ident">count</span>, <span class="ident">fold_many0</span>, <span class="ident">fold_many_m_n</span>, <span class="ident">many0</span>},
-    <span class="ident">number</span>::<span class="ident">complete</span>::<span class="ident">double</span>,
     <span class="ident">sequence</span>::{<span class="ident">preceded</span>, <span class="ident">separated_pair</span>, <span class="ident">terminated</span>},
     <span class="prelude-val">Err</span>, <span class="ident">IResult</span>,
 };
+<span class="kw">use</span> <span class="ident">ordered_float</span>::<span class="ident">NotNan</span>;
 
 <span class="kw">fn</span> <span class="ident">display_bpm_dwi</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">IResult</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">DisplayBpm</span><span class="op">&gt;</span> {
     <span class="prelude-val">Ok</span>(<span class="ident">alt</span>((
         <span class="ident">map</span>(
             <span class="comment">//we accept either .. or . as a separator because you can have the first bpm as an integer</span>
             <span class="comment">//and the first . gets read into the first parser as a result</span>
-            <span class="ident">separated_pair</span>(<span class="ident">double</span>, <span class="ident">ws_trimmed</span>(<span class="ident">alt</span>((<span class="ident">tag</span>(<span class="string">&quot;..&quot;</span>), <span class="ident">tag</span>(<span class="string">&quot;.&quot;</span>)))), <span class="ident">double</span>),
+            <span class="ident">separated_pair</span>(
+                <span class="ident">notnan_double</span>,
+                <span class="ident">ws_trimmed</span>(<span class="ident">alt</span>((<span class="ident">tag</span>(<span class="string">&quot;..&quot;</span>), <span class="ident">tag</span>(<span class="string">&quot;.&quot;</span>)))),
+                <span class="ident">notnan_double</span>,
+            ),
             <span class="op">|</span>(<span class="ident">min</span>, <span class="ident">max</span>)<span class="op">|</span> <span class="ident">DisplayBpm</span>::<span class="ident">Range</span>(<span class="ident">min</span>, <span class="ident">max</span>),
         ),
-        <span class="ident">map</span>(<span class="ident">double</span>, <span class="ident">DisplayBpm</span>::<span class="ident">Static</span>),
+        <span class="ident">map</span>(<span class="ident">notnan_double</span>, <span class="ident">DisplayBpm</span>::<span class="ident">Static</span>),
     ))(<span class="ident">input</span>)
     .<span class="ident">unwrap_or</span>((<span class="string">&quot;&quot;</span>, <span class="ident">DisplayBpm</span>::<span class="ident">Random</span>)))
 }
@@ -550,9 +565,9 @@
                 <span class="string">&quot;GENRE&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">genre</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>.<span class="ident">to_owned</span>()),
                 <span class="string">&quot;CDTITLE&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">cd_title</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>.<span class="ident">to_owned</span>()),
                 <span class="string">&quot;FILE&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">music_path</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>.<span class="ident">to_owned</span>()),
-                <span class="string">&quot;GAP&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">offset</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ws_trimmed</span>(<span class="ident">double</span>)(<span class="ident">value</span>)<span class="question-mark">?</span>.<span class="number">1</span> <span class="op">/</span> <span class="number">1000.0</span>),
+                <span class="string">&quot;GAP&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">offset</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ws_trimmed</span>(<span class="ident">notnan_double</span>)(<span class="ident">value</span>)<span class="question-mark">?</span>.<span class="number">1</span> <span class="op">/</span> <span class="number">1000.0</span>),
                 <span class="string">&quot;BPM&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="kw">let</span> <span class="ident">beat_pair</span> <span class="op">=</span> <span class="ident">BeatPair</span>::<span class="ident">at_start</span>(<span class="ident">ws_trimmed</span>(<span class="ident">double</span>)(<span class="ident">value</span>)<span class="question-mark">?</span>.<span class="number">1</span>);
+                    <span class="kw">let</span> <span class="ident">beat_pair</span> <span class="op">=</span> <span class="ident">BeatPair</span>::<span class="ident">at_start</span>(<span class="ident">ws_trimmed</span>(<span class="ident">notnan_double</span>)(<span class="ident">value</span>)<span class="question-mark">?</span>.<span class="number">1</span>);
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">bpm</span>) <span class="op">=</span> <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">bpms</span>.<span class="ident">get_mut</span>(<span class="number">0</span>) {
                         <span class="kw-2">*</span><span class="ident">bpm</span> <span class="op">=</span> <span class="ident">beat_pair</span>
                     } <span class="kw">else</span> {
@@ -561,18 +576,22 @@
                 }
                 <span class="string">&quot;CHANGEBPM&quot;</span> <span class="op">|</span> <span class="string">&quot;BPMCHANGE&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="kw">if</span> <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">bpms</span>.<span class="ident">is_empty</span>() {
-                        <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">bpms</span>.<span class="ident">push</span>(<span class="ident">BeatPair</span>::<span class="ident">from_pair</span>(<span class="number">0.0</span>, <span class="number">120.0</span>).<span class="ident">unwrap</span>())
+                        <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">bpms</span>.<span class="ident">push</span>(<span class="ident">BeatPair</span> {
+                            <span class="ident">beat</span>: <span class="number">0</span>,
+                            <span class="ident">sub_beat</span>: <span class="ident">Fraction</span>::<span class="ident">new</span>(<span class="number">0</span>, <span class="number">1</span>),
+                            <span class="ident">value</span>: <span class="ident">NotNan</span>::<span class="ident">new</span>(<span class="number">120.0</span>).<span class="ident">unwrap</span>(),
+                        })
                     }
-                    <span class="ident">nd</span>.<span class="ident">meta</span>
-                        .<span class="ident">bpms</span>
-                        .<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ws_trimmed</span>(<span class="ident">comma_separated</span>(<span class="ident">beat_pair</span>(<span class="ident">double</span>, <span class="number">16.0</span>)))(<span class="ident">value</span>)<span class="question-mark">?</span>.<span class="number">1</span>)
+                    <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">bpms</span>.<span class="ident">append</span>(
+                        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ws_trimmed</span>(<span class="ident">comma_separated</span>(<span class="ident">beat_pair</span>(<span class="ident">notnan_double</span>, <span class="number">16.0</span>)))(<span class="ident">value</span>)<span class="question-mark">?</span>.<span class="number">1</span>,
+                    )
                 }
                 <span class="string">&quot;FREEZE&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">stops</span> <span class="op">=</span>
-                        <span class="prelude-val">Some</span>(<span class="ident">ws_trimmed</span>(<span class="ident">comma_separated</span>(<span class="ident">beat_pair</span>(<span class="ident">double</span>, <span class="number">16.0</span>)))(<span class="ident">value</span>)<span class="question-mark">?</span>.<span class="number">1</span>)
+                        <span class="prelude-val">Some</span>(<span class="ident">ws_trimmed</span>(<span class="ident">comma_separated</span>(<span class="ident">beat_pair</span>(<span class="ident">notnan_double</span>, <span class="number">16.0</span>)))(<span class="ident">value</span>)<span class="question-mark">?</span>.<span class="number">1</span>)
                 }
-                <span class="string">&quot;SAMPLESTART&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">sample_start</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ws_trimmed</span>(<span class="ident">double</span>)(<span class="ident">value</span>)<span class="question-mark">?</span>.<span class="number">1</span>),
-                <span class="string">&quot;SAMPLELENGTH&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">sample_length</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ws_trimmed</span>(<span class="ident">double</span>)(<span class="ident">value</span>)<span class="question-mark">?</span>.<span class="number">1</span>),
+                <span class="string">&quot;SAMPLESTART&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">sample_start</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ws_trimmed</span>(<span class="ident">notnan_double</span>)(<span class="ident">value</span>)<span class="question-mark">?</span>.<span class="number">1</span>),
+                <span class="string">&quot;SAMPLELENGTH&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">sample_length</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ws_trimmed</span>(<span class="ident">notnan_double</span>)(<span class="ident">value</span>)<span class="question-mark">?</span>.<span class="number">1</span>),
                 <span class="string">&quot;DISPLAYBPM&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">nd</span>.<span class="ident">meta</span>.<span class="ident">display_bpm</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ws_trimmed</span>(<span class="ident">display_bpm_dwi</span>)(<span class="ident">value</span>)<span class="question-mark">?</span>.<span class="number">1</span>),
                 <span class="string">&quot;SINGLE&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">nd</span>.<span class="ident">charts</span>.<span class="ident">push</span>(
                     <span class="ident">preceded</span>(
@@ -656,13 +675,16 @@
                         <span class="ident">sample_start</span>: <span class="prelude-val">None</span>,
                         <span class="ident">sample_length</span>: <span class="prelude-val">None</span>,
                         <span class="ident">bpms</span>: <span class="macro">vec</span><span class="macro">!</span>[
-                            <span class="ident">BeatPair</span>::<span class="ident">from_pair</span>(<span class="number">0.0</span>, <span class="number">123.4</span>).<span class="ident">unwrap</span>(),
-                            <span class="ident">BeatPair</span>::<span class="ident">from_pair</span>(<span class="number">23.4</span> <span class="op">/</span> <span class="number">16.0</span>, <span class="number">56.7</span>).<span class="ident">unwrap</span>(),
-                            <span class="ident">BeatPair</span>::<span class="ident">from_pair</span>(<span class="number">256.0</span> <span class="op">/</span> <span class="number">16.0</span>, <span class="number">128.0</span>).<span class="ident">unwrap</span>()
+                            <span class="ident">BeatPair</span>::<span class="ident">from_pair</span>(<span class="number">0.0</span>, <span class="ident">NotNan</span>::<span class="ident">new</span>(<span class="number">123.4</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>(),
+                            <span class="ident">BeatPair</span>::<span class="ident">from_pair</span>(<span class="number">23.4</span> <span class="op">/</span> <span class="number">16.0</span>, <span class="ident">NotNan</span>::<span class="ident">new</span>(<span class="number">56.7</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>(),
+                            <span class="ident">BeatPair</span>::<span class="ident">from_pair</span>(<span class="number">256.0</span> <span class="op">/</span> <span class="number">16.0</span>, <span class="ident">NotNan</span>::<span class="ident">new</span>(<span class="number">128.0</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>()
                         ],
                         <span class="ident">stops</span>: <span class="prelude-val">None</span>,
                         <span class="ident">offset</span>: <span class="prelude-val">None</span>,
-                        <span class="ident">display_bpm</span>: <span class="prelude-val">Some</span>(<span class="ident">DisplayBpm</span>::<span class="ident">Range</span>(<span class="number">100.</span>, <span class="number">200.</span>)),
+                        <span class="ident">display_bpm</span>: <span class="prelude-val">Some</span>(<span class="ident">DisplayBpm</span>::<span class="ident">Range</span>(
+                            <span class="ident">NotNan</span>::<span class="ident">new</span>(<span class="number">100.</span>).<span class="ident">unwrap</span>(),
+                            <span class="ident">NotNan</span>::<span class="ident">new</span>(<span class="number">200.</span>).<span class="ident">unwrap</span>()
+                        )),
                         <span class="ident">background_changes</span>: <span class="prelude-val">None</span>,
                         <span class="ident">foreground_changes</span>: <span class="prelude-val">None</span>,
                         <span class="ident">selectable</span>: <span class="prelude-val">None</span>,
