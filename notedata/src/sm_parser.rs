@@ -1,5 +1,5 @@
 use crate::{
-    parser_generic::{beat_pair, comma_separated, notnan_double, stepmania_tag, ws_trimmed},
+    parser_generic::{beat_pair, comma_separated, stepmania_tag, ws_trimmed},
     Chart, DisplayBpm, Measure, Note, NoteData, NoteRow, NoteType,
 };
 use nom::{
@@ -9,6 +9,7 @@ use nom::{
     combinator::map,
     error::ErrorKind,
     multi::{count, fold_many0, fold_many1, many0, separated_nonempty_list},
+    number::complete::double,
     sequence::{preceded, separated_pair, terminated},
     Err, IResult,
 };
@@ -17,10 +18,10 @@ use num_rational::Rational32;
 fn display_bpm(input: &str) -> IResult<&str, DisplayBpm> {
     alt((
         map(
-            separated_pair(notnan_double, ws_trimmed(char(':')), notnan_double),
+            separated_pair(double, ws_trimmed(char(':')), double),
             |(min, max)| DisplayBpm::Range(min, max),
         ),
-        map(notnan_double, DisplayBpm::Static),
+        map(double, DisplayBpm::Static),
         map(char('*'), |_| DisplayBpm::Random),
     ))(input)
 }
@@ -119,17 +120,16 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                 "LYRICSPATH" => nd.meta.lyrics_path = Some(value.to_owned()),
                 "CDTITLE" => nd.meta.cd_title = Some(value.to_owned()),
                 "MUSIC" => nd.meta.music_path = Some(value.to_owned()),
-                "SAMPLESTART" => nd.meta.sample_start = Some(ws_trimmed(notnan_double)(value)?.1),
-                "SAMPLELENGTH" => nd.meta.sample_length = Some(ws_trimmed(notnan_double)(value)?.1),
-                "OFFSET" => nd.meta.offset = Some(-ws_trimmed(notnan_double)(value)?.1),
+                "SAMPLESTART" => nd.meta.sample_start = Some(ws_trimmed(double)(value)?.1),
+                "SAMPLELENGTH" => nd.meta.sample_length = Some(ws_trimmed(double)(value)?.1),
+                "OFFSET" => nd.meta.offset = Some(-ws_trimmed(double)(value)?.1),
                 "DISPLAYBPM" => nd.meta.display_bpm = Some(ws_trimmed(display_bpm)(value)?.1),
                 "BPMS" => {
-                    nd.meta.bpms =
-                        ws_trimmed(comma_separated(beat_pair(notnan_double, 4.0)))(value)?.1
+                    nd.meta.bpms = ws_trimmed(comma_separated(beat_pair(double, 4.0)))(value)?.1
                 }
                 "STOPS" => {
                     nd.meta.stops =
-                        Some(ws_trimmed(comma_separated(beat_pair(notnan_double, 4.0)))(value)?.1)
+                        Some(ws_trimmed(comma_separated(beat_pair(double, 4.0)))(value)?.1)
                 }
                 "NOTES" => nd.charts.push(chart(value)?.1),
                 _ => {}
@@ -148,21 +148,14 @@ mod tests {
     use super::*;
     use crate::{BeatPair, ChartMetadata};
     use nom::Err::Error;
-    use ordered_float::NotNan;
 
     #[test]
     fn parse_display_bpm() {
         assert_eq!(
             display_bpm("1.2  :   3.4  foo"),
-            Ok((
-                "  foo",
-                DisplayBpm::Range(NotNan::new(1.2).unwrap(), NotNan::new(3.4).unwrap())
-            ))
+            Ok(("  foo", DisplayBpm::Range(1.2, 3.4)))
         );
-        assert_eq!(
-            display_bpm("1.2foo"),
-            Ok(("foo", DisplayBpm::Static(NotNan::new(1.2).unwrap())))
-        );
+        assert_eq!(display_bpm("1.2foo"), Ok(("foo", DisplayBpm::Static(1.2))));
         assert_eq!(display_bpm("*"), Ok(("", DisplayBpm::Random)));
     }
 
@@ -291,15 +284,11 @@ mod tests {
                         lyrics_path: Some("bar11".to_owned()),
                         cd_title: Some("bar12".to_owned()),
                         music_path: Some("bar13".to_owned()),
-                        sample_start: Some(NotNan::new(1.2).unwrap()),
-                        sample_length: Some(NotNan::new(3.4).unwrap()),
-                        bpms: vec![BeatPair::from_pair(1. / 4.0, NotNan::new(2.).unwrap()).unwrap()],
-                        stops: Some(vec![BeatPair::from_pair(
-                            3. / 4.0,
-                            NotNan::new(4.).unwrap()
-                        )
-                        .unwrap()]),
-                        offset: Some(NotNan::new(-1.).unwrap()),
+                        sample_start: Some(1.2),
+                        sample_length: Some(3.4),
+                        bpms: vec![BeatPair::from_pair(1. / 4.0, 2.0).unwrap()],
+                        stops: Some(vec![BeatPair::from_pair(3. / 4.0, 4.0).unwrap()]),
+                        offset: Some(-1.0),
                         display_bpm: Some(DisplayBpm::Random),
                         background_changes: None,
                         foreground_changes: None,

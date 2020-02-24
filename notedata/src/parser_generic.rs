@@ -2,23 +2,18 @@ use crate::BeatPair;
 use nom::{
     bytes::complete::{is_not, take_until},
     character::complete::{char, multispace0},
-    combinator::{map, map_opt, map_res},
+    combinator::{map, map_opt},
     multi::separated_nonempty_list,
     number::complete::double,
     sequence::{preceded, separated_pair, terminated},
     IResult,
 };
-use ordered_float::NotNan;
 
 pub fn comma_separated<'a, P, O>(parser: P) -> impl Fn(&'a str) -> IResult<&str, Vec<O>>
 where
     P: Fn(&'a str) -> IResult<&str, O>,
 {
     move |input: &str| separated_nonempty_list(ws_trimmed(char(',')), &parser)(input)
-}
-
-pub fn notnan_double(input: &str) -> IResult<&str, NotNan<f64>> {
-    map_res(double, NotNan::new)(input)
 }
 
 pub fn beat_pair<'a, P, O>(parser: P, scale: f64) -> impl Fn(&'a str) -> IResult<&str, BeatPair<O>>

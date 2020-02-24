@@ -133,7 +133,7 @@ where
         let offset = meta.offset.unwrap_or_default() * 1000.0;
         let mut bpms: Vec<_> = meta.bpms.iter().map(|beat_pair| (beat_pair, 0.0)).collect();
         match bpms.get_mut(0) {
-            Some(bpm) => bpm.1 = offset.into_inner(),
+            Some(bpm) => bpm.1 = offset,
             None => return Self::new(),
         };
         for i in 1..bpms.len() {
@@ -141,7 +141,7 @@ where
                 + ((f64::from(bpms[i].0.beat - bpms[i - 1].0.beat)
                     + value(bpms[i].0.sub_beat - bpms[i - 1].0.sub_beat))
                     * 240_000.0
-                    / bpms[i - 1].0.value.into_inner());
+                    / bpms[i - 1].0.value);
         }
         let mut bpms = bpms.into_iter();
         let mut current_bpm = bpms.next().unwrap();
@@ -165,7 +165,7 @@ where
                     + 240_000.0
                         * ((measure_index - current_bpm.0.beat as usize) as f64
                             + value(inner_time - current_bpm.0.sub_beat))
-                        / current_bpm.0.value.into_inner())
+                        / current_bpm.0.value)
                     / rate;
                 for note in row.iter() {
                     let sprite =

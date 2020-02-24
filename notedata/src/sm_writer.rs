@@ -1,5 +1,4 @@
 use crate::{BeatPair, DisplayBpm, Fraction, Measure, Note, NoteData, NoteRow, NoteType};
-use ordered_float::NotNan;
 
 pub fn write_sm(data: &NoteData) -> String {
     let mut output = String::new();
@@ -21,7 +20,7 @@ pub fn write_sm(data: &NoteData) -> String {
     string_tag("LYRICSPATH", &data.meta.lyrics_path);
     string_tag("CDTITLE", &data.meta.cd_title);
     string_tag("MUSIC", &data.meta.music_path);
-    let mut number_tag = |tag_name: &str, from_location: &Option<NotNan<f64>>| {
+    let mut number_tag = |tag_name: &str, from_location: &Option<f64>| {
         if let Some(tag) = from_location {
             output.push_str(&write_tag(tag_name, &tag.to_string()))
         }
@@ -58,7 +57,7 @@ fn beat_to_float<T>(pair: &BeatPair<T>) -> f64 {
         * 4.0
 }
 
-fn float_pair_tag(list: &[BeatPair<NotNan<f64>>]) -> String {
+fn float_pair_tag(list: &[BeatPair<f64>]) -> String {
     let mut output = String::new();
     if let Some(first_bpm) = list.get(0) {
         output.push_str(&format!(

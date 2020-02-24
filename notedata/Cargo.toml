@@ -6,11 +6,10 @@ edition = "2018"
 
 [features]
 default = ["use-serde"]
-use-serde = ["serde", "num-rational/serde", "ordered-float/serde"]
+use-serde = ["serde", "num-rational/serde"]
 
 [dependencies]
 nom = "5.1.0"
 serde = { version = "1.0.104", optional = true, features = ["derive"] }
 num-rational = { version = "0.2", default-features = false, features = ["std"] }
 num-traits = "0.2.11"
-ordered-float = "1.0.2"
