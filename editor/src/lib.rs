@@ -32,7 +32,7 @@ impl Editor {
     }
     pub fn export(&mut self) -> Result<NoteData, ()> {
         let mut data = NoteData::new();
-        data.meta.bpms = self
+        data.structure.bpms = self
             .bpms
             .iter()
             .map(|((measure, beat), (bpm, _time))| BeatPair {
@@ -93,7 +93,7 @@ mod tests {
                 ),
             ],
         ]];
-        cool.meta.bpms = vec![
+        cool.structure.bpms = vec![
             BeatPair {
                 beat: 0,
                 sub_beat: Fraction::new(0, 1),

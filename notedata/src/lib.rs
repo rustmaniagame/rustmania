@@ -112,9 +112,6 @@ pub struct ChartMetadata {
     pub lyrics_path: Option<String>,
     pub cd_title: Option<String>,
     pub music_path: Option<String>,
-    pub offset: Option<f64>,
-    pub bpms: Vec<BeatPair<f64>>,
-    pub stops: Option<Vec<BeatPair<f64>>>,
     pub sample_start: Option<f64>,
     pub sample_length: Option<f64>,
     pub display_bpm: Option<DisplayBpm>,
@@ -126,9 +123,18 @@ pub struct ChartMetadata {
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Default, PartialEq, Clone)]
+pub struct StructureData {
+    pub offset: Option<f64>,
+    pub bpms: Vec<BeatPair<f64>>,
+    pub stops: Option<Vec<BeatPair<f64>>>,
+}
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct NoteData {
     pub charts: Vec<Chart>,
     pub meta: ChartMetadata,
+    pub structure: StructureData,
 }
 
 impl<T> BeatPair<T> {

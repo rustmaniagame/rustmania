@@ -122,13 +122,14 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                 "MUSIC" => nd.meta.music_path = Some(value.to_owned()),
                 "SAMPLESTART" => nd.meta.sample_start = Some(ws_trimmed(double)(value)?.1),
                 "SAMPLELENGTH" => nd.meta.sample_length = Some(ws_trimmed(double)(value)?.1),
-                "OFFSET" => nd.meta.offset = Some(-ws_trimmed(double)(value)?.1),
+                "OFFSET" => nd.structure.offset = Some(-ws_trimmed(double)(value)?.1),
                 "DISPLAYBPM" => nd.meta.display_bpm = Some(ws_trimmed(display_bpm)(value)?.1),
                 "BPMS" => {
-                    nd.meta.bpms = ws_trimmed(comma_separated(beat_pair(double, 4.0)))(value)?.1
+                    nd.structure.bpms =
+                        ws_trimmed(comma_separated(beat_pair(double, 4.0)))(value)?.1
                 }
                 "STOPS" => {
-                    nd.meta.stops =
+                    nd.structure.stops =
                         Some(ws_trimmed(comma_separated(beat_pair(double, 4.0)))(value)?.1)
                 }
                 "NOTES" => nd.charts.push(chart(value)?.1),
@@ -146,7 +147,7 @@ pub fn parse(input: &str) -> Result<NoteData, Err<(&str, ErrorKind)>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{BeatPair, ChartMetadata};
+    use crate::{BeatPair, ChartMetadata, StructureData};
     use nom::Err::Error;
 
     #[test]
@@ -286,13 +287,15 @@ mod tests {
                         music_path: Some("bar13".to_owned()),
                         sample_start: Some(1.2),
                         sample_length: Some(3.4),
-                        bpms: vec![BeatPair::from_pair(1. / 4.0, 2.0).unwrap()],
-                        stops: Some(vec![BeatPair::from_pair(3. / 4.0, 4.0).unwrap()]),
-                        offset: Some(-1.0),
                         display_bpm: Some(DisplayBpm::Random),
                         background_changes: None,
                         foreground_changes: None,
                         selectable: None,
+                    },
+                    structure: StructureData {
+                        bpms: vec![BeatPair::from_pair(1. / 4.0, 2.0).unwrap()],
+                        stops: Some(vec![BeatPair::from_pair(3. / 4.0, 4.0).unwrap()]),
+                        offset: Some(-1.0),
                     },
                     charts: vec![
                         vec![vec![(

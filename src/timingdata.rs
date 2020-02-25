@@ -1,6 +1,6 @@
 use crate::NOTEFIELD_SIZE;
 use ggez::graphics;
-use notedata::{ChartMetadata, Fraction, Measure, NoteData, NoteType};
+use notedata::{Fraction, Measure, NoteData, NoteType, StructureData};
 
 fn value(fraction: Fraction) -> f64 {
     f64::from(*fraction.numer()) / f64::from(*fraction.denom())
@@ -115,23 +115,26 @@ where
     where
         U: Fn(usize, f64, Fraction, NoteType, usize) -> graphics::Rect,
     {
-        let metadata = &data.meta;
         data.charts
             .iter()
-            .map(|chart| Self::from_chartdata::<U>(chart, metadata, &sprite_finder, rate))
+            .map(|chart| Self::from_chartdata::<U>(chart, &data.structure, &sprite_finder, rate))
             .collect()
     }
     pub fn from_chartdata<U>(
         data: &[Measure],
-        meta: &ChartMetadata,
+        structure: &StructureData,
         sprite_finder: &U,
         rate: f64,
     ) -> Self
     where
         U: Fn(usize, f64, Fraction, NoteType, usize) -> graphics::Rect,
     {
-        let offset = meta.offset.unwrap_or_default() * 1000.0;
-        let mut bpms: Vec<_> = meta.bpms.iter().map(|beat_pair| (beat_pair, 0.0)).collect();
+        let offset = structure.offset.unwrap_or_default() * 1000.0;
+        let mut bpms: Vec<_> = structure
+            .bpms
+            .iter()
+            .map(|beat_pair| (beat_pair, 0.0))
+            .collect();
         match bpms.get_mut(0) {
             Some(bpm) => bpm.1 = offset,
             None => return Self::new(),

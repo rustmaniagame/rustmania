@@ -150,29 +150,29 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
                 "GENRE" => nd.meta.genre = Some(value.to_owned()),
                 "CDTITLE" => nd.meta.cd_title = Some(value.to_owned()),
                 "FILE" => nd.meta.music_path = Some(value.to_owned()),
-                "GAP" => nd.meta.offset = Some(ws_trimmed(double)(value)?.1 / 1000.0),
+                "GAP" => nd.structure.offset = Some(ws_trimmed(double)(value)?.1 / 1000.0),
                 "BPM" => {
                     let beat_pair = BeatPair::at_start(ws_trimmed(double)(value)?.1);
-                    if let Some(bpm) = nd.meta.bpms.get_mut(0) {
+                    if let Some(bpm) = nd.structure.bpms.get_mut(0) {
                         *bpm = beat_pair
                     } else {
-                        nd.meta.bpms = vec![beat_pair];
+                        nd.structure.bpms = vec![beat_pair];
                     }
                 }
                 "CHANGEBPM" | "BPMCHANGE" => {
-                    if nd.meta.bpms.is_empty() {
-                        nd.meta.bpms.push(BeatPair {
+                    if nd.structure.bpms.is_empty() {
+                        nd.structure.bpms.push(BeatPair {
                             beat: 0,
                             sub_beat: Fraction::new(0, 1),
                             value: 120.0,
                         })
                     }
-                    nd.meta
+                    nd.structure
                         .bpms
                         .append(&mut ws_trimmed(comma_separated(beat_pair(double, 16.0)))(value)?.1)
                 }
                 "FREEZE" => {
-                    nd.meta.stops =
+                    nd.structure.stops =
                         Some(ws_trimmed(comma_separated(beat_pair(double, 16.0)))(value)?.1)
                 }
                 "SAMPLESTART" => nd.meta.sample_start = Some(ws_trimmed(double)(value)?.1),
@@ -217,7 +217,7 @@ fn notedata(input: &str) -> IResult<&str, NoteData> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ChartMetadata;
+    use crate::{ChartMetadata, StructureData};
 
     #[test]
     fn parse_notedata() {
@@ -259,6 +259,12 @@ mod tests {
                         music_path: Some("bar6.mp3".to_owned()),
                         sample_start: None,
                         sample_length: None,
+                        display_bpm: Some(DisplayBpm::Range(100.0, 200.)),
+                        background_changes: None,
+                        foreground_changes: None,
+                        selectable: None,
+                    },
+                    structure: StructureData {
                         bpms: vec![
                             BeatPair::from_pair(0.0, 123.4).unwrap(),
                             BeatPair::from_pair(23.4 / 16.0, 56.7).unwrap(),
@@ -266,10 +272,6 @@ mod tests {
                         ],
                         stops: None,
                         offset: None,
-                        display_bpm: Some(DisplayBpm::Range(100.0, 200.)),
-                        background_changes: None,
-                        foreground_changes: None,
-                        selectable: None,
                     },
                     charts: vec![vec![
                         vec![

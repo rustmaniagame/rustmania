@@ -27,7 +27,7 @@ pub fn write_sm(data: &NoteData) -> String {
     };
     number_tag("SAMPLESTART", &data.meta.sample_start);
     number_tag("SAMPLELENGTH", &data.meta.sample_length);
-    number_tag("OFFSET", &data.meta.offset.map(|x| -x));
+    number_tag("OFFSET", &data.structure.offset.map(|x| -x));
     if let Some(tag) = &data.meta.display_bpm {
         output.push_str(&write_tag(
             "DISPLAYBPM",
@@ -38,8 +38,8 @@ pub fn write_sm(data: &NoteData) -> String {
             },
         ))
     }
-    output.push_str(&write_tag("BPMS", &float_pair_tag(&data.meta.bpms)));
-    if let Some(tag) = &data.meta.stops {
+    output.push_str(&write_tag("BPMS", &float_pair_tag(&data.structure.bpms)));
+    if let Some(tag) = &data.structure.stops {
         output.push_str(&write_tag("STOPS", &float_pair_tag(tag)));
     }
     for chart in &data.charts {

@@ -58,16 +58,16 @@ fn main() {
     } else {
         println!("Song has no artist info");
     }
-    if !notedata.meta.bpms.is_empty() {
-        print!("Bpms are: {}", notedata.meta.bpms[0].value);
-        for bpm in notedata.meta.bpms.iter().skip(1) {
+    if !notedata.structure.bpms.is_empty() {
+        print!("Bpms are: {}", notedata.structure.bpms[0].value);
+        for bpm in notedata.structure.bpms.iter().skip(1) {
             print!(", {}", bpm.value);
         }
         println!();
     } else {
         println!("Song has no BPM info");
     }
-    if let Some(offset) = notedata.meta.offset {
+    if let Some(offset) = notedata.structure.offset {
         println!("Song offset is: {}", offset);
     } else {
         println!("Song has no offset");
