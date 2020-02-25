@@ -22,6 +22,7 @@ fern = "0.5"
 array-init = "0.1.1"
 ggez = "0.5.1"
 structopt = "0.3.7"
+editor = { path = "editor" }
 graphics = { path = "graphics" }
 notedata = { path = "notedata" }
 parallel-folder-walk = {path = "parallel-folder-walk"}

@@ -590,6 +590,13 @@ version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "editor"
+version = "0.1.0"
+dependencies = [
+ "notedata 0.1.0",
+]
+
+[[package]]
 name = "either"
 version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2023,6 +2030,7 @@ dependencies = [
  "array-init 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bincode 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "cpal 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "editor 0.1.0",
  "fern 0.5.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "ggez 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "graphics 0.1.0",
