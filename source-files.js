@@ -1,4 +1,5 @@
 var N = null;var sourcesIndex = {};
+sourcesIndex["editor"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["graphics"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["notedata"] = {"name":"","files":["dwi_parser.rs","error.rs","lib.rs","parser_generic.rs","sm_parser.rs","sm_writer.rs"]};
 sourcesIndex["parallel_folder_walk"] = {"name":"","files":["lib.rs"]};

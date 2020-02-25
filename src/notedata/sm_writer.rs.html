@@ -144,10 +144,8 @@
 <span id="144">144</span>
 <span id="145">145</span>
 <span id="146">146</span>
-<span id="147">147</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">BeatPair</span>, <span class="ident">DisplayBpm</span>, <span class="ident">Fraction</span>, <span class="ident">Measure</span>, <span class="ident">Note</span>, <span class="ident">NoteData</span>, <span class="ident">NoteRow</span>, <span class="ident">NoteType</span>};
-<span class="kw">use</span> <span class="ident">ordered_float</span>::<span class="ident">NotNan</span>;
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_sm</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">NoteData</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
@@ -169,14 +167,14 @@
     <span class="ident">string_tag</span>(<span class="string">&quot;LYRICSPATH&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>.<span class="ident">meta</span>.<span class="ident">lyrics_path</span>);
     <span class="ident">string_tag</span>(<span class="string">&quot;CDTITLE&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>.<span class="ident">meta</span>.<span class="ident">cd_title</span>);
     <span class="ident">string_tag</span>(<span class="string">&quot;MUSIC&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>.<span class="ident">meta</span>.<span class="ident">music_path</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number_tag</span> <span class="op">=</span> <span class="op">|</span><span class="ident">tag_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">from_location</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NotNan</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">|</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">number_tag</span> <span class="op">=</span> <span class="op">|</span><span class="ident">tag_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">from_location</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">|</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">tag</span>) <span class="op">=</span> <span class="ident">from_location</span> {
             <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">write_tag</span>(<span class="ident">tag_name</span>, <span class="kw-2">&amp;</span><span class="ident">tag</span>.<span class="ident">to_string</span>()))
         }
     };
     <span class="ident">number_tag</span>(<span class="string">&quot;SAMPLESTART&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>.<span class="ident">meta</span>.<span class="ident">sample_start</span>);
     <span class="ident">number_tag</span>(<span class="string">&quot;SAMPLELENGTH&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>.<span class="ident">meta</span>.<span class="ident">sample_length</span>);
-    <span class="ident">number_tag</span>(<span class="string">&quot;OFFSET&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>.<span class="ident">meta</span>.<span class="ident">offset</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="op">-</span><span class="ident">x</span>));
+    <span class="ident">number_tag</span>(<span class="string">&quot;OFFSET&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>.<span class="ident">structure</span>.<span class="ident">offset</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="op">-</span><span class="ident">x</span>));
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">tag</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">data</span>.<span class="ident">meta</span>.<span class="ident">display_bpm</span> {
         <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">write_tag</span>(
             <span class="string">&quot;DISPLAYBPM&quot;</span>,
@@ -187,8 +185,8 @@
             },
         ))
     }
-    <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">write_tag</span>(<span class="string">&quot;BPMS&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">float_pair_tag</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>.<span class="ident">meta</span>.<span class="ident">bpms</span>)));
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">tag</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">data</span>.<span class="ident">meta</span>.<span class="ident">stops</span> {
+    <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">write_tag</span>(<span class="string">&quot;BPMS&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">float_pair_tag</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>.<span class="ident">structure</span>.<span class="ident">bpms</span>)));
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">tag</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">data</span>.<span class="ident">structure</span>.<span class="ident">stops</span> {
         <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">write_tag</span>(<span class="string">&quot;STOPS&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">float_pair_tag</span>(<span class="ident">tag</span>)));
     }
     <span class="kw">for</span> <span class="ident">chart</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">data</span>.<span class="ident">charts</span> {
@@ -206,7 +204,7 @@
         <span class="op">*</span> <span class="number">4.0</span>
 }
 
-<span class="kw">fn</span> <span class="ident">float_pair_tag</span>(<span class="ident">list</span>: <span class="kw-2">&amp;</span>[<span class="ident">BeatPair</span><span class="op">&lt;</span><span class="ident">NotNan</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+<span class="kw">fn</span> <span class="ident">float_pair_tag</span>(<span class="ident">list</span>: <span class="kw-2">&amp;</span>[<span class="ident">BeatPair</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">first_bpm</span>) <span class="op">=</span> <span class="ident">list</span>.<span class="ident">get</span>(<span class="number">0</span>) {
         <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(
