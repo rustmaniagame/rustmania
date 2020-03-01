@@ -8,3 +8,7 @@ edition = "2018"
 
 [dependencies]
 notedata = { path = "../notedata"}
+
+[dev-dependencies]
+winit = "0.21.0"
+ggez = "0.5.1"

@@ -92,7 +92,7 @@ pub struct Note {
     pub column: usize,
 }
 
-type NoteRow = Vec<Note>;
+pub type NoteRow = Vec<Note>;
 pub type Measure = Vec<(NoteRow, Fraction)>;
 pub type Chart = Vec<Measure>;
 

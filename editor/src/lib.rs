@@ -1,13 +1,99 @@
-use notedata::{BeatPair, Fraction, Note, NoteData, NoteType};
+use notedata::{BeatPair, Fraction, Note, NoteData, NoteRow, NoteType};
 use std::collections::BTreeMap;
+use std::convert::TryFrom;
+
+pub struct Editor {
+    chart: ChartEditor,
+    current_beat: (i32, Fraction),
+    pub snap: i32,
+}
 
 #[derive(Default)]
-pub struct Editor {
+pub struct ChartEditor {
     bpms: BTreeMap<(i32, Fraction), (f64, f64)>,
     notes: BTreeMap<(usize, Fraction), BTreeMap<usize, NoteType>>,
 }
 
+impl Default for Editor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Editor {
+    pub fn new() -> Self {
+        Self {
+            chart: ChartEditor::default(),
+            current_beat: (0, Fraction::new(0, 1)),
+            snap: 4,
+        }
+    }
+    pub fn toggle_note(&mut self, column: usize, note_type: NoteType) {
+        self.chart.toggle_note(
+            usize::try_from(self.current_beat.0).unwrap_or(0),
+            self.current_beat.1,
+            column,
+            note_type,
+        );
+    }
+    pub fn add_bpm(&mut self, bpm: f64) {
+        self.chart
+            .add_bpm(self.current_beat.0, self.current_beat.1, bpm);
+    }
+    pub fn remove_bpm(&mut self) {
+        self.chart
+            .remove_bpm(self.current_beat.0, self.current_beat.1);
+    }
+    fn normalize_measure(&mut self) {
+        self.current_beat = (
+            self.current_beat.0 + *self.current_beat.1.floor().numer(),
+            if self.current_beat.1 >= Fraction::new(0, 1) {
+                self.current_beat.1.fract()
+            } else {
+                Fraction::new(1, 1) + self.current_beat.1.fract()
+            },
+        );
+        if self.current_beat.0 < 0 {
+            self.current_beat = (0, Fraction::new(0, 1));
+        }
+    }
+    pub fn next_snap(&mut self) {
+        self.current_beat.1 = Fraction::new(
+            (self.current_beat.1 * Fraction::new(self.snap, 1))
+                .floor()
+                .numer()
+                + 1,
+            self.snap,
+        );
+        self.normalize_measure();
+    }
+    pub fn previous_snap(&mut self) {
+        self.current_beat.1 = Fraction::new(
+            (self.current_beat.1 * Fraction::new(self.snap, 1))
+                .ceil()
+                .numer()
+                - 1,
+            self.snap,
+        );
+        self.normalize_measure();
+    }
+    pub fn set_beat(&mut self, measure: i32, beat: Fraction) {
+        self.current_beat = (measure, beat);
+        self.normalize_measure();
+    }
+    pub fn get_beat(&self) -> (i32, Fraction) {
+        self.current_beat
+    }
+    pub fn get_noterow(&self) -> Vec<Note> {
+        self.chart
+            .get_noterow(self.current_beat.0 as usize, self.current_beat.1)
+    }
+    pub fn export(&self) -> Result<NoteData, ()> {
+        self.chart.export()
+    }
+}
+
+impl ChartEditor {
     pub fn toggle_note(
         &mut self,
         measure: usize,
@@ -30,7 +116,10 @@ impl Editor {
     pub fn add_bpm(&mut self, measure: i32, beat: Fraction, bpm: f64) {
         self.bpms.insert((measure, beat), (bpm, 0.0));
     }
-    pub fn export(&mut self) -> Result<NoteData, ()> {
+    pub fn remove_bpm(&mut self, measure: i32, beat: Fraction) -> Option<(f64, f64)> {
+        self.bpms.remove(&(measure, beat))
+    }
+    pub fn export(&self) -> Result<NoteData, ()> {
         let mut data = NoteData::new();
         data.structure.bpms = self
             .bpms
@@ -58,6 +147,12 @@ impl Editor {
         data.charts = vec![out];
         Ok(data)
     }
+    pub fn get_noterow(&self, measure: usize, beat: Fraction) -> NoteRow {
+        self.notes
+            .get(&(measure, beat))
+            .map(|row| row.iter().map(|(m, b)| Note::new(*b, *m)).collect())
+            .unwrap_or_else(|| vec![])
+    }
 }
 
 #[cfg(test)]
@@ -66,7 +161,7 @@ mod tests {
 
     #[test]
     fn build_notedata() {
-        let mut edit = Editor::default();
+        let mut edit = ChartEditor::default();
         edit.add_bpm(3, Fraction::new(1, 2), 180.0);
         edit.add_bpm(0, Fraction::new(0, 1), 120.0);
         edit.toggle_note(1, Fraction::new(1, 2), 3, NoteType::Tap);
