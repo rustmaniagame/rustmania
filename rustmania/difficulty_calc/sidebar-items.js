@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["rate_chart",""]]});
+initSidebarItems({"fn":[["jack_scaler",""],["rate_chart",""]]});

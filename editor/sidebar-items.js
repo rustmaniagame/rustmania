@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Editor",""]]});
+initSidebarItems({"struct":[["ChartEditor",""],["Editor",""]]});
