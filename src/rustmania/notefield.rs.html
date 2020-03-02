@@ -253,6 +253,7 @@
 <span id="253">253</span>
 <span id="254">254</span>
 <span id="255">255</span>
+<span id="256">256</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">player_config</span>::<span class="ident">NoteLayout</span>,
@@ -389,9 +390,7 @@
         }
     }
     <span class="kw">fn</span> <span class="ident">redraw_batch</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">batches</span>
-            .<span class="ident">iter_mut</span>()
-            .<span class="ident">for_each</span>(<span class="ident">ggez</span>::<span class="ident">graphics</span>::<span class="ident">spritebatch</span>::<span class="ident">SpriteBatch</span>::<span class="ident">clear</span>);
+        <span class="self">self</span>.<span class="ident">batches</span>.<span class="ident">iter_mut</span>().<span class="ident">for_each</span>(<span class="ident">SpriteBatch</span>::<span class="ident">clear</span>);
         <span class="kw">for</span> <span class="ident">column_index</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">NOTEFIELD_SIZE</span> {
             <span class="kw">let</span> (<span class="ident">draw_start</span>, <span class="ident">draw_end</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">column_info</span>[<span class="ident">column_index</span>].<span class="ident">on_screen</span>;
             <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">add_column_of_notes</span>(
@@ -445,21 +444,6 @@
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">judgment</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">last_judgement</span> {
             <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">draw_judgment</span>(<span class="ident">ctx</span>, <span class="ident">judgment</span>)<span class="question-mark">?</span>;
         }
-        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;FPS: {:.2}&quot;</span>, <span class="ident">ggez</span>::<span class="ident">timer</span>::<span class="ident">fps</span>(<span class="ident">ctx</span>));
-        <span class="macro">println</span><span class="macro">!</span>(
-            <span class="string">&quot;Score: {:.2}%&quot;</span>,
-            (<span class="self">self</span>
-                .<span class="ident">column_info</span>
-                .<span class="ident">iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">judgement_list</span>.<span class="ident">current_points</span>(<span class="number">1.0</span>))
-                .<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>())
-                <span class="op">/</span> (<span class="self">self</span>
-                    .<span class="ident">column_info</span>
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">judgement_list</span>.<span class="ident">max_points</span>())
-                    .<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>())
-                <span class="op">*</span> <span class="number">100.0</span>
-        );
         <span class="prelude-val">Ok</span>(<span class="kw">if</span> <span class="ident">completed</span> {
             <span class="ident">Message</span>::<span class="ident">Finish</span>(<span class="number">2</span>)
         } <span class="kw">else</span> {
@@ -506,6 +490,24 @@
                 .<span class="ident">judgement_list</span>
                 .<span class="ident">add</span>(<span class="ident">Judgement</span>::<span class="ident">Hold</span>(<span class="bool-val">false</span>));
             <span class="self">self</span>.<span class="ident">column_info</span>[<span class="ident">index</span>].<span class="ident">active_hold</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+        }
+    }
+    <span class="kw">fn</span> <span class="ident">methods</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">_resource</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Resource</span><span class="op">&gt;</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Resource</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="ident">index</span> {
+            <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Resource</span>::<span class="ident">Float</span>(
+                (<span class="self">self</span>
+                    .<span class="ident">column_info</span>
+                    .<span class="ident">iter</span>()
+                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">judgement_list</span>.<span class="ident">current_points</span>(<span class="number">1.0</span>))
+                    .<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>())
+                    <span class="op">/</span> (<span class="self">self</span>
+                        .<span class="ident">column_info</span>
+                        .<span class="ident">iter</span>()
+                        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">judgement_list</span>.<span class="ident">max_points</span>())
+                        .<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>())
+                    <span class="op">*</span> <span class="number">100.0</span>,
+            )),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
         }
     }
 }
