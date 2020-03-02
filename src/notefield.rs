@@ -133,9 +133,7 @@ impl Notefield {
         }
     }
     fn redraw_batch(&mut self) {
-        self.batches
-            .iter_mut()
-            .for_each(ggez::graphics::spritebatch::SpriteBatch::clear);
+        self.batches.iter_mut().for_each(SpriteBatch::clear);
         for column_index in 0..NOTEFIELD_SIZE {
             let (draw_start, draw_end) = self.column_info[column_index].on_screen;
             self.layout.add_column_of_notes(
@@ -189,21 +187,6 @@ impl Element for Notefield {
         if let Some(judgment) = self.last_judgement {
             self.layout.draw_judgment(ctx, judgment)?;
         }
-        println!("FPS: {:.2}", ggez::timer::fps(ctx));
-        println!(
-            "Score: {:.2}%",
-            (self
-                .column_info
-                .iter()
-                .map(|x| x.judgement_list.current_points(1.0))
-                .sum::<f64>())
-                / (self
-                    .column_info
-                    .iter()
-                    .map(|x| x.judgement_list.max_points())
-                    .sum::<f64>())
-                * 100.0
-        );
         Ok(if completed {
             Message::Finish(2)
         } else {
@@ -250,6 +233,24 @@ impl Element for Notefield {
                 .judgement_list
                 .add(Judgement::Hold(false));
             self.column_info[index].active_hold = None;
+        }
+    }
+    fn methods(&mut self, _resource: Option<Resource>, index: usize) -> Option<Resource> {
+        match index {
+            0 => Some(Resource::Float(
+                (self
+                    .column_info
+                    .iter()
+                    .map(|x| x.judgement_list.current_points(1.0))
+                    .sum::<f64>())
+                    / (self
+                        .column_info
+                        .iter()
+                        .map(|x| x.judgement_list.max_points())
+                        .sum::<f64>())
+                    * 100.0,
+            )),
+            _ => None,
         }
     }
 }

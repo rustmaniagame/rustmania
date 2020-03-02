@@ -17,6 +17,7 @@ pub fn map_to_string(resource: Option<Resource>, _globals: &Globals) -> Option<R
                 * 100.0)
                 .to_string(),
         ),
+        Resource::Float(val) => Resource::String(format!("{}", val)),
         _ => Resource::String("".to_owned()),
     })
 }

@@ -40,7 +40,7 @@ pub enum Resource {
     _Notes(TimingData<GameplayInfo>),
     _Path(PathBuf),
     _Layout(Box<NoteLayout>),
-    _Float(f64),
+    Float(f64),
     Integer(i64),
     String(String),
     Replay(Vec<TimingColumn<Judgement>>),
@@ -52,7 +52,7 @@ pub enum ResourceType {
     Notes,
     Path,
     _Layout,
-    _Float,
+    Float,
     Integer,
     String,
     Replay,
@@ -100,6 +100,8 @@ pub struct MethodMap {
     pub method: usize,
     pub resource: usize,
     pub resource_type: ResourceType,
+    pub ret_index: usize,
+    pub ret_type: ResourceType,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
@@ -217,7 +219,7 @@ impl Resources {
             Resource::_Notes(notes) => self.notes.push(notes),
             Resource::_Path(path) => self.paths.push(path),
             Resource::_Layout(layout) => self.layouts.push(*layout),
-            Resource::_Float(f) => self.floats.push(f),
+            Resource::Float(f) => self.floats.push(f),
             Resource::Integer(int) => self.integers.push(int),
             Resource::String(string) => self.strings.push(string),
             Resource::Replay(replay) => self.replays.push(replay),
@@ -229,7 +231,7 @@ impl Resources {
             ResourceType::Notes => Resource::_Notes(self.notes[index].clone()),
             ResourceType::Path => Resource::_Path(self.paths[index].clone()),
             ResourceType::_Layout => Resource::_Layout(Box::new(self.layouts[index].clone())),
-            ResourceType::_Float => Resource::_Float(self.floats[index]),
+            ResourceType::Float => Resource::Float(self.floats[index]),
             ResourceType::Integer => Resource::Integer(self.integers[index]),
             ResourceType::String => Resource::String(self.strings[index].clone()),
             ResourceType::Replay => Resource::Replay(self.replays[index].clone()),
@@ -250,7 +252,7 @@ impl Resources {
                 *self.layouts.get_mut(index)? = *val;
                 Some(())
             }
-            Resource::_Float(val) => {
+            Resource::Float(val) => {
                 *self.floats.get_mut(index)? = val;
                 Some(())
             }
@@ -293,6 +295,10 @@ fn keycode_number(code: KeyCode) -> u32 {
         KeyCode::Right => 3,
         KeyCode::Escape => 4,
         KeyCode::Grave => 5,
+        KeyCode::Z => 6,
+        KeyCode::X => 7,
+        KeyCode::Comma => 8,
+        KeyCode::Period => 9,
         _ => 0,
     }
 }
@@ -349,10 +355,12 @@ impl Screen {
                 }
                 ResourceMap::Method(map) => {
                     if let Some(elem) = self.elements.get_mut(map.element) {
-                        elem.methods(
+                        if let Some(result) = elem.methods(
                             Some(resources.get(map.resource, map.resource_type)),
                             map.method,
-                        );
+                        ) {
+                            resources.set(map.ret_index, result);
+                        }
                     }
                 }
             }

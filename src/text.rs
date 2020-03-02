@@ -48,7 +48,7 @@ impl Element for TextBox {
             1 => {
                 if let Some(Resource::Integer(x)) = resource {
                     self.position[0] = x as f32;
-                } else if let Some(Resource::_Float(x)) = resource {
+                } else if let Some(Resource::Float(x)) = resource {
                     self.position[0] = x as f32;
                 }
                 None
@@ -56,7 +56,7 @@ impl Element for TextBox {
             2 => {
                 if let Some(Resource::Integer(y)) = resource {
                     self.position[1] = y as f32;
-                } else if let Some(Resource::_Float(y)) = resource {
+                } else if let Some(Resource::Float(y)) = resource {
                     self.position[1] = y as f32;
                 }
                 None

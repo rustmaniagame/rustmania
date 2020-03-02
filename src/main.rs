@@ -246,9 +246,13 @@ fn main() {
         vec![TimingData::new()],
         vec![PathBuf::new(); 2],
         vec![p1_layout, p2_layout],
-        vec![song_options.rate, 0.0, 12.0],
+        vec![song_options.rate, 0.0, 12.0, 36.0, 0.0],
         vec![600, 0, 0],
-        vec![String::new(), String::from("Editor placeholder text")],
+        vec![
+            String::new(),
+            String::from("Editor placeholder text"),
+            String::new(),
+        ],
         vec![],
         vec![],
     );

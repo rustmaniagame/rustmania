@@ -27,9 +27,17 @@ scene_stack:
           - 0
           - 1
           - 2
+      - TEXT:
+          - 0
+          - 1
+          - 3
     on_finish: 0
     on_keypress:
       4: 1
+      6: 6
+      7: 6
+      8: 6
+      9: 6
   - elements:
       - TEXT:
           - 0
@@ -77,6 +85,8 @@ scripts:
           method: 0
           resource: 0
           resource_type: String
+          ret_index: 0
+          ret_type: Integer
     - - Script:
           resource_type: Integer
           resource_index: 1
@@ -94,6 +104,8 @@ scripts:
           method: 0
           resource: 0
           resource_type: String
+          ret_index: 0
+          ret_type: Integer
     - - Script:
           resource_type: Integer
           resource_index: 1
@@ -116,3 +128,23 @@ scripts:
           Finish: 1
     - - Message:
           Finish: 3
+    - - Method:
+          element: 0
+          method: 0
+          resource: 0
+          resource_type: Integer
+          ret_index: 4
+          ret_type: Float
+      - Script:
+          resource_type: Float
+          resource_index: 4
+          script_index: 0
+          destination_type: String
+          destination_index: 2
+      - Method:
+          element: 4
+          method: 0
+          resource: 2
+          resource_type: String
+          ret_index: 0
+          ret_type: Integer
