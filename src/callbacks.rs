@@ -2,8 +2,8 @@
 use crate::{
     load_song,
     screen::{Globals, Resource},
-    timingdata::TimingColumn,
 };
+use notedata::timingdata::TimingColumn;
 use std::{convert::TryFrom, path::PathBuf};
 
 pub fn map_to_string(resource: Option<Resource>, _globals: &Globals) -> Option<Resource> {
@@ -77,7 +77,7 @@ pub fn song_path(resource: Option<Resource>, globals: &Globals) -> Option<Resour
 pub fn song_from_path(resource: Option<Resource>, globals: &Globals) -> Option<Resource> {
     if let Some(Resource::_Path(path)) = resource {
         Some(Resource::_Notes(
-            super::timingdata::TimingData::from_notedata(
+            notedata::timingdata::TimingData::from_notedata(
                 &load_song(&path).ok().map(|(_, data)| data)?,
                 super::sprite_finder,
                 globals.song_options.rate,

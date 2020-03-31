@@ -1590,6 +1590,7 @@ dependencies = [
 name = "notedata"
 version = "0.1.0"
 dependencies = [
+ "array-init 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "nom 5.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "num-rational 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "num-traits 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -1,11 +1,13 @@
 use crate::{
     player_config::NoteLayout,
     screen::{Element, Message, Resource},
-    timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData},
     NOTEFIELD_SIZE,
 };
 use ggez::graphics::{self, spritebatch::SpriteBatch};
-use notedata::NoteType;
+use notedata::{
+    timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData},
+    NoteType,
+};
 use std::time::Instant;
 
 #[derive(PartialEq, Debug)]

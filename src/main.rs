@@ -50,19 +50,20 @@ mod notefield;
 mod player_config;
 mod screen;
 mod text;
-mod timingdata;
 
 use crate::screen::Theme;
 use crate::{
     gamestate::GameState,
     player_config::NoteSkin,
     screen::{CacheEntry, Globals, Resources},
-    timingdata::{CalcInfo, TimingData},
 };
 use bincode::deserialize;
-use ggez::{filesystem::mount, graphics::Rect, ContextBuilder};
+use ggez::{filesystem::mount, ContextBuilder};
 use log::{debug, info};
-use notedata::{Fraction, NoteData, NoteType};
+use notedata::{
+    timingdata::{CalcInfo, Rectangle, TimingData},
+    Fraction, NoteData, NoteType,
+};
 use parallel_folder_walk::{load_songs_folder, LoadError};
 use std::{
     cmp::Ordering,
@@ -107,22 +108,22 @@ fn sprite_finder(
     row_alignment: Fraction,
     note_type: NoteType,
     _column: usize,
-) -> Rect {
+) -> Rectangle {
     match note_type {
         NoteType::Tap | NoteType::Hold => {
             let &division = (row_alignment * 4).denom();
             match division {
-                1 => Rect::new(0.0, 0.0, 1.0, 0.125),
-                2 => Rect::new(0.0, 0.125, 1.0, 0.125),
-                3 => Rect::new(0.0, 0.25, 1.0, 0.125),
-                4 => Rect::new(0.0, 0.375, 1.0, 0.125),
-                6 => Rect::new(0.0, 0.5, 1.0, 0.125),
-                8 => Rect::new(0.0, 0.625, 1.0, 0.125),
-                12 => Rect::new(0.0, 0.75, 1.0, 0.125),
-                _ => Rect::new(0.0, 0.875, 1.0, 0.125),
+                1 => Rectangle::new(0.0, 0.0, 1.0, 0.125),
+                2 => Rectangle::new(0.0, 0.125, 1.0, 0.125),
+                3 => Rectangle::new(0.0, 0.25, 1.0, 0.125),
+                4 => Rectangle::new(0.0, 0.375, 1.0, 0.125),
+                6 => Rectangle::new(0.0, 0.5, 1.0, 0.125),
+                8 => Rectangle::new(0.0, 0.625, 1.0, 0.125),
+                12 => Rectangle::new(0.0, 0.75, 1.0, 0.125),
+                _ => Rectangle::new(0.0, 0.875, 1.0, 0.125),
             }
         }
-        _ => Rect::new(0.0, 0.0, 1.0, 1.0),
+        _ => Rectangle::new(0.0, 0.0, 1.0, 1.0),
     }
 }
 

@@ -1,12 +1,13 @@
-use crate::{
-    timingdata::{GameplayInfo, Judgement},
-    NOTEFIELD_SIZE,
-};
+use crate::NOTEFIELD_SIZE;
 use ggez::{
     error::GameResult,
     graphics::{self, Rect, WrapMode},
 };
-use notedata::NoteType;
+use notedata::timingdata::Rectangle;
+use notedata::{
+    timingdata::{GameplayInfo, Judgement},
+    NoteType,
+};
 use serde_derive::Deserialize;
 use std::{fs::File, io::Read, path::Path};
 use toml;
@@ -45,6 +46,11 @@ pub struct PlayerOptions {
     scroll_speed: f32,
     is_reverse: bool,
     judgment_position: (f32, f32),
+}
+
+fn to_ggez(rect: Rectangle) -> ggez::graphics::Rect {
+    let Rectangle { x, y, w, h } = rect;
+    Rect::new(x, y, w, h)
 }
 
 impl NoteLayout {
@@ -127,7 +133,7 @@ impl NoteLayout {
         };
         batches[batch_index].add(
             graphics::DrawParam::new()
-                .src(coords)
+                .src(to_ggez(coords))
                 .dest([self.column_positions[column] as f32, position as f32])
                 .rotation(if note_type == NoteType::Tap {
                     self.column_rotations[column]

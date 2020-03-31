@@ -1,16 +1,13 @@
-use crate::{
-    music::Music,
-    notefield::Notefield,
-    player_config::NoteLayout,
-    timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData},
-    SongOptions,
-};
+use crate::{music::Music, notefield::Notefield, player_config::NoteLayout, SongOptions};
 use ggez::{
     event::{KeyCode, KeyMods},
     graphics::{self, Color},
     Context, GameError,
 };
-use notedata::ChartMetadata;
+use notedata::{
+    timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData},
+    ChartMetadata,
+};
 use serde_derive::{Deserialize, Serialize};
 use std::{
     collections::HashMap,

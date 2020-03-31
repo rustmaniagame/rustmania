@@ -1,12 +1,19 @@
 use crate::NOTEFIELD_SIZE;
-use ggez::graphics;
-use notedata::{Fraction, Measure, NoteData, NoteType, StructureData};
+use crate::{Fraction, Measure, NoteData, NoteType, StructureData};
 
 fn value(fraction: Fraction) -> f64 {
     f64::from(*fraction.numer()) / f64::from(*fraction.denom())
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Rectangle {
+    pub x: f32,
+    pub y: f32,
+    pub w: f32,
+    pub h: f32,
+}
+
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct TimingData<T>
 where
     T: TimingInfo,
@@ -14,7 +21,7 @@ where
     pub notes: [TimingColumn<T>; NOTEFIELD_SIZE],
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct TimingColumn<T>
 where
     T: TimingInfo,
@@ -25,16 +32,16 @@ where
 pub trait TimingInfo: Copy {}
 
 pub trait LayoutInfo {
-    fn from_layout(time: i64, sprite: graphics::Rect, note: NoteType) -> Self;
+    fn from_layout(time: i64, sprite: Rectangle, note: NoteType) -> Self;
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct GameplayInfo(pub i64, pub graphics::Rect, pub NoteType);
+pub struct GameplayInfo(pub i64, pub Rectangle, pub NoteType);
 
 impl TimingInfo for GameplayInfo {}
 
 impl LayoutInfo for GameplayInfo {
-    fn from_layout(time: i64, sprite: graphics::Rect, note: NoteType) -> Self {
+    fn from_layout(time: i64, sprite: Rectangle, note: NoteType) -> Self {
         Self(time, sprite, note)
     }
 }
@@ -42,10 +49,16 @@ impl LayoutInfo for GameplayInfo {
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct CalcInfo(pub i64, pub NoteType);
 
+impl Rectangle {
+    pub fn new(x: f32, y: f32, w: f32, h: f32) -> Self {
+        Self { x, y, w, h }
+    }
+}
+
 impl TimingInfo for CalcInfo {}
 
 impl LayoutInfo for CalcInfo {
-    fn from_layout(time: i64, _sprite: graphics::Rect, note: NoteType) -> Self {
+    fn from_layout(time: i64, _sprite: Rectangle, note: NoteType) -> Self {
         Self(time, note)
     }
 }
@@ -113,7 +126,7 @@ where
 {
     pub fn from_notedata<U>(data: &NoteData, sprite_finder: U, rate: f64) -> Vec<Self>
     where
-        U: Fn(usize, f64, Fraction, NoteType, usize) -> graphics::Rect,
+        U: Fn(usize, f64, Fraction, NoteType, usize) -> Rectangle,
     {
         data.charts
             .iter()
@@ -127,7 +140,7 @@ where
         rate: f64,
     ) -> Self
     where
-        U: Fn(usize, f64, Fraction, NoteType, usize) -> graphics::Rect,
+        U: Fn(usize, f64, Fraction, NoteType, usize) -> Rectangle,
     {
         let offset = structure.offset.unwrap_or_default() * 1000.0;
         let mut bpms: Vec<_> = structure
