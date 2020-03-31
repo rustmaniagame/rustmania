@@ -1598,6 +1598,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "notefield"
+version = "0.1.0"
+dependencies = [
+ "array-init 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ggez 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "notedata 0.1.0",
+ "serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_derive 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
+ "toml 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "num-complex"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2193,6 +2205,7 @@ dependencies = [
  "minimp3 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "nom 5.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "notedata 0.1.0",
+ "notefield 0.1.0",
  "parallel-folder-walk 0.1.0",
  "rand 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",

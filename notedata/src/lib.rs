@@ -48,7 +48,7 @@ mod sm_parser;
 mod sm_writer;
 pub mod timingdata;
 
-const NOTEFIELD_SIZE: usize = 4;
+pub const NOTEFIELD_SIZE: usize = 4;
 
 pub use num_rational::Rational32 as Fraction;
 #[cfg(feature = "serde")]

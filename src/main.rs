@@ -46,15 +46,12 @@ mod callbacks;
 mod difficulty_calc;
 mod gamestate;
 mod music;
-mod notefield;
-mod player_config;
 mod screen;
 mod text;
 
 use crate::screen::Theme;
 use crate::{
     gamestate::GameState,
-    player_config::NoteSkin,
     screen::{CacheEntry, Globals, Resources},
 };
 use bincode::deserialize;
@@ -64,6 +61,7 @@ use notedata::{
     timingdata::{CalcInfo, Rectangle, TimingData},
     Fraction, NoteData, NoteType,
 };
+use notefield::player_config::{NoteLayout, NoteSkin, PlayerOptions};
 use parallel_folder_walk::{load_songs_folder, LoadError};
 use std::{
     cmp::Ordering,
@@ -74,8 +72,6 @@ use std::{
     time::Instant,
 };
 use structopt::StructOpt;
-
-const NOTEFIELD_SIZE: usize = 4;
 
 fn parse_noteskin_path(arg: &OsStr) -> PathBuf {
     PathBuf::from("Noteskins").join(arg)
@@ -237,11 +233,11 @@ fn main() {
     let default_note_skin =
         NoteSkin::new(&song_options.noteskin, context).expect("Could not open default noteskin");
 
-    let p1_options = player_config::PlayerOptions::new(200, 125, 0.8, true, (-128.0, 383.0));
-    let p2_options = player_config::PlayerOptions::new(600, 125, 1.1, false, (-128.0, 383.0));
+    let p1_options = PlayerOptions::new(200, 125, 0.8, true, (-128.0, 383.0));
+    let p2_options = PlayerOptions::new(600, 125, 1.1, false, (-128.0, 383.0));
 
-    let p1_layout = player_config::NoteLayout::new(&default_note_skin, 600, p1_options);
-    let p2_layout = player_config::NoteLayout::new(&default_note_skin, 600, p2_options);
+    let p1_layout = NoteLayout::new(&default_note_skin, 600, p1_options);
+    let p2_layout = NoteLayout::new(&default_note_skin, 600, p2_options);
 
     let resources = Resources::new(
         vec![TimingData::new()],

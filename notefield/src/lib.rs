@@ -1,35 +1,32 @@
-use crate::{
-    player_config::NoteLayout,
-    screen::{Element, Message, Resource},
-    NOTEFIELD_SIZE,
-};
-use ggez::graphics::{self, spritebatch::SpriteBatch};
+use crate::player_config::NoteLayout;
+use ggez::graphics::spritebatch::SpriteBatch;
 use notedata::{
     timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData},
-    NoteType,
+    NoteType, NOTEFIELD_SIZE,
 };
-use std::time::Instant;
+
+pub mod player_config;
 
 #[derive(PartialEq, Debug)]
 pub struct Notefield {
-    layout: NoteLayout,
-    column_info: [ColumnInfo; NOTEFIELD_SIZE],
-    batches: Vec<SpriteBatch>,
-    draw_distance: i64,
-    last_judgement: Option<Judgement>,
+    pub layout: NoteLayout,
+    pub column_info: [ColumnInfo; NOTEFIELD_SIZE],
+    pub batches: Vec<SpriteBatch>,
+    pub draw_distance: i64,
+    pub last_judgement: Option<Judgement>,
 }
 
 #[derive(PartialEq, Debug)]
-struct ColumnInfo {
+pub struct ColumnInfo {
     on_screen: (usize, usize),
-    next_to_hit: usize,
-    active_hold: Option<i64>,
-    notes: TimingColumn<GameplayInfo>,
-    judgement_list: TimingColumn<Judgement>,
+    pub next_to_hit: usize,
+    pub active_hold: Option<i64>,
+    pub notes: TimingColumn<GameplayInfo>,
+    pub judgement_list: TimingColumn<Judgement>,
 }
 
 impl ColumnInfo {
-    fn update_on_screen(&mut self, layout: &NoteLayout, time: i64, draw_distance: i64) -> bool {
+    pub fn update_on_screen(&mut self, layout: &NoteLayout, time: i64, draw_distance: i64) -> bool {
         let mut updated = false;
         let (draw_start, draw_end) = &mut self.on_screen;
         while *draw_end != self.notes.notes.len()
@@ -44,7 +41,7 @@ impl ColumnInfo {
         }
         updated
     }
-    fn update_misses(&mut self, time: i64) -> bool {
+    pub fn update_misses(&mut self, time: i64) -> bool {
         let mut missed_judge = false;
         let mut offset = match self.notes.notes.get(self.next_to_hit) {
             Some(x) => x.0 - time,
@@ -82,7 +79,7 @@ impl ColumnInfo {
         }
         missed_judge
     }
-    fn handle_hit(&mut self, time: i64) -> Option<Judgement> {
+    pub fn handle_hit(&mut self, time: i64) -> Option<Judgement> {
         self.update_misses(time);
         let offset = self.notes.notes.get(self.next_to_hit).map(|x| x.0 - time)?;
         if offset < 180 {
@@ -134,7 +131,7 @@ impl Notefield {
             last_judgement: None,
         }
     }
-    fn redraw_batch(&mut self) {
+    pub fn redraw_batch(&mut self) {
         self.batches.iter_mut().for_each(SpriteBatch::clear);
         for column_index in 0..NOTEFIELD_SIZE {
             let (draw_start, draw_end) = self.column_info[column_index].on_screen;
@@ -145,13 +142,14 @@ impl Notefield {
             );
         }
     }
-    fn handle_judgement(&mut self, judge: Judgement) {
+    pub fn handle_judgement(&mut self, judge: Judgement) {
         if let Judgement::Hit(_) | Judgement::Miss = judge {
             self.last_judgement = Some(judge);
         }
     }
 }
 
+/*
 impl Element for Notefield {
     fn run(
         &mut self,
@@ -256,3 +254,4 @@ impl Element for Notefield {
         }
     }
 }
+*/

@@ -1,4 +1,4 @@
-use crate::{music::Music, notefield::Notefield, player_config::NoteLayout, SongOptions};
+use crate::{music::Music, SongOptions};
 use ggez::{
     event::{KeyCode, KeyMods},
     graphics::{self, Color},
@@ -6,8 +6,9 @@ use ggez::{
 };
 use notedata::{
     timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData},
-    ChartMetadata,
+    ChartMetadata, NOTEFIELD_SIZE,
 };
+use notefield::{player_config::NoteLayout, Notefield};
 use serde_derive::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -433,6 +434,111 @@ impl Screen {
         let time_delta = self.start_time_to_milliseconds();
         for element in &mut self.elements {
             element.handle_event(keycode, time_delta, false);
+        }
+    }
+}
+
+impl Element for Notefield {
+    fn run(
+        &mut self,
+        ctx: &mut ggez::Context,
+        time: Option<i64>,
+    ) -> Result<Message, ggez::GameError> {
+        self.layout.draw_receptors(ctx)?;
+        let time = match time {
+            Some(time) => time,
+            None => return Ok(Message::None),
+        };
+        let mut completed = true;
+        for column_index in 0..NOTEFIELD_SIZE {
+            if let Some(value) = self.column_info[column_index].active_hold {
+                let delta = value - time;
+                if delta > 0 {
+                    self.layout.add_hold(ctx, column_index, value - time)?;
+                }
+            }
+            if self.column_info[column_index].update_misses(time) {
+                self.handle_judgement(Judgement::Miss);
+            };
+            self.column_info[column_index].update_on_screen(&self.layout, time, self.draw_distance);
+            completed &= self.column_info[column_index].next_to_hit
+                == self.column_info[column_index].notes.notes.len();
+            completed &= self.column_info[column_index].active_hold.is_none();
+        }
+        self.redraw_batch();
+        let target_parameter =
+            graphics::DrawParam::new().dest([0.0, -1.0 * (self.layout.delta_to_offset(time))]);
+
+        for batch in &self.batches {
+            graphics::draw(ctx, batch, target_parameter)?;
+        }
+        if let Some(judgment) = self.last_judgement {
+            self.layout.draw_judgment(ctx, judgment)?;
+        }
+        Ok(if completed {
+            Message::Finish(2)
+        } else {
+            Message::None
+        })
+    }
+    fn start(&mut self, _time: Option<Instant>) -> Result<Message, ggez::GameError> {
+        Ok(Message::None)
+    }
+    fn finish(&mut self) -> Option<Resource> {
+        Some(Resource::Replay(
+            self.column_info
+                .iter()
+                .map(|x| x.judgement_list.clone())
+                .collect(),
+        ))
+    }
+    fn handle_event(&mut self, keycode: ggez::event::KeyCode, time: Option<i64>, key_down: bool) {
+        let index = match keycode {
+            ggez::event::KeyCode::Z => 0,
+            ggez::event::KeyCode::X => 1,
+            ggez::event::KeyCode::Comma => 2,
+            ggez::event::KeyCode::Period => 3,
+            _ => return,
+        };
+        let time = match time {
+            Some(time) => time,
+            None => return,
+        };
+        if let Some(hold_end) = self.column_info[index].active_hold {
+            if time > hold_end {
+                self.column_info[index]
+                    .judgement_list
+                    .add(Judgement::Hold(true));
+                self.column_info[index].active_hold = None;
+            }
+        }
+        if key_down {
+            if let Some(value) = self.column_info[index].handle_hit(time) {
+                self.handle_judgement(value)
+            };
+        } else if self.column_info[index].active_hold.is_some() {
+            self.column_info[index]
+                .judgement_list
+                .add(Judgement::Hold(false));
+            self.column_info[index].active_hold = None;
+        }
+    }
+    fn methods(&mut self, _resource: Option<Resource>, index: usize) -> Option<Resource> {
+        match index {
+            0 => Some(Resource::Float(
+                (self
+                    .column_info
+                    .iter()
+                    .map(|x| x.judgement_list.current_points(1.0))
+                    .sum::<f64>())
+                    / (self
+                        .column_info
+                        .iter()
+                        .map(|x| x.judgement_list.max_points())
+                        .sum::<f64>())
+                    * 100.0,
+            )),
+            _ => None,
         }
     }
 }
