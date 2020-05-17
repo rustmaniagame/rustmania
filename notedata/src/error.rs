@@ -1,4 +1,3 @@
-use nom;
 use std::{error, fmt, io};
 
 type NomError<T = String> = nom::Err<(T, nom::error::ErrorKind)>;

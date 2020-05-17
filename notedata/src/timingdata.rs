@@ -5,7 +5,7 @@ fn value(fraction: Fraction) -> f64 {
     f64::from(*fraction.numer()) / f64::from(*fraction.denom())
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub struct Rectangle {
     pub x: f32,
     pub y: f32,
@@ -21,12 +21,21 @@ where
     pub notes: [TimingColumn<T>; NOTEFIELD_SIZE],
 }
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct TimingColumn<T>
 where
     T: TimingInfo,
 {
     pub notes: Vec<T>,
+}
+
+impl<T> Default for TimingColumn<T>
+where
+    T: TimingInfo,
+{
+    fn default() -> Self {
+        Self { notes: vec![] }
+    }
 }
 
 pub trait TimingInfo: Copy {}
@@ -35,7 +44,7 @@ pub trait LayoutInfo {
     fn from_layout(time: i64, sprite: Rectangle, note: NoteType) -> Self;
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub struct GameplayInfo(pub i64, pub Rectangle, pub NoteType);
 
 impl TimingInfo for GameplayInfo {}

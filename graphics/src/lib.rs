@@ -229,7 +229,7 @@ impl Context {
             .surface
             .compatibility(&self.adapters[*adapter_index].physical_device);
         let &present_mode = {
-            use gfx_hal::window::PresentMode::*;
+            use gfx_hal::window::PresentMode::{Fifo, Immediate, Mailbox, Relaxed};
             [Mailbox, Fifo, Relaxed, Immediate]
                 .iter()
                 .find(|pm| present_modes.contains(pm))

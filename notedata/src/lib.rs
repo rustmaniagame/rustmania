@@ -78,6 +78,12 @@ pub enum NoteType {
     HoldEnd,
 }
 
+impl Default for NoteType {
+    fn default() -> Self {
+        Self::Tap
+    }
+}
+
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub enum DisplayBpm {

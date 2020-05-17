@@ -10,7 +10,6 @@ use notedata::{
 };
 use serde_derive::Deserialize;
 use std::{fs::File, io::Read, path::Path};
-use toml;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct NoteLayout {

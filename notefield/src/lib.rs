@@ -16,7 +16,7 @@ pub struct Notefield {
     pub last_judgement: Option<Judgement>,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Default)]
 pub struct ColumnInfo {
     on_screen: (usize, usize),
     pub next_to_hit: usize,
