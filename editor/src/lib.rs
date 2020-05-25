@@ -1,11 +1,22 @@
-use notedata::{BeatPair, Fraction, Note, NoteData, NoteRow, NoteType};
+use ggez::event::{EventHandler, KeyCode, KeyMods};
+use ggez::graphics::spritebatch::SpriteBatch;
+use ggez::{graphics, Context, GameError};
+use notedata::timingdata::{GameplayInfo, Rectangle, TimingColumn};
+use notedata::{BeatPair, Fraction, Note, NoteData, NoteRow, NoteType, NOTEFIELD_SIZE};
+use notefield::player_config::{NoteLayout, NoteSkin, PlayerOptions};
+use notefield::ColumnInfo;
 use std::collections::BTreeMap;
 use std::convert::TryFrom;
+use std::path::PathBuf;
 
 pub struct Editor {
     chart: ChartEditor,
     current_beat: (i32, Fraction),
     pub snap: i32,
+    pub layout: NoteLayout,
+    pub column_info: [ColumnInfo; NOTEFIELD_SIZE],
+    pub batches: Vec<SpriteBatch>,
+    pub zoom: Fraction,
 }
 
 #[derive(Default)]
@@ -14,18 +25,54 @@ pub struct ChartEditor {
     notes: BTreeMap<(usize, Fraction), BTreeMap<usize, NoteType>>,
 }
 
-impl Default for Editor {
+/*impl Default for Editor {
     fn default() -> Self {
         Self::new()
     }
-}
+}*/
 
 impl Editor {
-    pub fn new() -> Self {
+    pub fn new(
+        noteskin: PathBuf,
+        screen_height: i64,
+        options: PlayerOptions,
+        ctx: &mut Context,
+    ) -> Self {
+        let layout = NoteLayout::new(
+            &NoteSkin::new(&noteskin, ctx).unwrap(),
+            screen_height,
+            options,
+        );
+        let batches = vec![
+            SpriteBatch::new(layout.sprites.hold_end.clone()),
+            SpriteBatch::new(layout.sprites.hold_body.clone()),
+            SpriteBatch::new(layout.sprites.arrows.clone()),
+            SpriteBatch::new(layout.sprites.mine.clone()),
+        ];
         Self {
             chart: ChartEditor::default(),
             current_beat: (0, Fraction::new(0, 1)),
             snap: 4,
+            layout,
+            column_info: [
+                ColumnInfo::from(TimingColumn::new()),
+                ColumnInfo::from(TimingColumn::new()),
+                ColumnInfo::from(TimingColumn::new()),
+                ColumnInfo::from(TimingColumn::new()),
+            ],
+            batches,
+            zoom: Fraction::new(1,1),
+        }
+    }
+    pub fn redraw_batch(&mut self) {
+        self.batches.iter_mut().for_each(SpriteBatch::clear);
+        for column_index in 0..NOTEFIELD_SIZE {
+            let (draw_start, draw_end) = self.column_info[column_index].on_screen;
+            self.layout.add_column_of_notes(
+                &self.column_info[column_index].notes.notes[draw_start..draw_end],
+                column_index,
+                &mut self.batches,
+            );
         }
     }
     pub fn toggle_note(&mut self, column: usize, note_type: NoteType) {
@@ -90,6 +137,145 @@ impl Editor {
     }
     pub fn export(&self) -> Result<NoteData, ()> {
         self.chart.export()
+    }
+}
+
+fn handle_keypress(editor: &mut Editor, code: KeyCode) {
+    match code {
+        KeyCode::Left => {
+            if editor.snap > 1 {
+                editor.snap -= 1;
+                println!("snap changed to: {}", editor.snap);
+            }
+        }
+        KeyCode::Right => {
+            editor.snap += 1;
+            println!("snap changed to: {}", editor.snap);
+        }
+        KeyCode::Up => {
+            if editor.layout.scroll_speed > 0.0 {
+                editor.previous_snap();
+            } else {
+                editor.next_snap();
+            }
+            let (measure, beat) = editor.get_beat();
+            println!(
+                "measure: {} beat: {} row: {:?}",
+                measure,
+                beat,
+                editor.get_noterow()
+            );
+        }
+        KeyCode::Down => {
+            if editor.layout.scroll_speed > 0.0 {
+                editor.next_snap();
+            } else {
+                editor.previous_snap();
+            }
+            let (measure, beat) = editor.get_beat();
+            println!(
+                "measure: {} beat: {} row: {:?}",
+                measure,
+                beat,
+                editor.get_noterow()
+            );
+        }
+        KeyCode::Key1 => {
+            editor.toggle_note(0, NoteType::Tap);
+            let (measure, beat) = editor.get_beat();
+            println!(
+                "measure: {} beat: {} row: {:?}",
+                measure,
+                beat,
+                editor.get_noterow()
+            );
+        }
+        KeyCode::Key2 => {
+            editor.toggle_note(1, NoteType::Tap);
+            let (measure, beat) = editor.get_beat();
+            println!(
+                "measure: {} beat: {} row: {:?}",
+                measure,
+                beat,
+                editor.get_noterow()
+            );
+        }
+        KeyCode::Key3 => {
+            editor.toggle_note(2, NoteType::Tap);
+            let (measure, beat) = editor.get_beat();
+            println!(
+                "measure: {} beat: {} row: {:?}",
+                measure,
+                beat,
+                editor.get_noterow()
+            );
+        }
+        KeyCode::Key4 => {
+            editor.toggle_note(3, NoteType::Tap);
+            let (measure, beat) = editor.get_beat();
+            println!(
+                "measure: {} beat: {} row: {:?}",
+                measure,
+                beat,
+                editor.get_noterow()
+            );
+        }
+        KeyCode::B => editor.add_bpm(120.0),
+        KeyCode::Return => {
+            let simfile_string = editor
+                .export()
+                .map(|data| data.to_sm_string())
+                .unwrap_or_else(|_|String::from("Failed"));
+            println!("{}", simfile_string);
+        }
+        KeyCode::Add => editor.zoom *= 2,
+        KeyCode::Subtract => editor.zoom /= 2,
+        _ => {}
+    }
+}
+
+impl EventHandler for Editor {
+    fn update(&mut self, _ctx: &mut Context) -> Result<(), GameError> {
+        Ok(())
+    }
+    fn draw(&mut self, ctx: &mut Context) -> Result<(), GameError> {
+        graphics::clear(ctx, graphics::BLACK);
+        let scroll_const = 1000.0 * self.layout.scroll_speed * *self.zoom.numer() as f32 / *self.zoom.denom() as f32;
+        let time = ((self.current_beat.0 as f32
+            + (*self.current_beat.1.numer() as f32 / *self.current_beat.1.denom() as f32)) * scroll_const) as i64;
+        for column_index in 0..4 {
+            self.column_info[column_index].update_on_screen(&self.layout, time, 600);
+        }
+        let target_parameter =
+            graphics::DrawParam::new().dest([0.0, (self.layout.delta_to_offset(time))]);
+        self.redraw_batch();
+
+        self.column_info = [
+            ColumnInfo::from(TimingColumn::new()),
+            ColumnInfo::from(TimingColumn::new()),
+            ColumnInfo::from(TimingColumn::new()),
+            ColumnInfo::from(TimingColumn::new()),
+        ];
+        for ((measure, beat), contents) in self.chart.notes.iter() {
+            for (&index, &note) in contents {
+                self.column_info[index].notes.notes.push(GameplayInfo((-1.0 * (*measure as f32
+                    + (*beat.numer() as f32 / *beat.denom() as f32)) * scroll_const) as i64,Rectangle { x: 0.0, y: 0.0, w: 1.0, h: 0.125},note))
+            }
+        }
+        self.layout.draw_receptors(ctx)?;
+        for batch in &self.batches {
+            graphics::draw(ctx, batch, target_parameter)?;
+        }
+        graphics::present(ctx)
+    }
+    fn key_down_event(
+        &mut self,
+        _ctx: &mut Context,
+        keycode: KeyCode,
+        _keymod: KeyMods,
+        _repeat: bool,
+    ) {
+        handle_keypress(self, keycode);
     }
 }
 

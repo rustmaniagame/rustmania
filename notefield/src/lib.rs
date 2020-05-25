@@ -18,7 +18,7 @@ pub struct Notefield {
 
 #[derive(PartialEq, Debug, Default)]
 pub struct ColumnInfo {
-    on_screen: (usize, usize),
+    pub on_screen: (usize, usize),
     pub next_to_hit: usize,
     pub active_hold: Option<i64>,
     pub notes: TimingColumn<GameplayInfo>,
