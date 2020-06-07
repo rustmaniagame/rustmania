@@ -61,7 +61,7 @@ impl Editor {
                 ColumnInfo::from(TimingColumn::new()),
             ],
             batches,
-            zoom: Fraction::new(1,1),
+            zoom: Fraction::new(1, 1),
         }
     }
     pub fn redraw_batch(&mut self) {
@@ -130,6 +130,9 @@ impl Editor {
     }
     pub fn get_beat(&self) -> (i32, Fraction) {
         self.current_beat
+    }
+    pub fn get_bpm(&self) -> Option<f64> {
+        self.chart.get_bpm(self.current_beat.0, self.current_beat.1)
     }
     pub fn get_noterow(&self) -> Vec<Note> {
         self.chart
@@ -220,12 +223,19 @@ fn handle_keypress(editor: &mut Editor, code: KeyCode) {
                 editor.get_noterow()
             );
         }
-        KeyCode::B => editor.add_bpm(120.0),
+        KeyCode::N => {
+            let bpm = editor.get_bpm().unwrap_or(120.0) + 10.0;
+            editor.chart.bpms.insert(editor.current_beat, (bpm, 0.0));
+        }
+        KeyCode::M => {
+            let bpm = editor.get_bpm().unwrap_or(120.0) - 10.0;
+            editor.chart.bpms.insert(editor.current_beat, (bpm, 0.0));
+        }
         KeyCode::Return => {
             let simfile_string = editor
                 .export()
                 .map(|data| data.to_sm_string())
-                .unwrap_or_else(|_|String::from("Failed"));
+                .unwrap_or_else(|_| String::from("Failed"));
             println!("{}", simfile_string);
         }
         KeyCode::Add => editor.zoom *= 2,
@@ -240,9 +250,11 @@ impl EventHandler for Editor {
     }
     fn draw(&mut self, ctx: &mut Context) -> Result<(), GameError> {
         graphics::clear(ctx, graphics::BLACK);
-        let scroll_const = 1000.0 * self.layout.scroll_speed * *self.zoom.numer() as f32 / *self.zoom.denom() as f32;
+        let scroll_const = 1000.0 * self.layout.scroll_speed * *self.zoom.numer() as f32
+            / *self.zoom.denom() as f32;
         let time = ((self.current_beat.0 as f32
-            + (*self.current_beat.1.numer() as f32 / *self.current_beat.1.denom() as f32)) * scroll_const) as i64;
+            + (*self.current_beat.1.numer() as f32 / *self.current_beat.1.denom() as f32))
+            * scroll_const) as i64;
         for column_index in 0..4 {
             self.column_info[column_index].update_on_screen(&self.layout, time, 600);
         }
@@ -258,8 +270,18 @@ impl EventHandler for Editor {
         ];
         for ((measure, beat), contents) in self.chart.notes.iter() {
             for (&index, &note) in contents {
-                self.column_info[index].notes.notes.push(GameplayInfo((-1.0 * (*measure as f32
-                    + (*beat.numer() as f32 / *beat.denom() as f32)) * scroll_const) as i64,Rectangle { x: 0.0, y: 0.0, w: 1.0, h: 0.125},note))
+                self.column_info[index].notes.notes.push(GameplayInfo(
+                    (-1.0
+                        * (*measure as f32 + (*beat.numer() as f32 / *beat.denom() as f32))
+                        * scroll_const) as i64,
+                    Rectangle {
+                        x: 0.0,
+                        y: 0.0,
+                        w: 1.0,
+                        h: 0.125,
+                    },
+                    note,
+                ))
             }
         }
         self.layout.draw_receptors(ctx)?;
@@ -298,6 +320,13 @@ impl ChartEditor {
             row.insert(column, note_type);
             self.notes.insert((measure, beat), row);
         }
+    }
+    pub fn get_bpm(&self, measure: i32, beat: Fraction) -> Option<f64> {
+        self.bpms
+            .range(..=(measure, beat))
+            .rev()
+            .next()
+            .map(|(_, (x, _))| *x)
     }
     pub fn add_bpm(&mut self, measure: i32, beat: Fraction, bpm: f64) {
         self.bpms.insert((measure, beat), (bpm, 0.0));
