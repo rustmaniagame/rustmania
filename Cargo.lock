@@ -844,6 +844,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "gfx-hal"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "bitflags 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "raw-window-handle 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "gfx_core"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1103,7 +1112,7 @@ dependencies = [
  "gfx-backend-dx12 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "gfx-backend-metal 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "gfx-backend-vulkan 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "gfx-hal 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gfx-hal 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "winit 0.19.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -3147,6 +3156,7 @@ dependencies = [
 "checksum gfx-backend-metal 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "979d807dcd10f193d874317eb4fdf9106ded161b08dd2ea4212bbae1294ff8cd"
 "checksum gfx-backend-vulkan 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "5facf0b6e4306a6a93682077f85602c89b49aca8ecceb73b9558e7baa37f8c54"
 "checksum gfx-hal 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "00a079b66250a6437c3822c8bfc25e5bed5ba0186d312e7df87bc503325ab33c"
+"checksum gfx-hal 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "f13e8fd6aaa8f50146b9519999432e097da43466749d8863c53409322c705339"
 "checksum gfx_core 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "559a7b438248707675721519065be39ae47756cea1324d68c90fbd63adcf64ac"
 "checksum gfx_device_gl 0.16.0 (registry+https://github.com/rust-lang/crates.io-index)" = "2229b46c5630717e9aeb330561374594ffb30749a314c1c2f5a6514eab5ed53f"
 "checksum gfx_gl 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3e8a920f8f6c1025a7ddf9dd25502bf059506fd3cd765dfbe8dba0b56b7eeecb"
