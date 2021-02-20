@@ -26,7 +26,7 @@ impl TextBox {
 
 impl Element for TextBox {
     fn run(&mut self, context: &mut Context, _time: Option<i64>) -> Result<Message, GameError> {
-        graphics::draw(context, &self.image, DrawParam::new().dest(self.position))?;
+        println!("{}", self.contents);
         Ok(Message::None)
     }
     fn start(&mut self, _time: Option<Instant>) -> Result<Message, GameError> {
