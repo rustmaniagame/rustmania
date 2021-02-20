@@ -9,6 +9,7 @@ use std::time::Instant;
 pub struct TextBox {
     image: graphics::Text,
     contents: String,
+    last_displayed: String,
     position: [f32; 2],
     _size: u32,
 }
@@ -18,6 +19,7 @@ impl TextBox {
         Self {
             image: graphics::Text::new(contents.clone()),
             contents,
+            last_displayed: String::new(),
             position,
             _size: size,
         }
@@ -25,8 +27,11 @@ impl TextBox {
 }
 
 impl Element for TextBox {
-    fn run(&mut self, context: &mut Context, _time: Option<i64>) -> Result<Message, GameError> {
-        println!("{}", self.contents);
+    fn run(&mut self, _context: &mut Context, _time: Option<i64>) -> Result<Message, GameError> {
+        if self.last_displayed != self.contents {
+            println!("{}", self.contents);
+            self.last_displayed = self.contents.clone();
+        }
         Ok(Message::None)
     }
     fn start(&mut self, _time: Option<Instant>) -> Result<Message, GameError> {
