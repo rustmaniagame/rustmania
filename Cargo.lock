@@ -924,7 +924,7 @@ dependencies = [
  "bitflags",
  "d3d12",
  "derivative",
- "gfx-hal",
+ "gfx-hal 0.3.1",
  "log 0.4.8",
  "range-alloc",
  "raw-window-handle 0.1.2",
@@ -946,7 +946,7 @@ dependencies = [
  "copyless",
  "core-graphics",
  "foreign-types",
- "gfx-hal",
+ "gfx-hal 0.3.1",
  "log 0.4.8",
  "metal",
  "objc",
@@ -968,7 +968,7 @@ dependencies = [
  "byteorder",
  "core-graphics",
  "derivative",
- "gfx-hal",
+ "gfx-hal 0.3.1",
  "lazy_static",
  "log 0.4.8",
  "objc",
@@ -987,6 +987,16 @@ dependencies = [
  "bitflags",
  "failure",
  "fxhash",
+]
+
+[[package]]
+name = "gfx-hal"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "18d0754f5b7a43915fd7466883b2d1bb0800d7cc4609178d0b27bf143b9e5123"
+dependencies = [
+ "bitflags",
+ "raw-window-handle 0.3.3",
 ]
 
 [[package]]
@@ -1271,7 +1281,7 @@ dependencies = [
  "gfx-backend-dx12",
  "gfx-backend-metal",
  "gfx-backend-vulkan",
- "gfx-hal",
+ "gfx-hal 0.6.0",
  "winit 0.19.3",
 ]
 
