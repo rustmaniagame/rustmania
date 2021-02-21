@@ -671,7 +671,7 @@ checksum = "6073e9676dbebdddeabaeb63e3b7cefd23c86f5c41d381ee1237cc77b1079898"
 dependencies = [
  "proc-macro2 0.4.27",
  "quote 0.6.11",
- "syn 0.15.29",
+ "syn 0.15.44",
 ]
 
 [[package]]
@@ -791,7 +791,7 @@ checksum = "fdcb84c18ea5037a1c5a23039b4ff29403abce2e0d6b1daa11cf0bde2b30be15"
 dependencies = [
  "proc-macro2 0.4.27",
  "quote 0.6.11",
- "syn 0.15.29",
+ "syn 0.15.44",
 ]
 
 [[package]]
@@ -812,7 +812,7 @@ checksum = "ea1063915fd7ef4309e222a5a07cf9c319fb9c7836b1f89b85458672dbb127e1"
 dependencies = [
  "proc-macro2 0.4.27",
  "quote 0.6.11",
- "syn 0.15.29",
+ "syn 0.15.44",
  "synstructure",
 ]
 
@@ -1847,7 +1847,7 @@ checksum = "d9fe8fcafd1b86a37ce8a1cfa15ae504817e0c8c2e7ad42767371461ac1d316d"
 dependencies = [
  "proc-macro2 0.4.27",
  "quote 0.6.11",
- "syn 0.15.29",
+ "syn 0.15.44",
 ]
 
 [[package]]
@@ -2711,7 +2711,7 @@ checksum = "5a9dbd5f03d04e80355cbbe3ce5cf1f65c421eac575402e3d4d6e95d5a44edaa"
 dependencies = [
  "proc-macro2 0.4.27",
  "quote 0.6.11",
- "syn 0.15.29",
+ "syn 0.15.44",
 ]
 
 [[package]]
@@ -2890,9 +2890,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "0.15.29"
+version = "0.15.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1825685f977249735d510a242a6727b46efe914bb67e38d30c071b1b72b1d5c2"
+checksum = "9ca4b3b69a77cbe1ffc9e198781b7acb0c7365a883670e8f1c1bc66fba79a5c5"
 dependencies = [
  "proc-macro2 0.4.27",
  "quote 0.6.11",
@@ -2929,7 +2929,7 @@ checksum = "02353edf96d6e4dc81aea2d8490a7e9db177bf8acb0e951c24940bf866cb313f"
 dependencies = [
  "proc-macro2 0.4.27",
  "quote 0.6.11",
- "syn 0.15.29",
+ "syn 0.15.44",
  "unicode-xid 0.1.0",
 ]
 
@@ -3127,7 +3127,7 @@ dependencies = [
  "log 0.4.8",
  "proc-macro2 0.4.27",
  "quote 0.6.11",
- "syn 0.15.29",
+ "syn 0.15.44",
  "wasm-bindgen-shared",
 ]
 
@@ -3149,7 +3149,7 @@ checksum = "95cf8fe77e45ba5f91bc8f3da0c3aa5d464b3d8ed85d84f4d4c7cc106436b1d7"
 dependencies = [
  "proc-macro2 0.4.27",
  "quote 0.6.11",
- "syn 0.15.29",
+ "syn 0.15.44",
  "wasm-bindgen-backend",
  "wasm-bindgen-shared",
 ]
