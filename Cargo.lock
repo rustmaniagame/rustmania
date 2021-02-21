@@ -1956,13 +1956,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "parallel-folder-walk"
-version = "0.1.0"
-dependencies = [
- "rayon",
-]
-
-[[package]]
 name = "parking_lot"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2488,7 +2481,6 @@ dependencies = [
  "log 0.4.8",
  "nom 5.1.0",
  "notedata",
- "parallel-folder-walk",
  "rand 0.7.2",
  "serde",
  "serde_derive",
@@ -3074,6 +3066,7 @@ dependencies = [
  "lewton",
  "minimp3",
  "notedata",
+ "rayon",
  "serde",
  "serde_derive",
  "toml",

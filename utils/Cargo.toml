@@ -16,4 +16,5 @@ minimp3 = "0.3.3"
 serde = "1.0.104"
 serde_derive = "1.0.101"
 toml = "0.5.5"
+rayon = "1.5.0"
 notedata = { path = "../notedata" }
