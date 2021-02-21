@@ -975,7 +975,7 @@ dependencies = [
  "raw-window-handle 0.1.2",
  "smallvec 0.6.10",
  "winapi 0.3.6",
- "winit 0.19.3",
+ "winit 0.19.5",
 ]
 
 [[package]]
@@ -1059,7 +1059,7 @@ dependencies = [
  "skeptic",
  "smart-default",
  "toml",
- "winit 0.19.3",
+ "winit 0.19.5",
  "zip",
 ]
 
@@ -1188,7 +1188,7 @@ dependencies = [
  "shared_library",
  "wayland-client 0.21.11",
  "winapi 0.3.6",
- "winit 0.19.3",
+ "winit 0.19.5",
 ]
 
 [[package]]
@@ -1272,7 +1272,7 @@ dependencies = [
  "gfx-backend-metal",
  "gfx-backend-vulkan",
  "gfx-hal",
- "winit 0.19.3",
+ "winit 0.21.0",
 ]
 
 [[package]]
@@ -1471,7 +1471,7 @@ version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5cc7ad3d82c845bdb5dde34ffdcc7a5fb4d2996e1e1ee0f19c33bc80e15196b9"
 dependencies = [
- "num-traits 0.2.11",
+ "num-traits 0.1.43",
 ]
 
 [[package]]
@@ -3245,7 +3245,7 @@ checksum = "3611f231e675e15c2feb7623103e6449edc6f10b0598cafb3e16e590a0561355"
 dependencies = [
  "proc-macro2 0.4.27",
  "quote 0.6.11",
- "xml-rs 0.8.0",
+ "xml-rs 0.7.0",
 ]
 
 [[package]]
@@ -3256,7 +3256,7 @@ checksum = "93b02247366f395b9258054f964fe293ddd019c3237afba9be2ccbe9e1651c3d"
 dependencies = [
  "proc-macro2 0.4.27",
  "quote 0.6.11",
- "xml-rs 0.8.0",
+ "xml-rs 0.7.0",
 ]
 
 [[package]]
@@ -3333,9 +3333,9 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
 name = "winit"
-version = "0.19.3"
+version = "0.19.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d0da905e61ae52d55c5ca6f8bea1e09daf5e325b6c77b0947c65a5179b49f5f"
+checksum = "1e96eb4bb472fa43e718e8fa4aef82f86cd9deac9483a1e1529230babdb394a8"
 dependencies = [
  "android_glue",
  "backtrace",
@@ -3349,6 +3349,7 @@ dependencies = [
  "objc",
  "parking_lot 0.9.0",
  "percent-encoding",
+ "raw-window-handle 0.3.3",
  "smithay-client-toolkit 0.4.5",
  "wayland-client 0.21.11",
  "winapi 0.3.6",
