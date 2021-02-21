@@ -1,23 +1,21 @@
-use crate::screen::{Element, Message, Resource};
+//use crate::screen::{Element, Message, Resource};
 use cpal::traits::{DeviceTrait, EventLoopTrait, HostTrait};
-use ggez::{event::KeyCode, Context, GameError};
 use lewton::inside_ogg::OggStreamReader;
 use minimp3::Decoder;
 use std::{
     self,
     fs::File,
     path::{Path, PathBuf},
-    sync::mpsc::{channel, Receiver, Sender},
-    thread,
+    sync::mpsc::{Receiver, Sender},
     time::{Duration, Instant},
 };
 
 const CORRECTION_DEGREE: f64 = 0.00002;
 
 pub struct Music {
-    rate: f64,
-    path: PathBuf,
-    sender: Option<Sender<bool>>,
+    pub rate: f64,
+    pub path: PathBuf,
+    pub sender: Option<Sender<bool>>,
 }
 
 impl Music {
@@ -32,7 +30,7 @@ impl Music {
 
 //Known issue: playback only operates correctly on two channel audio
 //single channel audio needs to be accounted for
-fn play_file<T>(start_time: Instant, rate: f64, path: T, recv: Receiver<bool>)
+pub fn play_file<T>(start_time: Instant, rate: f64, path: T, recv: Receiver<bool>)
 where
     T: AsRef<Path>,
 {
@@ -163,27 +161,4 @@ where
             .filter_map(Result::ok)
             .collect::<Vec<_>>(),
     )
-}
-
-impl Element for Music {
-    fn run(&mut self, _ctx: &mut Context, _time: Option<i64>) -> Result<Message, GameError> {
-        Ok(Message::None)
-    }
-    fn start(&mut self, time: Option<Instant>) -> Result<Message, GameError> {
-        if let Some(time) = time {
-            let rate = self.rate;
-            let path = self.path.clone();
-            let (send, recv) = channel();
-            self.sender = Some(send);
-            thread::spawn(move || play_file(time, rate, path, recv));
-        }
-        Ok(Message::None)
-    }
-    fn finish(&mut self) -> Option<Resource> {
-        if let Some(sender) = &self.sender {
-            sender.send(true).expect("fuck");
-        }
-        None
-    }
-    fn handle_event(&mut self, _keycode: KeyCode, _time: Option<i64>, _key_down: bool) {}
 }

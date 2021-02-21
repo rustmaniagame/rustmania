@@ -6,10 +6,6 @@ version = "0.1.0"
 description = "A rhythm game in the vein of Stepmania and Etterna, currently in very early stages of development."
 
 [dependencies]
-cpal = "0.10.0"
-hound = "3.4.0"
-lewton = "0.9.1"
-minimp3 = "0.3.3"
 nom = "5.0.1"
 serde = "1.0.104"
 serde_derive = "1.0.101"
@@ -27,6 +23,7 @@ graphics = { path = "graphics" }
 notedata = { path = "notedata" }
 notefield = { path = "notefield" }
 parallel-folder-walk = {path = "parallel-folder-walk"}
+utils = { path = "utils" }
 
 [workspace]
 members = ["graphics", "notedata"]

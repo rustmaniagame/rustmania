@@ -2493,15 +2493,11 @@ version = "0.1.0"
 dependencies = [
  "array-init",
  "bincode",
- "cpal 0.10.0",
  "editor",
  "fern",
  "ggez",
  "graphics",
- "hound",
- "lewton",
  "log 0.4.8",
- "minimp3",
  "nom 5.1.0",
  "notedata",
  "notefield",
@@ -2512,6 +2508,7 @@ dependencies = [
  "serde_yaml",
  "structopt",
  "toml",
+ "utils",
 ]
 
 [[package]]
@@ -3078,6 +3075,16 @@ name = "utf8-ranges"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "796f7e48bef87609f7ade7e06495a87d5cd06c7866e6a5cbfceffc558a243737"
+
+[[package]]
+name = "utils"
+version = "0.1.0"
+dependencies = [
+ "cpal 0.10.0",
+ "hound",
+ "lewton",
+ "minimp3",
+]
 
 [[package]]
 name = "uuid"

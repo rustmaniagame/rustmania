@@ -45,7 +45,6 @@
 mod callbacks;
 mod difficulty_calc;
 mod gamestate;
-mod music;
 mod screen;
 mod text;
 

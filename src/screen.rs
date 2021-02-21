@@ -1,4 +1,4 @@
-use crate::{music::Music, SongOptions};
+use crate::SongOptions;
 use ggez::{
     event::{KeyCode, KeyMods},
     graphics::{self, Color},
@@ -10,11 +10,14 @@ use notedata::{
 };
 use notefield::{player_config::NoteLayout, Notefield};
 use serde_derive::{Deserialize, Serialize};
+use std::sync::mpsc::channel;
 use std::{
     collections::HashMap,
     path::PathBuf,
+    thread,
     time::{Duration, Instant},
 };
+use utils::music::{Music, play_file};
 
 pub trait Element: Send {
     fn run(&mut self, context: &mut Context, time: Option<i64>) -> Result<Message, GameError>;
@@ -436,6 +439,29 @@ impl Screen {
             element.handle_event(keycode, time_delta, false);
         }
     }
+}
+
+impl Element for Music {
+    fn run(&mut self, _ctx: &mut Context, _time: Option<i64>) -> Result<Message, GameError> {
+        Ok(Message::None)
+    }
+    fn start(&mut self, time: Option<Instant>) -> Result<Message, GameError> {
+        if let Some(time) = time {
+            let rate = self.rate;
+            let path = self.path.clone();
+            let (send, recv) = channel();
+            self.sender = Some(send);
+            thread::spawn(move || play_file(time, rate, path, recv));
+        }
+        Ok(Message::None)
+    }
+    fn finish(&mut self) -> Option<Resource> {
+        if let Some(sender) = &self.sender {
+            sender.send(true).expect("fuck");
+        }
+        None
+    }
+    fn handle_event(&mut self, _keycode: KeyCode, _time: Option<i64>, _key_down: bool) {}
 }
 
 impl Element for Notefield {
