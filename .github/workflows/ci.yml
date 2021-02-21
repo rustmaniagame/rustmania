@@ -97,7 +97,7 @@ jobs:
         with:
           name: Clippy
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all
+          args: --all --verbose
 
   docs:
     name: Deploy Docs
