@@ -1509,9 +1509,9 @@ dependencies = [
 
 [[package]]
 name = "lyon"
-version = "0.13.1"
+version = "0.13.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5bdc664e8c75115a90cb08dcd23401a66c886184be28568debf6a447cf221ae7"
+checksum = "fcbe51099b21e92413cd1f692ba6f0140007d1b01ca07e703172d88d45096c9a"
 dependencies = [
  "lyon_algorithms",
  "lyon_tessellation",
@@ -1519,9 +1519,9 @@ dependencies = [
 
 [[package]]
 name = "lyon_algorithms"
-version = "0.13.1"
+version = "0.13.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db6a52698a7455d25f8385959721c3bb078e2385bc35d053e96f6cab14fe5d07"
+checksum = "5acff42f708e6d2d4126c7aee8c4711c08e9be6143f0d6050498fafb7f4a0287"
 dependencies = [
  "lyon_path",
  "sid",
@@ -1529,9 +1529,9 @@ dependencies = [
 
 [[package]]
 name = "lyon_geom"
-version = "0.12.4"
+version = "0.12.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ea0ba5f8d2d91d6d895aca54d1ec0d84ddfa4826f33fbfe8abb39f08f9e4153"
+checksum = "bdb9bf1f1d43be9a9cc2343a7a096dc113cc25337a13e8f99721b01d1d548b60"
 dependencies = [
  "arrayvec 0.4.11",
  "euclid",
@@ -1540,18 +1540,18 @@ dependencies = [
 
 [[package]]
 name = "lyon_path"
-version = "0.13.1"
+version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59da21f4f954c32448e470134d15374e1a9e832cbf85c3b4e657e58882c9a716"
+checksum = "bd492548d32f7e8de10509953ed56d11dbc7103c36d56f32f3b74bf72b04cf29"
 dependencies = [
  "lyon_geom",
 ]
 
 [[package]]
 name = "lyon_tessellation"
-version = "0.13.1"
+version = "0.13.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2e515032733b7f3d1e4e4568315df3e56ff537fa717225442d7f42590441b17"
+checksum = "228f5eedeb6795b57d22fa91f6c215643f2c2aae758f9432585c8d99b7be9143"
 dependencies = [
  "lyon_path",
  "sid",
