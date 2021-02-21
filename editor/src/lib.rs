@@ -3,11 +3,11 @@ use ggez::graphics::spritebatch::SpriteBatch;
 use ggez::{graphics, Context, GameError};
 use notedata::timingdata::{GameplayInfo, Rectangle, TimingColumn};
 use notedata::{BeatPair, Fraction, Note, NoteData, NoteRow, NoteType, NOTEFIELD_SIZE};
-use notefield::player_config::{NoteLayout, NoteSkin, PlayerOptions};
-use notefield::ColumnInfo;
 use std::collections::BTreeMap;
 use std::convert::TryFrom;
 use std::path::PathBuf;
+use utils::notefield::player_config::{NoteLayout, NoteSkin, PlayerOptions};
+use utils::notefield::ColumnInfo;
 
 pub struct Editor {
     chart: ChartEditor,

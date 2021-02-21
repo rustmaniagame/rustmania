@@ -21,7 +21,6 @@ structopt = "0.3.7"
 editor = { path = "editor" }
 graphics = { path = "graphics" }
 notedata = { path = "notedata" }
-notefield = { path = "notefield" }
 parallel-folder-walk = {path = "parallel-folder-walk"}
 utils = { path = "utils" }
 

@@ -60,7 +60,6 @@ use notedata::{
     timingdata::{CalcInfo, Rectangle, TimingData},
     Fraction, NoteData, NoteType,
 };
-use notefield::player_config::{NoteLayout, NoteSkin, PlayerOptions};
 use parallel_folder_walk::{load_songs_folder, LoadError};
 use std::{
     cmp::Ordering,
@@ -71,6 +70,7 @@ use std::{
     time::Instant,
 };
 use structopt::StructOpt;
+use utils::notefield::player_config::{NoteLayout, NoteSkin, PlayerOptions};
 
 fn parse_noteskin_path(arg: &OsStr) -> PathBuf {
     PathBuf::from("Noteskins").join(arg)

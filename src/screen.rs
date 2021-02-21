@@ -8,7 +8,6 @@ use notedata::{
     timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData},
     ChartMetadata, NOTEFIELD_SIZE,
 };
-use notefield::{player_config::NoteLayout, Notefield};
 use serde_derive::{Deserialize, Serialize};
 use std::sync::mpsc::channel;
 use std::{
@@ -17,7 +16,8 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
-use utils::music::{Music, play_file};
+use utils::music::{play_file, Music};
+use utils::notefield::{player_config::NoteLayout, Notefield};
 
 pub trait Element: Send {
     fn run(&mut self, context: &mut Context, time: Option<i64>) -> Result<Message, GameError>;

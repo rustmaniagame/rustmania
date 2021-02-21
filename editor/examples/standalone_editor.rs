@@ -1,8 +1,8 @@
 use editor::Editor;
 use ggez::ContextBuilder;
-use notefield::player_config::PlayerOptions;
 use std::env::set_current_dir;
 use std::path::PathBuf;
+use utils::notefield::player_config::PlayerOptions;
 
 fn main() {
     set_current_dir("..").expect("We need to change current dir because of ggez weirdness");

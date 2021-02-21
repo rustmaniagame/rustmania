@@ -1,4 +1,4 @@
-use crate::NOTEFIELD_SIZE;
+use super::NOTEFIELD_SIZE;
 use ggez::{
     error::GameResult,
     graphics::{self, Rect, WrapMode},

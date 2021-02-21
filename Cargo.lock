@@ -744,7 +744,7 @@ version = "0.1.0"
 dependencies = [
  "ggez",
  "notedata",
- "notefield",
+ "utils",
  "winit 0.21.0",
 ]
 
@@ -1831,18 +1831,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "notefield"
-version = "0.1.0"
-dependencies = [
- "array-init",
- "ggez",
- "notedata",
- "serde",
- "serde_derive",
- "toml",
-]
-
-[[package]]
 name = "num-complex"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2500,7 +2488,6 @@ dependencies = [
  "log 0.4.8",
  "nom 5.1.0",
  "notedata",
- "notefield",
  "parallel-folder-walk",
  "rand 0.7.2",
  "serde",
@@ -3080,10 +3067,16 @@ checksum = "796f7e48bef87609f7ade7e06495a87d5cd06c7866e6a5cbfceffc558a243737"
 name = "utils"
 version = "0.1.0"
 dependencies = [
+ "array-init",
  "cpal 0.10.0",
+ "ggez",
  "hound",
  "lewton",
  "minimp3",
+ "notedata",
+ "serde",
+ "serde_derive",
+ "toml",
 ]
 
 [[package]]

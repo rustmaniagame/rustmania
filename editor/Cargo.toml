@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 notedata = { path = "../notedata"}
-notefield = { path = "../notefield" }
+utils = { path = "../utils" }
 ggez = "0.5.1"
 
 [dev-dependencies]

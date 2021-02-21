@@ -1,9 +1,9 @@
-use crate::player_config::NoteLayout;
 use ggez::graphics::spritebatch::SpriteBatch;
 use notedata::{
     timingdata::{GameplayInfo, Judgement, TimingColumn, TimingData},
     NoteType, NOTEFIELD_SIZE,
 };
+use player_config::NoteLayout;
 
 pub mod player_config;
 
