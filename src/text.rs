@@ -3,7 +3,7 @@ use ggez::{event::KeyCode, graphics, Context, GameError};
 use std::time::Instant;
 
 pub struct TextBox {
-    image: graphics::Text,
+    _image: graphics::Text,
     contents: String,
     last_displayed: String,
     position: [f32; 2],
@@ -13,7 +13,7 @@ pub struct TextBox {
 impl TextBox {
     pub fn new(contents: String, position: [f32; 2], size: u32) -> Self {
         Self {
-            image: graphics::Text::new(contents.clone()),
+            _image: graphics::Text::new(contents.clone()),
             contents,
             last_displayed: String::new(),
             position,
@@ -42,7 +42,7 @@ impl Element for TextBox {
             0 => {
                 if let Some(Resource::String(contents)) = resource {
                     self.contents = contents;
-                    self.image = graphics::Text::new(self.contents.clone());
+                    self._image = graphics::Text::new(self.contents.clone());
                 }
                 None
             }
