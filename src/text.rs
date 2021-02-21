@@ -40,6 +40,7 @@ impl Element for TextBox {
     fn methods(&mut self, resource: Option<Resource>, index: usize) -> Option<Resource> {
         match index {
             0 => {
+                #[allow(clippy::used_underscore_binding)]
                 if let Some(Resource::String(contents)) = resource {
                     self.contents = contents;
                     self._image = graphics::Text::new(self.contents.clone());

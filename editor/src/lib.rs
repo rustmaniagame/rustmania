@@ -138,6 +138,7 @@ impl Editor {
         self.chart
             .get_noterow(self.current_beat.0 as usize, self.current_beat.1)
     }
+    #[allow(clippy::result_unit_err)]
     pub fn export(&self) -> Result<NoteData, ()> {
         self.chart.export()
     }
@@ -334,6 +335,7 @@ impl ChartEditor {
     pub fn remove_bpm(&mut self, measure: i32, beat: Fraction) -> Option<(f64, f64)> {
         self.bpms.remove(&(measure, beat))
     }
+    #[allow(clippy::result_unit_err)]
     pub fn export(&self) -> Result<NoteData, ()> {
         let mut data = NoteData::new();
         data.structure.bpms = self
@@ -366,7 +368,7 @@ impl ChartEditor {
         self.notes
             .get(&(measure, beat))
             .map(|row| row.iter().map(|(m, b)| Note::new(*b, *m)).collect())
-            .unwrap_or_else(|| vec![])
+            .unwrap_or_else(Vec::new)
     }
 }
 
