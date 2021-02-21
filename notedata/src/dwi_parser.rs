@@ -14,6 +14,7 @@ use nom::{
     Err, IResult,
 };
 
+#[allow(clippy::unnecessary_wraps)]
 fn display_bpm_dwi(input: &str) -> IResult<&str, DisplayBpm> {
     Ok(alt((
         map(
