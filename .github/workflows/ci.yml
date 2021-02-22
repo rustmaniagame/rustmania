@@ -7,7 +7,6 @@ on:
       - master
       - staging
       - trying
-      - fix-ci
 
 env:
   RUST_BACKTRACE: 1
