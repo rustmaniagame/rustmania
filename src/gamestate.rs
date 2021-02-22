@@ -30,7 +30,9 @@ impl GameState {
                 cache: vec![],
                 song_options: SongOptions::default(),
             },
-            scripts: ScriptList { scripts: vec![] },
+            scripts: ScriptList {
+                scripts: HashMap::new(),
+            },
         }
     }
     pub fn new(

@@ -117,21 +117,21 @@ pub type ResourceMaps = Vec<ResourceMap>;
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct ScriptList {
-    pub scripts: Vec<ResourceMaps>,
+    pub scripts: HashMap<String, ResourceMaps>,
 }
 
 #[derive(Deserialize, Serialize)]
 pub struct ScreenBuilder {
     pub elements: Vec<ElementType>,
-    pub on_finish: usize,
-    pub on_keypress: HashMap<u32, usize>,
+    pub on_finish: String,
+    pub on_keypress: HashMap<u32, String>,
 }
 
 pub struct Screen {
     start_time: Option<Instant>,
     elements: Vec<Box<dyn Element>>,
-    on_finish: usize,
-    on_keypress: HashMap<u32, usize>,
+    on_finish: String,
+    on_keypress: HashMap<u32, String>,
     pub current_message: Message,
 }
 
@@ -284,7 +284,11 @@ impl ScreenBuilder {
             .iter()
             .map(|element| element.build(resources))
             .collect();
-        Screen::new(element_list, self.on_finish, self.on_keypress.clone())
+        Screen::new(
+            element_list,
+            self.on_finish.clone(),
+            self.on_keypress.clone(),
+        )
     }
 }
 
@@ -307,8 +311,8 @@ fn keycode_number(code: KeyCode) -> u32 {
 impl Screen {
     pub fn new(
         elements: Vec<Box<dyn Element>>,
-        on_finish: usize,
-        on_keypress: HashMap<u32, usize>,
+        on_finish: String,
+        on_keypress: HashMap<u32, String>,
     ) -> Self {
         Self {
             start_time: Some(Instant::now() + Duration::from_secs(3)),
@@ -380,7 +384,7 @@ impl Screen {
         globals: &Globals,
         scripts: &ScriptList,
     ) {
-        if let Some(script) = scripts.scripts.get(self.on_finish) {
+        if let Some(script) = scripts.scripts.get(&self.on_finish) {
             self.run_script(resources, callbacks, globals, script);
         }
         for element in &mut self.elements {
@@ -424,7 +428,7 @@ impl Screen {
         scripts: &ScriptList,
     ) {
         if let Some(cool) = self.on_keypress.get(&keycode_number(keycode)) {
-            if let Some(script) = scripts.scripts.get(*cool) {
+            if let Some(script) = scripts.scripts.get(cool) {
                 self.run_script(resources, callbacks, globals, script);
             }
         }

@@ -8,10 +8,10 @@ scene_stack:
           - 0
     on_finish: 999
     on_keypress:
-      5: 5
-      1: 4
-      3: 3
-      2: 2
+      5: to-editor
+      1: enter-gameplay
+      3: next-song
+      2: previous-song
   gameplay:
     elements:
       - NOTEFIELD:
@@ -33,35 +33,36 @@ scene_stack:
           - 0
           - 1
           - 3
-    on_finish: 0
+    on_finish: score-from-replay
     on_keypress:
-      4: 1
-      6: 6
-      7: 6
-      8: 6
-      9: 6
+      4: to-song-select
+      6: update-score
+      7: update-score
+      8: update-score
+      9: update-score
   results:
     elements:
       - TEXT:
           - 0
           - 1
           - 2
-    on_finish: 2
+    on_finish: previous-song
     on_keypress:
-      1: 1
+      1: to-song-select
   editor:
     elements:
       - TEXT:
           - 1
           - 1
           - 1
-    on_finish: 0
+    on_finish: score-from-replay
     on_keypress:
-      4: 1
-      5: 1
+      4: to-song-select
+      5: to-song-select
 scripts:
   scripts:
-    - - Element:
+    score-from-replay:
+      - Element:
           resource_index: 0
           element_index: 0
       - Script:
@@ -70,9 +71,11 @@ scripts:
           script_index: 0
           destination_type: String
           destination_index: 0
-    - - Message:
+    to-song-select:
+      - Message:
           Finish: start
-    - - Script:
+    previous-song:
+      - Script:
           resource_type: Integer
           resource_index: 1
           script_index: 4
@@ -91,7 +94,8 @@ scripts:
           resource_type: String
           ret_index: 0
           ret_type: Integer
-    - - Script:
+    next-song:
+      - Script:
           resource_type: Integer
           resource_index: 1
           script_index: 3
@@ -110,7 +114,8 @@ scripts:
           resource_type: String
           ret_index: 0
           ret_type: Integer
-    - - Script:
+    enter-gameplay:
+      - Script:
           resource_type: Integer
           resource_index: 1
           script_index: 7
@@ -130,9 +135,11 @@ scripts:
           destination_index: 0
       - Message:
           Finish: gameplay
-    - - Message:
+    to-editor:
+      - Message:
           Finish: editor
-    - - Method:
+    update-score:
+      - Method:
           element: 0
           method: 0
           resource: 0
