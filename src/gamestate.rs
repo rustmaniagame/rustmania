@@ -6,12 +6,12 @@ use ggez::{
     event::{EventHandler, KeyCode, KeyMods},
     Context, GameError,
 };
-use std::convert::TryFrom;
+use std::collections::HashMap;
 
 pub struct GameState {
-    scene_stack: Vec<ScreenBuilder>,
+    scene_stack: HashMap<String, ScreenBuilder>,
     current_screen: Option<Screen>,
-    screen_index: usize,
+    screen_index: String,
     resources: Resources,
     callbacks: Vec<ResourceCallback>,
     globals: Globals,
@@ -21,9 +21,9 @@ pub struct GameState {
 impl GameState {
     pub fn _new() -> Self {
         Self {
-            scene_stack: Vec::new(),
+            scene_stack: HashMap::new(),
             current_screen: None,
-            screen_index: 0,
+            screen_index: "start".to_string(),
             resources: Resources::_new(),
             callbacks: vec![],
             globals: Globals {
@@ -34,7 +34,7 @@ impl GameState {
         }
     }
     pub fn new(
-        scene_stack: Vec<ScreenBuilder>,
+        scene_stack: HashMap<String, ScreenBuilder>,
         resources: Resources,
         callbacks: Vec<ResourceCallback>,
         globals: Globals,
@@ -43,7 +43,7 @@ impl GameState {
         Self {
             scene_stack,
             current_screen: None,
-            screen_index: 0,
+            screen_index: "start".to_string(),
             resources,
             callbacks,
             globals,
@@ -58,10 +58,10 @@ impl EventHandler for GameState {
     }
     fn draw(&mut self, ctx: &mut Context) -> Result<(), GameError> {
         if let Some(ref mut screen) = self.current_screen {
-            match screen.current_message {
+            match &screen.current_message {
                 Message::None => {}
                 Message::Finish(destination) => {
-                    self.screen_index = usize::try_from(destination).unwrap_or(usize::max_value());
+                    self.screen_index = destination.clone();
                     screen.finish(
                         &mut self.resources,
                         &self.callbacks,
@@ -76,7 +76,7 @@ impl EventHandler for GameState {
             match screen.draw(ctx)? {
                 Message::None => {}
                 Message::Finish(destination) => {
-                    self.screen_index = usize::try_from(destination).unwrap_or(usize::max_value());
+                    self.screen_index = destination;
                     screen.finish(
                         &mut self.resources,
                         &self.callbacks,
@@ -89,7 +89,7 @@ impl EventHandler for GameState {
         } else {
             self.current_screen = self
                 .scene_stack
-                .get(self.screen_index)
+                .get(&self.screen_index)
                 .map(|screen| screen.build(&self.resources));
             if let Some(ref mut screen) = self.current_screen {
                 screen.start()?;

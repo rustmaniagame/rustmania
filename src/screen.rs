@@ -89,10 +89,10 @@ pub struct ElementMap {
     pub element_index: usize,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum Message {
     None,
-    Finish(i64),
+    Finish(String),
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
@@ -105,7 +105,7 @@ pub struct MethodMap {
     pub ret_type: ResourceType,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum ResourceMap {
     Script(ScriptMap),
     Element(ElementMap),
@@ -148,7 +148,7 @@ pub struct Globals {
 
 #[derive(Deserialize, Serialize)]
 pub struct Theme {
-    pub scene_stack: Vec<ScreenBuilder>,
+    pub scene_stack: HashMap<String, ScreenBuilder>,
     pub scripts: ScriptList,
 }
 
@@ -352,7 +352,7 @@ impl Screen {
                     }
                 }
                 ResourceMap::Message(message) => {
-                    self.current_message = *message;
+                    self.current_message = message.clone();
                 }
                 ResourceMap::Method(map) => {
                     if let Some(elem) = self.elements.get_mut(map.element) {
@@ -502,7 +502,7 @@ impl Element for Notefield {
             self.layout.draw_judgment(ctx, judgment)?;
         }
         Ok(if completed {
-            Message::Finish(2)
+            Message::Finish("results".to_string())
         } else {
             Message::None
         })
