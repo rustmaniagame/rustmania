@@ -412,6 +412,6 @@ mod tests {
                 value: 180.0,
             },
         ];
-        assert_eq!(edit.export(), Ok(cool))
+        assert_eq!(edit.export(), cool)
     }
 }
