@@ -35,16 +35,16 @@ jobs:
           args: --all -- --check
 
   test:
-    name: Test ${{ matrix.rust }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
-        rust: [beta, stable, nightly]
-        allow_failure: [false]
+        os: [ ubuntu-latest, windows-latest, macOS-latest ]
+        rust: [ beta, stable, nightly ]
+        allow_failure: [ false ]
         include:
           - rust: nightly
             allow_failure: true
+    name: Test ${{ matrix.rust }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v1
