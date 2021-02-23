@@ -72,7 +72,7 @@ scripts:
     score-from-replay:
       - Element:
           resource_index: 0
-          element_index: 0
+          element_index: player-1
       - Script:
           resource_type: Replay
           resource_index: 0
