@@ -2,7 +2,8 @@
 scene_stack:
   start:
     elements:
-      - TEXT:
+      song-title:
+        TEXT:
           - 0
           - 0
           - 0
@@ -14,22 +15,27 @@ scene_stack:
       2: previous-song
   gameplay:
     elements:
-      - NOTEFIELD:
+      player-1:
+        NOTEFIELD:
           - 0
           - 0
           - 0
-      - NOTEFIELD:
+      player-2:
+        NOTEFIELD:
           - 1
           - 0
           - 0
-      - MUSIC:
+      music:
+        MUSIC:
           - 0
           - 0
-      - TEXT:
+      song-title:
+        TEXT:
           - 0
           - 1
           - 2
-      - TEXT:
+      score:
+        TEXT:
           - 0
           - 1
           - 3
@@ -42,7 +48,8 @@ scene_stack:
       9: update-score
   results:
     elements:
-      - TEXT:
+      final-score:
+        TEXT:
           - 0
           - 1
           - 2
@@ -51,7 +58,8 @@ scene_stack:
       1: to-song-select
   editor:
     elements:
-      - TEXT:
+      placeholder:
+        TEXT:
           - 1
           - 1
           - 1
@@ -88,7 +96,7 @@ scripts:
           destination_type: String
           destination_index: 0
       - Method:
-          element: 0
+          element: song-title
           method: 0
           resource: 0
           resource_type: String
@@ -108,7 +116,7 @@ scripts:
           destination_type: String
           destination_index: 0
       - Method:
-          element: 0
+          element: song-title
           method: 0
           resource: 0
           resource_type: String
@@ -140,7 +148,7 @@ scripts:
           Finish: editor
     update-score:
       - Method:
-          element: 0
+          element: player-1
           method: 0
           resource: 0
           resource_type: Integer
@@ -153,7 +161,7 @@ scripts:
           destination_type: String
           destination_index: 2
       - Method:
-          element: 4
+          element: score
           method: 0
           resource: 2
           resource_type: String

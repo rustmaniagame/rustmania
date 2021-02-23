@@ -83,10 +83,10 @@ pub struct ScriptMap {
     pub destination_index: usize,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ElementMap {
     pub resource_index: usize,
-    pub element_index: usize,
+    pub element_index: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -95,9 +95,9 @@ pub enum Message {
     Finish(String),
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct MethodMap {
-    pub element: usize,
+    pub element: String,
     pub method: usize,
     pub resource: usize,
     pub resource_type: ResourceType,
@@ -122,14 +122,14 @@ pub struct ScriptList {
 
 #[derive(Deserialize, Serialize)]
 pub struct ScreenBuilder {
-    pub elements: Vec<ElementType>,
+    pub elements: HashMap<String, ElementType>,
     pub on_finish: String,
     pub on_keypress: HashMap<u32, String>,
 }
 
 pub struct Screen {
     start_time: Option<Instant>,
-    elements: Vec<Box<dyn Element>>,
+    elements: HashMap<String, Box<dyn Element>>,
     on_finish: String,
     on_keypress: HashMap<u32, String>,
     pub current_message: Message,
@@ -282,7 +282,7 @@ impl ScreenBuilder {
         let element_list = self
             .elements
             .iter()
-            .map(|element| element.build(resources))
+            .map(|(name, element)| (name.clone(), element.build(resources)))
             .collect();
         Screen::new(
             element_list,
@@ -310,7 +310,7 @@ fn keycode_number(code: KeyCode) -> u32 {
 
 impl Screen {
     pub fn new(
-        elements: Vec<Box<dyn Element>>,
+        elements: HashMap<String, Box<dyn Element>>,
         on_finish: String,
         on_keypress: HashMap<u32, String>,
     ) -> Self {
@@ -335,7 +335,11 @@ impl Screen {
                     resource_index,
                     element_index,
                 }) => {
-                    if let Some(resource) = self.elements[*element_index].finish() {
+                    if let Some(resource) = self
+                        .elements
+                        .get_mut(element_index)
+                        .and_then(|e| e.finish())
+                    {
                         if resources.set(*resource_index, resource.clone()).is_none() {
                             resources.push(resource)
                         }
@@ -359,7 +363,7 @@ impl Screen {
                     self.current_message = message.clone();
                 }
                 ResourceMap::Method(map) => {
-                    if let Some(elem) = self.elements.get_mut(map.element) {
+                    if let Some(elem) = self.elements.get_mut(&map.element) {
                         if let Some(result) = elem.methods(
                             Some(resources.get(map.resource, map.resource_type)),
                             map.method,
@@ -372,7 +376,7 @@ impl Screen {
         }
     }
     pub fn start(&mut self) -> Result<(), GameError> {
-        for element in &mut self.elements {
+        for element in self.elements.values_mut() {
             element.start(self.start_time)?;
         }
         Ok(())
@@ -387,7 +391,7 @@ impl Screen {
         if let Some(script) = scripts.scripts.get(&self.on_finish) {
             self.run_script(resources, callbacks, globals, script);
         }
-        for element in &mut self.elements {
+        for element in self.elements.values_mut() {
             element.finish();
         }
     }
@@ -410,7 +414,7 @@ impl Screen {
     pub fn draw(&mut self, ctx: &mut Context) -> Result<Message, GameError> {
         graphics::clear(ctx, Color::new(0.0, 0.0, 0.0, 1.0));
         let time_delta = self.start_time_to_milliseconds();
-        for element in &mut self.elements {
+        for element in self.elements.values_mut() {
             match element.run(ctx, time_delta)? {
                 Message::None => {}
                 Message::Finish(val) => return Ok(Message::Finish(val)),
@@ -433,13 +437,13 @@ impl Screen {
             }
         }
         let time_delta = self.start_time_to_milliseconds();
-        for element in &mut self.elements {
+        for element in self.elements.values_mut() {
             element.handle_event(keycode, time_delta, true);
         }
     }
     pub fn key_up_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _keymod: KeyMods) {
         let time_delta = self.start_time_to_milliseconds();
-        for element in &mut self.elements {
+        for element in self.elements.values_mut() {
             element.handle_event(keycode, time_delta, false);
         }
     }
