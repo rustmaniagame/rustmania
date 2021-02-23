@@ -46,7 +46,7 @@ scene_stack:
           - 0
           - 1
           - 2
-    on_finish: previous-song
+    on_finish: 999
     on_keypress:
       1: to-song-select
   editor:
@@ -55,7 +55,7 @@ scene_stack:
           - 1
           - 1
           - 1
-    on_finish: score-from-replay
+    on_finish: 999
     on_keypress:
       4: to-song-select
       5: to-song-select
