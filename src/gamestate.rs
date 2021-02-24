@@ -36,6 +36,7 @@ impl GameState {
         }
     }
     pub fn new(
+        start_screen: String,
         scene_stack: HashMap<String, ScreenBuilder>,
         resources: Resources,
         callbacks: Vec<ResourceCallback>,
@@ -45,7 +46,7 @@ impl GameState {
         Self {
             scene_stack,
             current_screen: None,
-            screen_index: "start".to_string(),
+            screen_index: start_screen,
             resources,
             callbacks,
             globals,

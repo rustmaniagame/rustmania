@@ -257,6 +257,7 @@ fn main() {
     }
 
     let mut gamestate = GameState::new(
+        theme.start_screen,
         theme.scene_stack,
         resources,
         vec![

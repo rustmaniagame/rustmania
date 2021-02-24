@@ -1,6 +1,7 @@
 ---
+start_screen: song-select
 scene_stack:
-  start:
+  song-select:
     elements:
       song-title:
         TEXT:
@@ -81,7 +82,7 @@ scripts:
           destination_index: 0
     to-song-select:
       - Message:
-          Finish: start
+          Finish: song-select
     previous-song:
       - Script:
           resource_type: Integer

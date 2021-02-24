@@ -148,6 +148,7 @@ pub struct Globals {
 
 #[derive(Deserialize, Serialize)]
 pub struct Theme {
+    pub start_screen: String,
     pub scene_stack: HashMap<String, ScreenBuilder>,
     pub scripts: ScriptList,
 }
