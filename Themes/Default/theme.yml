@@ -9,10 +9,10 @@ scene_stack:
           - 0
     on_finish: 999
     on_keypress:
-      5: to-editor
-      1: enter-gameplay
-      3: next-song
-      2: previous-song
+      grave: to-editor
+      enter: enter-gameplay
+      right: next-song
+      left: previous-song
   gameplay:
     elements:
       player-1:
@@ -41,11 +41,11 @@ scene_stack:
           - 3
     on_finish: score-from-replay
     on_keypress:
-      4: to-song-select
-      6: update-score
-      7: update-score
-      8: update-score
-      9: update-score
+      esc: to-song-select
+      z: update-score
+      x: update-score
+      comma: update-score
+      period: update-score
   results:
     elements:
       final-score:
@@ -55,7 +55,7 @@ scene_stack:
           - 2
     on_finish: 999
     on_keypress:
-      1: to-song-select
+      enter: to-song-select
   editor:
     elements:
       placeholder:
@@ -65,8 +65,8 @@ scene_stack:
           - 1
     on_finish: 999
     on_keypress:
-      4: to-song-select
-      5: to-song-select
+      esc: to-song-select
+      grave: to-song-select
 scripts:
   scripts:
     score-from-replay:

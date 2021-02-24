@@ -124,14 +124,14 @@ pub struct ScriptList {
 pub struct ScreenBuilder {
     pub elements: HashMap<String, ElementType>,
     pub on_finish: String,
-    pub on_keypress: HashMap<u32, String>,
+    pub on_keypress: HashMap<String, String>,
 }
 
 pub struct Screen {
     start_time: Option<Instant>,
     elements: HashMap<String, Box<dyn Element>>,
     on_finish: String,
-    on_keypress: HashMap<u32, String>,
+    on_keypress: HashMap<String, String>,
     pub current_message: Message,
 }
 
@@ -293,26 +293,27 @@ impl ScreenBuilder {
 }
 
 // Temporary workaround for ggez's reexported KeyCode not implementing serde traits
-fn keycode_number(code: KeyCode) -> u32 {
+fn keycode_number(code: KeyCode) -> String {
     match code {
-        KeyCode::Return => 1,
-        KeyCode::Left => 2,
-        KeyCode::Right => 3,
-        KeyCode::Escape => 4,
-        KeyCode::Grave => 5,
-        KeyCode::Z => 6,
-        KeyCode::X => 7,
-        KeyCode::Comma => 8,
-        KeyCode::Period => 9,
-        _ => 0,
+        KeyCode::Return => "enter",
+        KeyCode::Left => "left",
+        KeyCode::Right => "right",
+        KeyCode::Escape => "esc",
+        KeyCode::Grave => "grave",
+        KeyCode::Z => "z",
+        KeyCode::X => "x",
+        KeyCode::Comma => "comma",
+        KeyCode::Period => "period",
+        _ => "",
     }
+    .to_string()
 }
 
 impl Screen {
     pub fn new(
         elements: HashMap<String, Box<dyn Element>>,
         on_finish: String,
-        on_keypress: HashMap<u32, String>,
+        on_keypress: HashMap<String, String>,
     ) -> Self {
         Self {
             start_time: Some(Instant::now() + Duration::from_secs(3)),
