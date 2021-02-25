@@ -31,9 +31,20 @@ pub trait Element: Send {
 
 #[derive(Eq, PartialEq, Ord, PartialOrd, Deserialize, Serialize)]
 pub enum ElementType {
-    MUSIC(usize, usize),
-    NOTEFIELD(usize, usize, usize),
-    TEXT(usize, usize, usize),
+    MUSIC {
+        rate: usize,
+        path: usize,
+    },
+    NOTEFIELD {
+        layout: usize,
+        notes: usize,
+        draw_distance: usize,
+    },
+    TEXT {
+        contents: usize,
+        x_pos: usize,
+        y_pos: usize,
+    },
 }
 
 #[derive(Clone, Debug)]
@@ -160,16 +171,24 @@ fn to_milliseconds(dur: Duration) -> i64 {
 impl ElementType {
     pub fn build(&self, resources: &Resources) -> Box<dyn Element> {
         match self {
-            Self::MUSIC(rate, name) => Box::new(Music::new(
+            Self::MUSIC { rate, path } => Box::new(Music::new(
                 resources.floats[*rate],
-                resources.paths[*name].clone(),
+                resources.paths[*path].clone(),
             )),
-            Self::NOTEFIELD(layout, timing_data, draw_distance) => Box::new(Notefield::new(
+            Self::NOTEFIELD {
+                layout,
+                notes,
+                draw_distance,
+            } => Box::new(Notefield::new(
                 resources.layouts[*layout].clone(),
-                &resources.notes[*timing_data],
+                &resources.notes[*notes],
                 resources.integers[*draw_distance],
             )),
-            Self::TEXT(contents, x_pos, y_pos) => Box::new(crate::text::TextBox::new(
+            Self::TEXT {
+                contents,
+                x_pos,
+                y_pos,
+            } => Box::new(crate::text::TextBox::new(
                 resources.strings[*contents].clone(),
                 [
                     resources.floats[*x_pos] as f32,
