@@ -57,6 +57,7 @@ use notedata::{
     timingdata::{CalcInfo, Rectangle, TimingData},
     Fraction, NoteData, NoteType,
 };
+use std::collections::HashMap;
 use std::{
     cmp::Ordering,
     ffi::OsStr,
@@ -235,19 +236,38 @@ fn main() {
     let p1_layout = NoteLayout::new(&default_note_skin, 600, p1_options);
     let p2_layout = NoteLayout::new(&default_note_skin, 600, p2_options);
 
+    let mut notes_resources = HashMap::new();
+    notes_resources.insert("0".to_string(), TimingData::new());
+    let mut path_resources = HashMap::new();
+    path_resources.insert("0".to_string(), PathBuf::new());
+    path_resources.insert("1".to_string(), PathBuf::new());
+    let mut layout_resoures = HashMap::new();
+    layout_resoures.insert("0".to_string(), p1_layout);
+    layout_resoures.insert("1".to_string(), p2_layout);
+    let mut float_resources = HashMap::new();
+    float_resources.insert("0".to_string(), song_options.rate);
+    float_resources.insert("1".to_string(), 0.0);
+    float_resources.insert("2".to_string(), 12.0);
+    float_resources.insert("3".to_string(), 36.0);
+    float_resources.insert("4".to_string(), 0.0);
+    let mut integer_resources = HashMap::new();
+    integer_resources.insert("0".to_string(), 600);
+    integer_resources.insert("1".to_string(), 0);
+    integer_resources.insert("2".to_string(), 0);
+    let mut string_resources = HashMap::new();
+    string_resources.insert("0".to_string(), String::new());
+    string_resources.insert("1".to_string(), String::from("Editor placeholder text"));
+    string_resources.insert("2".to_string(), String::new());
+
     let resources = Resources::new(
-        vec![TimingData::new()],
-        vec![PathBuf::new(); 2],
-        vec![p1_layout, p2_layout],
-        vec![song_options.rate, 0.0, 12.0, 36.0, 0.0],
-        vec![600, 0, 0],
-        vec![
-            String::new(),
-            String::from("Editor placeholder text"),
-            String::new(),
-        ],
-        vec![],
-        vec![],
+        notes_resources,
+        path_resources,
+        layout_resoures,
+        float_resources,
+        integer_resources,
+        string_resources,
+        HashMap::new(),
+        HashMap::new(),
     );
 
     if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {

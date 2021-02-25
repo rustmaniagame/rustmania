@@ -32,18 +32,18 @@ pub trait Element: Send {
 #[derive(Eq, PartialEq, Ord, PartialOrd, Deserialize, Serialize)]
 pub enum ElementType {
     MUSIC {
-        rate: usize,
-        path: usize,
+        rate: String,
+        path: String,
     },
     NOTEFIELD {
-        layout: usize,
-        notes: usize,
-        draw_distance: usize,
+        layout: String,
+        notes: String,
+        draw_distance: String,
     },
     TEXT {
-        contents: usize,
-        x_pos: usize,
-        y_pos: usize,
+        contents: String,
+        x_pos: String,
+        y_pos: String,
     },
 }
 
@@ -75,28 +75,28 @@ pub type ResourceCallback = fn(Option<Resource>, &Globals) -> Option<Resource>;
 
 #[derive(Clone)]
 pub struct Resources {
-    notes: Vec<TimingData<GameplayInfo>>,
-    paths: Vec<PathBuf>,
-    layouts: Vec<NoteLayout>,
-    floats: Vec<f64>,
-    integers: Vec<i64>,
-    strings: Vec<String>,
-    replays: Vec<Vec<TimingColumn<Judgement>>>,
-    multiples: Vec<Vec<Resource>>,
+    notes: HashMap<String, TimingData<GameplayInfo>>,
+    paths: HashMap<String, PathBuf>,
+    layouts: HashMap<String, NoteLayout>,
+    floats: HashMap<String, f64>,
+    integers: HashMap<String, i64>,
+    strings: HashMap<String, String>,
+    replays: HashMap<String, Vec<TimingColumn<Judgement>>>,
+    multiples: HashMap<String, Vec<Resource>>,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ScriptMap {
     pub resource_type: ResourceType,
-    pub resource_index: usize,
+    pub resource_index: String,
     pub script_index: usize,
     pub destination_type: ResourceType,
-    pub destination_index: usize,
+    pub destination_index: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ElementMap {
-    pub resource_index: usize,
+    pub resource_index: String,
     pub element_index: String,
 }
 
@@ -110,9 +110,9 @@ pub enum Message {
 pub struct MethodMap {
     pub element: String,
     pub method: usize,
-    pub resource: usize,
+    pub resource: String,
     pub resource_type: ResourceType,
-    pub ret_index: usize,
+    pub ret_index: String,
     pub ret_type: ResourceType,
 }
 
@@ -172,27 +172,27 @@ impl ElementType {
     pub fn build(&self, resources: &Resources) -> Box<dyn Element> {
         match self {
             Self::MUSIC { rate, path } => Box::new(Music::new(
-                resources.floats[*rate],
-                resources.paths[*path].clone(),
+                resources.floats[rate],
+                resources.paths[path].clone(),
             )),
             Self::NOTEFIELD {
                 layout,
                 notes,
                 draw_distance,
             } => Box::new(Notefield::new(
-                resources.layouts[*layout].clone(),
-                &resources.notes[*notes],
-                resources.integers[*draw_distance],
+                resources.layouts[layout].clone(),
+                &resources.notes[notes],
+                resources.integers[draw_distance],
             )),
             Self::TEXT {
                 contents,
                 x_pos,
                 y_pos,
             } => Box::new(crate::text::TextBox::new(
-                resources.strings[*contents].clone(),
+                resources.strings[contents].clone(),
                 [
-                    resources.floats[*x_pos] as f32,
-                    resources.floats[*y_pos] as f32,
+                    resources.floats[x_pos] as f32,
+                    resources.floats[y_pos] as f32,
                 ],
                 0,
             )),
@@ -203,26 +203,26 @@ impl ElementType {
 impl Resources {
     pub fn _new() -> Self {
         Self {
-            notes: vec![],
-            paths: vec![],
-            layouts: vec![],
-            floats: vec![],
-            integers: vec![],
-            strings: vec![],
-            replays: vec![],
-            multiples: vec![],
+            notes: HashMap::new(),
+            paths: HashMap::new(),
+            layouts: HashMap::new(),
+            floats: HashMap::new(),
+            integers: HashMap::new(),
+            strings: HashMap::new(),
+            replays: HashMap::new(),
+            multiples: HashMap::new(),
         }
     }
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        notes: Vec<TimingData<GameplayInfo>>,
-        paths: Vec<PathBuf>,
-        layouts: Vec<NoteLayout>,
-        floats: Vec<f64>,
-        integers: Vec<i64>,
-        strings: Vec<String>,
-        replays: Vec<Vec<TimingColumn<Judgement>>>,
-        multiples: Vec<Vec<Resource>>,
+        notes: HashMap<String, TimingData<GameplayInfo>>,
+        paths: HashMap<String, PathBuf>,
+        layouts: HashMap<String, NoteLayout>,
+        floats: HashMap<String, f64>,
+        integers: HashMap<String, i64>,
+        strings: HashMap<String, String>,
+        replays: HashMap<String, Vec<TimingColumn<Judgement>>>,
+        multiples: HashMap<String, Vec<Resource>>,
     ) -> Self {
         Self {
             notes,
@@ -235,62 +235,79 @@ impl Resources {
             multiples,
         }
     }
-    pub fn push(&mut self, resource: Resource) {
+    pub fn push(&mut self, key: String, resource: Resource) {
         match resource {
-            Resource::_Notes(notes) => self.notes.push(notes),
-            Resource::_Path(path) => self.paths.push(path),
-            Resource::_Layout(layout) => self.layouts.push(*layout),
-            Resource::Float(f) => self.floats.push(f),
-            Resource::Integer(int) => self.integers.push(int),
-            Resource::String(string) => self.strings.push(string),
-            Resource::Replay(replay) => self.replays.push(replay),
-            Resource::_Multiple(list) => list.into_iter().for_each(|resource| self.push(resource)),
-        }
+            Resource::_Notes(notes) => {
+                self.notes.insert(key, notes);
+            }
+            Resource::_Path(path) => {
+                self.paths.insert(key, path);
+            }
+            Resource::_Layout(layout) => {
+                self.layouts.insert(key, *layout);
+            }
+            Resource::Float(f) => {
+                self.floats.insert(key, f);
+            }
+            Resource::Integer(int) => {
+                self.integers.insert(key, int);
+            }
+            Resource::String(string) => {
+                self.strings.insert(key, string);
+            }
+            Resource::Replay(replay) => {
+                self.replays.insert(key, replay);
+            }
+            Resource::_Multiple(list) => {
+                list.into_iter()
+                    .for_each(|resource| self.push(key.clone(), resource));
+            }
+        };
     }
-    pub fn get(&self, index: usize, resource_type: ResourceType) -> Resource {
+    pub fn get(&self, index: String, resource_type: ResourceType) -> Resource {
         match resource_type {
-            ResourceType::Notes => Resource::_Notes(self.notes[index].clone()),
-            ResourceType::Path => Resource::_Path(self.paths[index].clone()),
-            ResourceType::_Layout => Resource::_Layout(Box::new(self.layouts[index].clone())),
-            ResourceType::Float => Resource::Float(self.floats[index]),
-            ResourceType::Integer => Resource::Integer(self.integers[index]),
-            ResourceType::String => Resource::String(self.strings[index].clone()),
-            ResourceType::Replay => Resource::Replay(self.replays[index].clone()),
-            ResourceType::_Multiple => Resource::_Multiple(self.multiples[index].clone()),
+            ResourceType::Notes => Resource::_Notes(self.notes[&index].clone()),
+            ResourceType::Path => Resource::_Path(self.paths[&index].clone()),
+            ResourceType::_Layout => Resource::_Layout(Box::new(self.layouts[&index].clone())),
+            ResourceType::Float => Resource::Float(self.floats[&index]),
+            ResourceType::Integer => Resource::Integer(self.integers[&index]),
+            ResourceType::String => Resource::String(self.strings[&index].clone()),
+            ResourceType::Replay => Resource::Replay(self.replays[&index].clone()),
+            ResourceType::_Multiple => Resource::_Multiple(self.multiples[&index].clone()),
         }
     }
-    pub fn set(&mut self, index: usize, value: Resource) -> Option<()> {
+    pub fn set(&mut self, index: String, value: Resource) -> Option<()> {
         match value {
             Resource::_Notes(val) => {
-                *self.notes.get_mut(index)? = val;
+                *self.notes.get_mut(&index)? = val;
                 Some(())
             }
             Resource::_Path(val) => {
-                *self.paths.get_mut(index)? = val;
+                *self.paths.get_mut(&index)? = val;
                 Some(())
             }
             Resource::_Layout(val) => {
-                *self.layouts.get_mut(index)? = *val;
+                *self.layouts.get_mut(&index)? = *val;
                 Some(())
             }
             Resource::Float(val) => {
-                *self.floats.get_mut(index)? = val;
+                *self.floats.get_mut(&index)? = val;
                 Some(())
             }
             Resource::Integer(val) => {
-                *self.integers.get_mut(index)? = val;
+                *self.integers.get_mut(&index)? = val;
                 Some(())
             }
             Resource::String(val) => {
-                *self.strings.get_mut(index)? = val;
+                *self.strings.get_mut(&index)? = val;
                 Some(())
             }
             Resource::Replay(val) => {
-                *self.replays.get_mut(index)? = val;
+                *self.replays.get_mut(&index)? = val;
                 Some(())
             }
             Resource::_Multiple(val) => {
-                *self.multiples.get_mut(index)? = val;
+                *self.multiples.get_mut(&index)? = val;
                 Some(())
             }
         }
@@ -361,8 +378,11 @@ impl Screen {
                         .get_mut(element_index)
                         .and_then(|e| e.finish())
                     {
-                        if resources.set(*resource_index, resource.clone()).is_none() {
-                            resources.push(resource)
+                        if resources
+                            .set(resource_index.clone(), resource.clone())
+                            .is_none()
+                        {
+                            resources.push(resource_index.clone(), resource)
                         }
                     }
                 }
@@ -374,10 +394,10 @@ impl Screen {
                     destination_index,
                 }) => {
                     if let Some(resource) = callbacks[*script_index](
-                        Some(resources.get(*resource_index, *resource_type)),
+                        Some(resources.get(resource_index.clone(), *resource_type)),
                         globals,
                     ) {
-                        resources.set(*destination_index, resource);
+                        resources.set(destination_index.clone(), resource);
                     }
                 }
                 ResourceMap::Message(message) => {
@@ -386,10 +406,10 @@ impl Screen {
                 ResourceMap::Method(map) => {
                     if let Some(elem) = self.elements.get_mut(&map.element) {
                         if let Some(result) = elem.methods(
-                            Some(resources.get(map.resource, map.resource_type)),
+                            Some(resources.get(map.resource.clone(), map.resource_type)),
                             map.method,
                         ) {
-                            resources.set(map.ret_index, result);
+                            resources.set(map.ret_index.clone(), result);
                         }
                     }
                 }
